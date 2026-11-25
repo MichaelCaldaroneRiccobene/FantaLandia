@@ -36,6 +36,12 @@ namespace FantaLandia.Characters
         [Tooltip("Fino a questa altezza ci si arrampica velocemente; oltre è un'arrampicata alta")]
         public float mediumObstacleMax = 1.7f;
 
+        [Header("Scelta corsia")]
+        [Tooltip("Dopo quanti secondi fermo davanti a una corsia occupata ne cerca una libera")]
+        public float laneWaitBeforeSwitch = 0.15f;
+        [Tooltip("Distanza massima da un ingresso occupato per considerarsi in coda")]
+        public float laneSearchRadius = 2.5f;
+
         [Header("Atterraggio")]
         [Tooltip("Da questa altezza in su l'atterraggio è duro: il personaggio resta stordito")]
         public float hardLandingHeight = 3.5f;
@@ -82,14 +88,25 @@ namespace FantaLandia.Characters
 
         void Update()
         {
-            if (!agent.enabled) return;
-            if (!IsTraversing && agent.isOnOffMeshLink)
+            if (!agent.enabled || IsTraversing) return;
+            if (agent.isOnOffMeshLink)
+            {
                 StartCoroutine(TraverseLink());
+                return;
+            }
+            UpdateLaneChoice();
         }
 
         public void MoveTo(Vector3 destination, bool allowDangerousJumps)
         {
             if (!agent.enabled) return;
+            if (detouring)
+            {
+                // Sta già andando verso una corsia libera: aggiorna solo la meta finale.
+                detourFinal = destination;
+                SetDangerousJumps(allowDangerousJumps);
+                return;
+            }
             if (IsTraversing)
             {
                 // Finisce prima il salto/arrampicata in corso, poi esegue l'ordine.
@@ -103,6 +120,71 @@ namespace FantaLandia.Characters
         }
 
         bool pendingDangerous;
+
+        // ------------------------------------------------------------------ scelta della corsia libera
+
+        float waitTimer;
+        bool detouring;
+        Vector3 detourFinal;
+        Vector3 detourTarget;
+
+        /// <summary>
+        /// Unity fa aspettare chi trova un link occupato. Se il personaggio è fermo in coda davanti
+        /// a una corsia occupata, va verso l'ingresso della corsia libera più vicina dello stesso passaggio.
+        /// </summary>
+        void UpdateLaneChoice()
+        {
+            if (detouring)
+            {
+                if (!agent.pathPending && FlatDistance(transform.position, detourTarget) <= 0.3f)
+                {
+                    detouring = false;
+                    agent.SetDestination(detourFinal);
+                }
+                return;
+            }
+
+            bool waiting = agent.hasPath && !agent.pathPending && !agent.isStopped &&
+                           agent.velocity.sqrMagnitude < 0.04f &&
+                           FlatDistance(transform.position, agent.destination) > 0.5f;
+            waitTimer = waiting ? waitTimer + Time.deltaTime : 0f;
+            if (waitTimer < laneWaitBeforeSwitch) return;
+            waitTimer = 0f;
+
+            // La corsia occupata più vicina a noi: è lì che siamo in coda.
+            TraversalLink blocked = null;
+            int side = 0;
+            float best = laneSearchRadius;
+            foreach (var lane in TraversalLink.All)
+            {
+                if (lane.IsFree || lane.Occupant == this) continue;
+                int s = lane.NearestEntrySide(transform.position, out float d);
+                if (d < best) { best = d; blocked = lane; side = s; }
+            }
+            if (blocked == null) return;
+
+            TraversalLink free = null;
+            float bestFree = float.MaxValue;
+            foreach (var lane in blocked.Lanes)
+            {
+                if (!lane.IsFree) continue;
+                float d = FlatDistance(transform.position, lane.Entry(side));
+                if (d < bestFree) { bestFree = d; free = lane; }
+            }
+            if (free == null) return; // tutte occupate: si aspetta
+
+            detouring = true;
+            detourFinal = agent.destination;
+            detourTarget = free.Entry(side);
+            agent.SetDestination(detourTarget);
+        }
+
+        static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
+        }
 
         public void SetGait(Gait gait)
         {
@@ -157,8 +239,12 @@ namespace FantaLandia.Characters
             float dy = end.y - start.y;
 
             float obstacle = 0f;
-            if (data.owner is Component owner && owner.TryGetComponent(out TraversalLink info))
-                obstacle = info.obstacleHeight;
+            TraversalLink lane = null;
+            if (data.owner is Component owner && owner.TryGetComponent(out lane))
+            {
+                obstacle = lane.obstacleHeight;
+                lane.Occupant = this;
+            }
             if (obstacle <= 0f && Mathf.Abs(dy) < 0.5f)
                 obstacle = ProbeObstacleHeight(start, end);
 
@@ -191,6 +277,7 @@ namespace FantaLandia.Characters
 
             transform.position = end;
             agent.CompleteOffMeshLink();
+            if (lane != null && lane.Occupant == this) lane.Occupant = null;
             CurrentTraversal = TraversalKind.None;
 
             if (kind == TraversalKind.Drop)

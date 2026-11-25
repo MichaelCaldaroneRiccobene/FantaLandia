@@ -269,11 +269,12 @@ namespace FantaLandia.EditorTools
             dir.y = 0f;
             Vector3 side = Vector3.Cross(Vector3.up, dir.normalized);
 
-            Transform group = lanes > 1 ? Group(name, parent) : parent;
+            // Il gruppo "Passaggio ..." dice a TraversalLink quali corsie sono alternative tra loro.
+            Transform group = Group($"{TraversalLink.LaneGroupPrefix}: {name}", parent);
             for (int i = 0; i < lanes; i++)
             {
                 Vector3 offset = side * ((i - (lanes - 1) * 0.5f) * laneWidth);
-                string laneName = lanes > 1 ? $"Corsia {i + 1}" : name;
+                string laneName = $"Corsia {i + 1}";
                 LinkLane(group, laneName, worldStart + offset, worldEnd + offset, laneWidth * 0.9f, bidirectional, area, obstacleHeight);
             }
         }
