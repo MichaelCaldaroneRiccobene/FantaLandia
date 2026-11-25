@@ -56,8 +56,9 @@ namespace FantaLandia.EditorTools
             BuildHouse(env, new Vector3(0f, 0f, 14f));
             BuildNavMesh();
 
-            BuildCharacter("Viandante", new Vector3(-1f, 0f, -3f), matBodyA);
-            BuildCharacter("Compagna", new Vector3(1f, 0f, -3f), matBodyB);
+            // Velocità diverse per provare il movimento di gruppo (G): la Compagna è più lenta.
+            BuildCharacter("Viandante", new Vector3(-1f, 0f, -3f), matBodyA, 2.0f, 4.0f, 6.5f);
+            BuildCharacter("Compagna", new Vector3(1f, 0f, -3f), matBodyB, 1.8f, 3.5f, 5.5f);
             BuildSystems();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -273,7 +274,7 @@ namespace FantaLandia.EditorTools
 
         // ------------------------------------------------------------------ personaggi e sistemi
 
-        static void BuildCharacter(string name, Vector3 position, Material bodyMat)
+        static void BuildCharacter(string name, Vector3 position, Material bodyMat, float walk, float jog, float sprint)
         {
             var root = new GameObject(name);
             root.transform.position = position;
@@ -289,7 +290,10 @@ namespace FantaLandia.EditorTools
             agent.autoTraverseOffMeshLink = false;
             agent.enabled = false; // lo attiva CharacterMotor.Start dopo la costruzione della NavMesh
 
-            root.AddComponent<CharacterMotor>();
+            var motor = root.AddComponent<CharacterMotor>();
+            motor.walkSpeed = walk;
+            motor.jogSpeed = jog;
+            motor.sprintSpeed = sprint;
             root.AddComponent<NavMeshModifier>().ignoreFromBuild = true; // il personaggio non deve "bucare" la NavMesh
             var selectable = root.AddComponent<SelectableCharacter>();
             selectable.displayName = name;

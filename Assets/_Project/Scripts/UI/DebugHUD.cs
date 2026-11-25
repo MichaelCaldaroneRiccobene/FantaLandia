@@ -23,7 +23,7 @@ namespace FantaLandia.UI
         {
             if (GameInput.HelpToggle) showHelp = !showHelp;
             if (GameInput.WallModeCycle)
-                BuildingVisibility.Mode = (BuildingVisibility.WallMode)(((int)BuildingVisibility.Mode + 1) % 3);
+                BuildingVisibility.Mode = (BuildingVisibility.WallMode)(((int)BuildingVisibility.Mode + 1) % 2);
         }
 
         void OnGUI()
@@ -41,7 +41,9 @@ namespace FantaLandia.UI
             {
                 var m = focus.Motor;
                 GUILayout.Label($"<b>{focus.displayName}</b>  ({sel.Selected.Count} selezionati)", style);
-                GUILayout.Label($"Andatura: {(m.IsRunning ? "Corsa" : "Camminata")}  —  {m.CurrentSpeed:0.0} m/s", style);
+                string cap = m.SpeedCap > 0f ? $"  (gruppo: max {m.SpeedCap:0.0})" : "";
+                GUILayout.Label($"Andatura: {GaitName(m.CurrentGait)}  —  {m.CurrentSpeed:0.0} m/s{cap}", style);
+                if (m.IsConspicuous) GUILayout.Label("<color=#ffb040>Scatto: dà nell'occhio in città</color>", style);
                 GUILayout.Label($"Azione: {ActionName(m)}", style);
                 if (Time.time - m.LastLandingTime < 4f)
                 {
@@ -49,6 +51,8 @@ namespace FantaLandia.UI
                     GUILayout.Label($"Atterraggio da {m.LastFallHeight:0.0} m{hard}", style);
                 }
             }
+
+            if (sel != null) GUILayout.Label($"Movimento di gruppo: {(sel.GroupPace ? "sì, alla velocità del più lento" : "no")}", style);
 
             var b = BuildingVisibility.Current;
             GUILayout.Label($"Posizione: {(b != null ? b.CurrentFloorName : "All'aperto")}", style);
@@ -62,9 +66,10 @@ namespace FantaLandia.UI
                     "<b>Comandi</b> (F1 nasconde)\n" +
                     "Clic sinistro / trascina: seleziona  (Shift aggiunge)\n" +
                     "1-9: seleziona un membro del party\n" +
-                    "Clic destro: muovi\n" +
+                    "Clic destro: muovi (tienilo premuto per guidare)\n" +
                     "Alt + clic destro: consenti salti pericolosi\n" +
-                    "R: camminata / corsa\n" +
+                    "R: andatura (cammina / corsa leggera / scatto)\n" +
+                    "G: movimento di gruppo on/off\n" +
                     "WASD / frecce: sposta camera\n" +
                     "Q / E o tasto centrale: ruota camera\n" +
                     "Rotellina: zoom\n" +
@@ -90,13 +95,16 @@ namespace FantaLandia.UI
             return m.CurrentSpeed > 0.1f ? "In movimento" : "Fermo";
         }
 
-        static string WallModeName(BuildingVisibility.WallMode mode)
+        static string WallModeName(BuildingVisibility.WallMode mode) =>
+            mode == BuildingVisibility.WallMode.Full ? "pieni" : "tagliati verso la camera";
+
+        static string GaitName(Gait gait)
         {
-            switch (mode)
+            switch (gait)
             {
-                case BuildingVisibility.WallMode.Full: return "pieni";
-                case BuildingVisibility.WallMode.FrontCutaway: return "tagliati verso la camera";
-                default: return "abbassati (solo pavimenti)";
+                case Gait.Walk: return "Cammina";
+                case Gait.Sprint: return "Scatto";
+                default: return "Corsa leggera";
             }
         }
     }

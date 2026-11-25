@@ -7,6 +7,9 @@ namespace FantaLandia.Characters
 {
     public enum TraversalKind { None, Vault, Climb, ClimbHigh, ClimbUp, Drop }
 
+    /// <summary>Andatura. Lo scatto in città/insediamenti sarà sospetto per gli NPC (calo di reputazione).</summary>
+    public enum Gait { Walk, Jog, Sprint }
+
     /// <summary>
     /// Movimento di un personaggio: cammina/corre sulla NavMesh e attraversa i NavMeshLink
     /// (scavalcare ostacoli, arrampicarsi, buttarsi giù) con movimenti procedurali.
@@ -18,9 +21,10 @@ namespace FantaLandia.Characters
         /// <summary>Area NavMesh predefinita "Jump": la usiamo per i salti pericolosi, consentiti solo su ordine esplicito.</summary>
         public const int DangerousJumpArea = 2;
 
-        [Header("Velocità (m/s)")]
-        public float walkSpeed = 2.2f;
-        public float runSpeed = 5.5f;
+        [Header("Velocità (m/s) — in futuro calcolate dalle statistiche del personaggio")]
+        public float walkSpeed = 2.0f;
+        public float jogSpeed = 4.0f;
+        public float sprintSpeed = 6.5f;
 
         [Header("Scavalcare / arrampicarsi")]
         public float vaultUpSpeed = 6f;
@@ -37,7 +41,12 @@ namespace FantaLandia.Characters
         public float hardLandingHeight = 3.5f;
         public float hardLandingStun = 0.9f;
 
-        public bool IsRunning { get; private set; } = true;
+        public Gait CurrentGait { get; private set; } = Gait.Jog;
+        /// <summary>Andatura che attira l'attenzione (scatto): usata più avanti dal sistema di sospetto/reputazione.</summary>
+        public bool IsConspicuous => CurrentGait == Gait.Sprint && CurrentSpeed > 0.5f;
+        /// <summary>Limite di velocità imposto dal movimento di gruppo (0 = nessun limite).</summary>
+        public float SpeedCap { get; private set; }
+        public event Action<Gait> GaitChanged;
         public bool IsTraversing { get; private set; }
         public bool IsStunned { get; private set; }
         public TraversalKind CurrentTraversal { get; private set; }
@@ -95,15 +104,38 @@ namespace FantaLandia.Characters
 
         bool pendingDangerous;
 
-        public void SetRunning(bool run)
+        public void SetGait(Gait gait)
         {
-            IsRunning = run;
+            if (CurrentGait == gait) return;
+            CurrentGait = gait;
+            ApplySpeed();
+            GaitChanged?.Invoke(gait);
+        }
+
+        /// <summary>Velocità massima di questo personaggio con l'andatura data.</summary>
+        public float SpeedFor(Gait gait)
+        {
+            switch (gait)
+            {
+                case Gait.Walk: return walkSpeed;
+                case Gait.Sprint: return sprintSpeed;
+                default: return jogSpeed;
+            }
+        }
+
+        /// <summary>Movimento di gruppo: nessuno supera questa velocità. 0 toglie il limite.</summary>
+        public void SetSpeedCap(float cap)
+        {
+            SpeedCap = cap;
             ApplySpeed();
         }
 
         void ApplySpeed()
         {
-            if (agent != null) agent.speed = IsRunning ? runSpeed : walkSpeed;
+            if (agent == null) return;
+            float speed = SpeedFor(CurrentGait);
+            if (SpeedCap > 0f) speed = Mathf.Min(speed, SpeedCap);
+            agent.speed = speed;
         }
 
         void SetDangerousJumps(bool allow)

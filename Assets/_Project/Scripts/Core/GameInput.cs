@@ -34,6 +34,8 @@ namespace FantaLandia.Core
         public static bool LeftDown => Ms != null && Ms.leftButton.wasPressedThisFrame;
         public static bool LeftUp => Ms != null && Ms.leftButton.wasReleasedThisFrame;
         public static bool RightDown => Ms != null && Ms.rightButton.wasPressedThisFrame;
+        public static bool RightHeld => Ms != null && Ms.rightButton.isPressed;
+        public static bool RightUp => Ms != null && Ms.rightButton.wasReleasedThisFrame;
         public static bool MiddleHeld => Ms != null && Ms.middleButton.isPressed;
 
         public static bool Shift => Kb != null && Kb.shiftKey.isPressed;
@@ -45,7 +47,8 @@ namespace FantaLandia.Core
 
         public static float RotateAxis => (Held(Key.E) ? 1f : 0f) - (Held(Key.Q) ? 1f : 0f);
 
-        public static bool RunToggle => Pressed(Key.R);
+        public static bool GaitCycle => Pressed(Key.R);
+        public static bool GroupPaceToggle => Pressed(Key.G);
         public static bool FollowToggle => Pressed(Key.F);
         public static bool CenterCamera => Pressed(Key.Space);
         public static bool WallModeCycle => Pressed(Key.V);
@@ -69,6 +72,8 @@ namespace FantaLandia.Core
         public static bool LeftDown => Input.GetMouseButtonDown(0);
         public static bool LeftUp => Input.GetMouseButtonUp(0);
         public static bool RightDown => Input.GetMouseButtonDown(1);
+        public static bool RightHeld => Input.GetMouseButton(1);
+        public static bool RightUp => Input.GetMouseButtonUp(1);
         public static bool MiddleHeld => Input.GetMouseButton(2);
 
         public static bool Shift => Held(KeyCode.LeftShift) || Held(KeyCode.RightShift);
@@ -80,7 +85,8 @@ namespace FantaLandia.Core
 
         public static float RotateAxis => (Held(KeyCode.E) ? 1f : 0f) - (Held(KeyCode.Q) ? 1f : 0f);
 
-        public static bool RunToggle => Pressed(KeyCode.R);
+        public static bool GaitCycle => Pressed(KeyCode.R);
+        public static bool GroupPaceToggle => Pressed(KeyCode.G);
         public static bool FollowToggle => Pressed(KeyCode.F);
         public static bool CenterCamera => Pressed(KeyCode.Space);
         public static bool WallModeCycle => Pressed(KeyCode.V);

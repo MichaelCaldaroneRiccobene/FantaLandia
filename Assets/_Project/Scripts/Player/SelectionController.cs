@@ -8,7 +8,9 @@ namespace FantaLandia.Player
 {
     /// <summary>
     /// Comandi stile strategico: clic sinistro / riquadro per selezionare, clic destro per muovere.
+    /// Tenendo premuto il destro i personaggi inseguono il cursore; al rilascio l'ultimo punto diventa la destinazione.
     /// Alt + clic destro consente i salti pericolosi (tetto, balcone).
+    /// R cambia andatura, G attiva il movimento di gruppo (tutti alla velocità del più lento).
     /// </summary>
     public class SelectionController : MonoBehaviour
     {
@@ -17,6 +19,10 @@ namespace FantaLandia.Player
         public Camera cam;
         public float dragThreshold = 8f;
         public float formationSpacing = 1.3f;
+        [Tooltip("Ogni quanto aggiornare la destinazione tenendo premuto il tasto destro")]
+        public float holdRepathInterval = 0.1f;
+        [Tooltip("Spostamento minimo del cursore (m) per aggiornare la destinazione")]
+        public float holdMinMove = 0.3f;
 
         readonly List<SelectableCharacter> selected = new List<SelectableCharacter>();
         public IReadOnlyList<SelectableCharacter> Selected => selected;
@@ -24,8 +30,19 @@ namespace FantaLandia.Player
         /// <summary>Il personaggio seguito da camera e visibilità degli edifici.</summary>
         public SelectableCharacter Focus { get; private set; }
 
+        /// <summary>Andatura scelta per la selezione (R).</summary>
+        public Gait CurrentGait { get; private set; } = Gait.Jog;
+
+        /// <summary>Se attivo, il gruppo selezionato si muove alla velocità del più lento (G).</summary>
+        public bool GroupPace { get; private set; } = true;
+
         Vector2 dragStart;
         bool pressing, dragging;
+
+        bool holdingMove;
+        float holdTimer;
+        Vector3 lastOrderPoint;
+
         Transform marker;
         Material markerMat;
         float markerTimer;
@@ -49,8 +66,10 @@ namespace FantaLandia.Player
             if (cam == null) return;
 
             HandleMouseSelection();
-            if (GameInput.RightDown) IssueMoveOrder();
-            if (GameInput.RunToggle) ToggleRun();
+            HandleMoveInput();
+
+            if (GameInput.GaitCycle) CycleGait();
+            if (GameInput.GroupPaceToggle) { GroupPace = !GroupPace; ApplyPace(); }
 
             int digit = GameInput.DigitPressed();
             if (digit > 0 && digit <= SelectableCharacter.All.Count)
@@ -135,6 +154,7 @@ namespace FantaLandia.Player
             if (!selected.Contains(c)) selected.Add(c);
             c.SetSelected(true);
             Focus = c;
+            if (selected.Count == 1) CurrentGait = c.Motor.CurrentGait; // l'HUD mostra l'andatura del selezionato
         }
 
         public void Remove(SelectableCharacter c)
@@ -151,21 +171,58 @@ namespace FantaLandia.Player
             // Focus resta l'ultimo personaggio: la camera continua a sapere su che piano siamo.
         }
 
-        // ------------------------------------------------------------------ ordini
+        // ------------------------------------------------------------------ ordini di movimento
 
-        void IssueMoveOrder()
+        void HandleMoveInput()
         {
-            if (selected.Count == 0) return;
+            if (GameInput.RightDown)
+            {
+                holdingMove = true;
+                holdTimer = 0f;
+                if (TryGetGroundPoint(out Vector3 p)) IssueMoveOrder(p);
+            }
 
+            if (holdingMove && GameInput.RightHeld)
+            {
+                // Tenendo premuto: i personaggi seguono il cursore.
+                holdTimer += Time.deltaTime;
+                if (holdTimer >= holdRepathInterval && TryGetGroundPoint(out Vector3 p) &&
+                    (p - lastOrderPoint).sqrMagnitude > holdMinMove * holdMinMove)
+                {
+                    holdTimer = 0f;
+                    IssueMoveOrder(p);
+                }
+            }
+
+            if (holdingMove && GameInput.RightUp)
+            {
+                // Al rilascio: l'ultimo punto sotto il cursore diventa la destinazione definitiva.
+                holdingMove = false;
+                if (TryGetGroundPoint(out Vector3 p)) IssueMoveOrder(p);
+            }
+        }
+
+        bool TryGetGroundPoint(out Vector3 point)
+        {
+            point = default;
             Ray ray = cam.ScreenPointToRay(GameInput.MousePosition);
             // I pezzi di edificio nascosti sono sul layer "Ignore Raycast", quindi il clic li attraversa.
-            if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return;
-            if (!NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas)) return;
+            if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return false;
+            if (!NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas)) return false;
+            point = navHit.position;
+            return true;
+        }
+
+        void IssueMoveOrder(Vector3 center)
+        {
+            if (selected.Count == 0) return;
+            lastOrderPoint = center;
 
             bool dangerous = GameInput.Alt;
-            Vector3 center = navHit.position;
             int n = selected.Count;
             float camYaw = cam.transform.eulerAngles.y;
+
+            ApplyPace();
 
             for (int i = 0; i < n; i++)
             {
@@ -183,11 +240,29 @@ namespace FantaLandia.Player
             ShowMarker(center, dangerous);
         }
 
-        void ToggleRun()
+        // ------------------------------------------------------------------ andatura e gruppo
+
+        void CycleGait()
         {
-            if (selected.Count == 0) return;
-            bool run = !selected[0].Motor.IsRunning;
-            foreach (var c in selected) c.Motor.SetRunning(run);
+            CurrentGait = (Gait)(((int)CurrentGait + 1) % 3);
+            ApplyPace();
+        }
+
+        /// <summary>Applica l'andatura alla selezione e, se il gruppo è attivo, il limite del più lento.</summary>
+        void ApplyPace()
+        {
+            float cap = 0f;
+            if (GroupPace && selected.Count > 1)
+            {
+                cap = float.MaxValue;
+                foreach (var c in selected) cap = Mathf.Min(cap, c.Motor.SpeedFor(CurrentGait));
+            }
+
+            foreach (var c in selected)
+            {
+                c.Motor.SetGait(CurrentGait);
+                c.Motor.SetSpeedCap(cap);
+            }
         }
 
         // ------------------------------------------------------------------ feedback visivo
@@ -212,6 +287,7 @@ namespace FantaLandia.Player
 
         void UpdateMarker()
         {
+            if (holdingMove) markerTimer = 0.8f; // resta visibile mentre si tiene premuto
             if (markerTimer <= 0f) return;
             markerTimer -= Time.deltaTime;
             float s = Mathf.Lerp(0.2f, 0.9f, markerTimer / 0.8f);

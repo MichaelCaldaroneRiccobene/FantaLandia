@@ -7,12 +7,12 @@ namespace FantaLandia.World
 {
     /// <summary>
     /// Quando il personaggio seguito è dentro l'edificio, nasconde il tetto e i piani sopra di lui.
-    /// Sul piano corrente i muri possono essere: pieni, tagliati sul lato verso la camera, oppure abbassati.
+    /// Sul piano corrente i muri possono essere pieni oppure tagliati sul lato verso la camera.
     /// I pezzi nascosti passano sul layer "Ignore Raycast", così i clic li attraversano.
     /// </summary>
     public class BuildingVisibility : MonoBehaviour
     {
-        public enum WallMode { Full, FrontCutaway, WallsDown }
+        public enum WallMode { Full, FrontCutaway }
 
         [Serializable]
         public class Floor
@@ -114,8 +114,7 @@ namespace FantaLandia.World
                     if (p.floor > floor) hide = true;
                     else if (p.isWall && p.floor == floor)
                     {
-                        if (Mode == WallMode.WallsDown) hide = true;
-                        else if (Mode == WallMode.FrontCutaway)
+                        if (Mode == WallMode.FrontCutaway)
                             hide = Vector3.Dot(transform.TransformDirection(p.localNormal), toCamera) > frontWallThreshold;
                     }
                 }
