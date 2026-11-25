@@ -254,8 +254,32 @@ namespace FantaLandia.EditorTools
         }
 
         /// <summary>NavMeshLink tra due punti in coordinate mondo, con l'altezza dell'ostacolo per il CharacterMotor.</summary>
+        /// <summary>
+        /// Un NavMeshLink fa passare un solo agente alla volta: i passaggi larghi vengono quindi
+        /// divisi in corsie affiancate, così più personaggi scavalcano contemporaneamente.
+        /// </summary>
+        const float LaneWidth = 1.2f;
+
         static void Link(Transform parent, string name, Vector3 worldStart, Vector3 worldEnd, float width,
                          bool bidirectional, int area, float obstacleHeight)
+        {
+            int lanes = Mathf.Max(1, Mathf.FloorToInt(width / LaneWidth));
+            float laneWidth = width / lanes;
+            Vector3 dir = worldEnd - worldStart;
+            dir.y = 0f;
+            Vector3 side = Vector3.Cross(Vector3.up, dir.normalized);
+
+            Transform group = lanes > 1 ? Group(name, parent) : parent;
+            for (int i = 0; i < lanes; i++)
+            {
+                Vector3 offset = side * ((i - (lanes - 1) * 0.5f) * laneWidth);
+                string laneName = lanes > 1 ? $"Corsia {i + 1}" : name;
+                LinkLane(group, laneName, worldStart + offset, worldEnd + offset, laneWidth * 0.9f, bidirectional, area, obstacleHeight);
+            }
+        }
+
+        static void LinkLane(Transform parent, string name, Vector3 worldStart, Vector3 worldEnd, float width,
+                             bool bidirectional, int area, float obstacleHeight)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);

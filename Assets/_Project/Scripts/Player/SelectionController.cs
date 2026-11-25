@@ -220,24 +220,45 @@ namespace FantaLandia.Player
 
             bool dangerous = GameInput.Alt;
             int n = selected.Count;
-            float camYaw = cam.transform.eulerAngles.y;
 
             ApplyPace();
 
+            // Direzione di marcia: dal centro del gruppo alla destinazione.
+            Vector3 centroid = Vector3.zero;
+            foreach (var c in selected) centroid += c.transform.position;
+            centroid /= n;
+            Vector3 forward = center - centroid;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.01f) { forward = cam.transform.forward; forward.y = 0f; }
+            forward.Normalize();
+            Vector3 right = Vector3.Cross(Vector3.up, forward);
+
+            // Ognuno prende lo slot dal suo lato, così le traiettorie non si incrociano
+            // e ogni personaggio usa una corsia diversa dei link (scavalcamenti in parallelo).
+            var order = new List<SelectableCharacter>(selected);
+            order.Sort((a, b) => Vector3.Dot(a.transform.position - centroid, right)
+                                 .CompareTo(Vector3.Dot(b.transform.position - centroid, right)));
+
             for (int i = 0; i < n; i++)
             {
+                Vector3 candidate = center + FormationOffset(i, n, forward, right);
                 Vector3 target = center;
-                if (i > 0)
-                {
-                    float angle = camYaw + 180f + (i - 1) * 360f / (n - 1);
-                    Vector3 candidate = center + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * formationSpacing;
-                    if (NavMesh.SamplePosition(candidate, out NavMeshHit h, 1.5f, NavMesh.AllAreas) && Mathf.Abs(h.position.y - center.y) < 1f)
-                        target = h.position;
-                }
-                selected[i].Motor.MoveTo(target, dangerous);
+                if (NavMesh.SamplePosition(candidate, out NavMeshHit h, 1.5f, NavMesh.AllAreas) && Mathf.Abs(h.position.y - center.y) < 1f)
+                    target = h.position;
+                order[i].Motor.MoveTo(target, dangerous);
             }
 
             ShowMarker(center, dangerous);
+        }
+
+        /// <summary>Formazione in riga affiancata, file da 4 una dietro l'altra.</summary>
+        Vector3 FormationOffset(int index, int count, Vector3 forward, Vector3 right)
+        {
+            const int perRow = 4;
+            int row = index / perRow;
+            int inRow = Mathf.Min(perRow, count - row * perRow);
+            float lateral = (index % perRow - (inRow - 1) * 0.5f) * formationSpacing;
+            return right * lateral - forward * row * formationSpacing;
         }
 
         // ------------------------------------------------------------------ andatura e gruppo
