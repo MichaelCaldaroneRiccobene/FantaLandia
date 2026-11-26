@@ -156,8 +156,12 @@ namespace FantaLandia.Horror.EditorTools
             foreach (var o in list)
             {
                 Seg(cursor, o.a, 0f, height, mat, thick, "");
-                Seg(o.a, o.b, 0f, o.bottom, mat, thick, "");
+                // sotto le porte il muro si ferma 1 cm sotto il pavimento (niente facce coincidenti con solaio e veranda)
+                Seg(o.a, o.b, 0f, o.kind == OpeningKind.Door ? o.bottom - 0.01f : o.bottom, mat, thick, "");
                 Seg(o.a, o.b, o.top, height, mat, thick, "");
+                // soglia: copre la giunzione tra muro, pavimento di casa e veranda; l'anta passa 3 mm sopra
+                if (o.kind == OpeningKind.Door && trim != null)
+                    Seg(o.a - 0.004f, o.b + 0.004f, o.bottom - 0.01f, o.bottom + 0.012f, trim, thick + 0.14f, "soglia");
                 cursor = o.b;
 
                 if (o.kind == OpeningKind.Window && glass != null)
