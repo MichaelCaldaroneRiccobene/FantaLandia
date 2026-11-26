@@ -1069,6 +1069,11 @@ namespace FantaLandia.Horror.EditorTools
 
             // retro: pedana con barbecue e sedie, alberi, staccionata alta
             Floor("Pedana", y, new Vector3(-4f, 0f, Z1), new Vector3(2f, 0.15f, 14f), deckWood, Surface.Wood);
+            // lampada sopra la porta sul retro: illumina la pedana e il giardino (si spegne con il blackout)
+            houseLights.Add(PointLight(y, "Luce sul retro", new Vector3(-1.5f, F0 + 2.45f, Z1 + 0.3f), 11f, 1.6f, Warm, true));
+            Box("Lampada sul retro", y, new Vector3(-1.58f, F0 + 2.4f, Z1 + 0.02f), new Vector3(-1.42f, F0 + 2.6f, Z1 + 0.09f),
+                EditorAssetUtil.Emissive("Casa Lampada accesa", new Color(1f, 0.85f, 0.55f), 2f));
+            HorrorVisuals.LightCone(y, new Vector3(-1.5f, F0 + 2.4f, Z1 + 0.1f), 2.6f, 1.4f, new Color(1f, 0.8f, 0.5f), 0.1f);
             Place(VoxelFurniture.Get("Barbecue"), y, new Vector3(1.2f, 0.15f, 13.2f), 0f);
             Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-3f, 0.15f, 12.9f), 30f);
             Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-1.6f, 0.15f, 13.3f), -20f);

@@ -350,6 +350,7 @@ namespace FantaLandia.Horror.Story
         IEnumerator Explosion()
         {
             if (smoke != null) smoke.Ignite();
+            AddFireGlowOnGarden();
             HorrorAudio.Play2D(ProceduralAudio.Explosion(), 1f);
             Shake(1.6f, 1.8f);
             if (neighborhood != null) StartCoroutine(neighborhood.Flicker(1.3f));
@@ -374,6 +375,26 @@ namespace FantaLandia.Horror.Story
                  (roy, Speakers.Roy, "Muark, vieni a vedere! Presto!"));
             Job(tom, Actor(tom).WalkTo(deckTom.position, Gait.Jog, 25f));
             Job(roy, Actor(roy).WalkTo(deckRoy.position, Gait.Jog, 25f));
+        }
+
+        Light fireGlow;
+
+        /// <summary>
+        /// Il riflesso dell'incendio sul giardino: una luce arancione alta, tra il fuoco e il punto dove si fermano
+        /// gli amici, che tremola come le fiamme (la luce del fuoco vero è troppo lontana per illuminarli).
+        /// </summary>
+        void AddFireGlowOnGarden()
+        {
+            if (fireGlow != null || smoke == null || deckTom == null) return;
+            Vector3 toFire = smoke.transform.position - deckTom.position;
+            toFire.y = 0f;
+            fireGlow = new GameObject("Riflesso dell'incendio sul giardino").AddComponent<Light>();
+            fireGlow.transform.position = deckTom.position + toFire.normalized * 6f + Vector3.up * 5f;
+            fireGlow.type = LightType.Point;
+            fireGlow.color = new Color(1f, 0.52f, 0.22f);
+            fireGlow.range = 16f;
+            fireGlow.intensity = 2.2f;
+            fireGlow.shadows = LightShadows.Soft;
         }
 
         IEnumerator TvLosesSignal(float delay)
@@ -939,6 +960,7 @@ namespace FantaLandia.Horror.Story
             if (s >= (int)StartAt.Blackout)
             {
                 if (smoke != null) smoke.Ignite();
+                AddFireGlowOnGarden();
                 bathDoor.Unlock();
                 jefOut = true;
                 Warp(jef, seatJef.FrontPosition, 0f);
@@ -1137,6 +1159,7 @@ namespace FantaLandia.Horror.Story
 
         void Update()
         {
+            if (fireGlow != null) fireGlow.intensity = 2.2f * (0.75f + 0.35f * Mathf.PerlinNoise(Time.time * 4f, 1.7f));
             UpdateHints();
             BarrierLine();
 
