@@ -33,7 +33,7 @@ namespace FantaLandia.Horror.UI
                 bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, richText = true, wordWrap = true };
             }
             int lines = body.Split('\n').Length;
-            var box = new Rect(20f, 20f, 360f, 40f + lines * 22f);
+            var box = new Rect(20f, 20f, 470f, 40f + lines * 22f);
             GUI.color = new Color(0f, 0f, 0f, 0.6f * a);
             GUI.DrawTexture(box, Texture2D.whiteTexture);
             GUI.color = new Color(0.91f, 0.85f, 0.66f, a);
