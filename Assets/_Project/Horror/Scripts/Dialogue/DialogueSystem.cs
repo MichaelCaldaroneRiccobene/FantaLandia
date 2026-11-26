@@ -421,7 +421,7 @@ namespace FantaLandia.Horror.Dialogue
                 return; // si aspetta che finisca di parlare
             }
             if (lineDoneAt < 0f) lineDoneAt = Time.time;
-            float hold = lineVoice != null ? 0.55f : holdBase + len * holdPerChar;
+            float hold = lineVoice != null ? 0.3f : holdBase + len * holdPerChar;
             if (Skip() || Time.time - lineDoneAt > hold) Next();
         }
 

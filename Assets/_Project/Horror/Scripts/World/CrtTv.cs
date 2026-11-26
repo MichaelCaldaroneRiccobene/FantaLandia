@@ -21,6 +21,8 @@ namespace FantaLandia.Horror.World
         public string newsHeadline = "EDIZIONE STRAORDINARIA";
         [Tooltip("Il giocatore può accenderla e spegnerla con E (nella storia no: la TV la gestisce la regia)")]
         public bool playerCanToggle;
+        [Tooltip("Volume del suono della TV (cartoni, neve)")]
+        [Range(0f, 1f)] public float volume = 0.14f;
 
         const int W = 96, H = 72;
         Texture2D tex;
@@ -48,7 +50,7 @@ namespace FantaLandia.Horror.World
                 screen.sharedMaterial = mat;
             }
             if (screenLight != null) lightIntensity = screenLight.intensity;
-            sound = HorrorAudio.CreateLoop(transform, null, 0.35f, true, 12f);
+            sound = HorrorAudio.CreateLoop(transform, null, volume, true, 12f);
         }
 
         public override bool CanInteract(Interactor who) => enabled && playerCanToggle;

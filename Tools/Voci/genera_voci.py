@@ -25,6 +25,9 @@ OUT = os.path.join(ROOT, "Assets/_Project/Horror/Resources/Voci")
 FIELD_TO_ID = {"Muark": "muark", "Tom": "tom", "Jef": "jef", "Roy": "roy", "Tv": "tv", "Frank": "frank", "Martha": "martha",
                "Gary": "gary", "Linda": "linda", "NeighborMan": "vicino", "NeighborWoman": "vicina"}
 
+# tutti parlano un po' più svelti del modello (che di suo è lento e scandito)
+GLOBAL_SPEED = 1.22
+
 # voce: modello, tono (1 = invariato), velocità, filtro ffmpeg extra
 VOICES = {
     "muark":  ("male",   1.00, 1.00, ""),
@@ -34,7 +37,7 @@ VOICES = {
     "frank":  ("male",   0.87, 0.90, ""),
     "gary":   ("male",   0.80, 1.00, ""),
     "vicino": ("male",   0.88, 1.00, ""),
-    "tv":     ("male",   1.00, 1.03, "highpass=f=320,lowpass=f=3400,acompressor=threshold=0.1:ratio=4"),
+    "tv":     ("male",   1.00, 1.03, "highpass=f=320,lowpass=f=3400,acompressor=threshold=0.1:ratio=4,volume=-7dB"),
     "martha": ("female", 0.93, 0.92, ""),
     "linda":  ("female", 1.07, 1.05, ""),
     "vicina": ("female", 1.00, 1.00, ""),
@@ -112,8 +115,8 @@ def main():
             wav = os.path.join(tmp, "v.wav")
             engine(model).tts_to_file(text=spoken, file_path=wav)
             # tono: si cambia la frequenza di campionamento, poi si rimette a posto la durata; più un filo di pausa all'inizio
-            filters = [f"asetrate={int(16000 * pitch)}", "aresample=22050", f"atempo={speed / pitch:.4f}", "adelay=60", "loudnorm=I=-18:TP=-2"]
-            if extra: filters.insert(3, extra)
+            filters = [f"asetrate={int(16000 * pitch)}", "aresample=22050", f"atempo={speed * GLOBAL_SPEED / pitch:.4f}", "adelay=40", "loudnorm=I=-18:TP=-2"]
+            if extra: filters.append(extra)   # dopo la normalizzazione (così il volume della TV resta più basso)
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav, "-af", ",".join(filters), "-ac", "1", "-c:a", "libvorbis", "-q:a", "4", dst], check=True)
         made += 1
         print(f"[{made}] {speaker}: {text}")
