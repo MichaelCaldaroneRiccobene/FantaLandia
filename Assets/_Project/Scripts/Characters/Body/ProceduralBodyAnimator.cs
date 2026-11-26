@@ -671,7 +671,7 @@ namespace FantaLandia.Characters.Body
                 if (rig.joints[i] != null) rig.joints[i].localRotation = Quaternion.Euler(pose[i]);
             }
             // il bacino appoggiato sul cuscino (anca sopra il sedile + spessore della coscia), un po' indietro
-            Vector3 seated = new Vector3(0f, motor.SeatHeight + hipDrop + 0.06f, -0.08f);
+            Vector3 seated = new Vector3(0f, motor.SeatHeight + hipDrop + 0.06f, -0.02f);
             hips.localPosition = Vector3.Lerp(hips.localPosition, seated, k);
             desiredHipsLocal = seated;
             crouch = crouchVel = lastCrouch = 0f;

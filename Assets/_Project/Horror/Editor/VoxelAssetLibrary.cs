@@ -273,7 +273,9 @@ namespace FantaLandia.Horror.EditorTools
             v.Fill(0, 29, 1, 1, 30, 3, pole);
             v.Fill(0, 28, 3, 1, 29, 5, pole);
             v.Fill(0, 27, 3, 1, 28, 5, lamp);
-            return Save("Lampione", v, new Vector3(0.5f * v.size, 0f, 0.5f * v.size));
+            // la lampada brilla davvero
+            return Save("Lampione", v, new Vector3(0.5f * v.size, 0f, 0.5f * v.size), true,
+                c => c.r > 0.8f && c.g > 0.7f ? EditorAssetUtil.Emissive("Lampione acceso " + ColorUtility.ToHtmlStringRGB(c), c, 3f) : null);
         }
     }
 }

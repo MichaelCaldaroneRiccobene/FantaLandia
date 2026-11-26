@@ -128,7 +128,9 @@ namespace FantaLandia.Horror.Player
             bobPhase += hs * dt * 2.2f;
             float bob = Mathf.Sin(bobPhase * Mathf.PI) * headBob * Mathf.Clamp01(hs / walkSpeed);
             float eye = Mathf.Lerp(eyeHeight, crouchEyeHeight, crouchT);
-            cam.transform.localPosition = new Vector3(0f, eye + bob, eyeForward);
+            // guardando in basso la camera avanza un po' (come la testa che si sporge): non entra nelle spalle e nei vestiti
+            float down = Mathf.Clamp01(pitch / 70f);
+            cam.transform.localPosition = new Vector3(0f, eye + bob - down * 0.05f, eyeForward + down * 0.2f);
             cam.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
 
             // --- il corpo segue

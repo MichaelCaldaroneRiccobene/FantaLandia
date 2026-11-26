@@ -60,7 +60,8 @@ namespace FantaLandia.Horror.World
                 float h = Mathf.Lerp(heightRange.x, heightRange.y, (float)rng.NextDouble());
                 float yaw = (float)rng.NextDouble() * Mathf.PI;
                 Color32 c = Greens[rng.Next(Greens.Length)];
-                if (!Physics.Raycast(new Vector3(x, 5f, z), Vector3.down, out RaycastHit hit, 8f, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
+                // il raggio parte da sotto le chiome degli alberi (che iniziano a ~1.8 m), così l'erba cresce anche lì
+                if (!Physics.Raycast(new Vector3(x, 1.35f, z), Vector3.down, out RaycastHit hit, 4f, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
                 var surf = hit.collider.GetComponentInParent<FootstepSurface>();
                 if (surf == null || surf.surface != Surface.Grass) continue;  // niente erba su vialetti, pedane, sotto auto e staccionate
 

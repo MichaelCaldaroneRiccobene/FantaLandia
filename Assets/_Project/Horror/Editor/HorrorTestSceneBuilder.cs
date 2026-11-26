@@ -342,7 +342,7 @@ namespace FantaLandia.Horror.EditorTools
             camGo.transform.localPosition = new Vector3(0f, 1.68f, 0.12f);
             var cam = camGo.AddComponent<Camera>();
             cam.nearClipPlane = 0.03f;
-            cam.farClipPlane = 120f;
+            cam.farClipPlane = 400f; // la volta celeste (cielo notturno) ha raggio 250 m
             cam.fieldOfView = 70f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = RenderSettings.fogColor;
