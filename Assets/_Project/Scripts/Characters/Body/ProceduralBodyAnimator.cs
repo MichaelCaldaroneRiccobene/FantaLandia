@@ -204,6 +204,7 @@ namespace FantaLandia.Characters.Body
                 SeatedUpdate(dt);
                 return;
             }
+            seatHandW = 0f;
 
             bool traversing = motor != null && motor.IsTraversing && !motor.IsStunned;
             if (wasTraversing && !traversing) OnTraversalEnded();
@@ -626,23 +627,31 @@ namespace FantaLandia.Characters.Body
             }
         }
 
-        /// <summary>Seduto: cosce in avanti, ginocchia piegate, schiena appoggiata, avambracci sui braccioli.</summary>
+        /// <summary>
+        /// Seduto: bacino sul cuscino, schiena appoggiata e un po' accasciata, cosce in avanti leggermente aperte,
+        /// piedi a terra, mani appoggiate sulle cosce (IK).
+        /// </summary>
         void SeatedUpdate(float dt)
         {
             feetInitialized = false;
             breathPhase += dt * Mathf.PI * 2f * (breathRate + exertion * 0.55f);
             float breath = Mathf.Sin(breathPhase);
             System.Array.Clear(target, 0, N);
-            Rot(BodyPart.Abdomen, -6f + breath * breathAmplitude * 0.3f, 0f, 0f);
-            Rot(BodyPart.Chest, -4f - breath * breathAmplitude, 0f, 0f);
-            Rot(BodyPart.ThighL, -88f, 0f, -4f);
-            Rot(BodyPart.ThighR, -88f, 0f, 4f);
-            Rot(BodyPart.ShinL, 86f, 0f, 0f);
-            Rot(BodyPart.ShinR, 92f, 0f, 0f);
-            Rot(BodyPart.UpperArmL, -18f, 0f, -14f);
-            Rot(BodyPart.UpperArmR, -18f, 0f, 14f);
-            Rot(BodyPart.ForearmL, -50f, 0f, 0f);
-            Rot(BodyPart.ForearmR, -50f, 0f, 0f);
+            Rot(BodyPart.Pelvis, -8f, 0f, 0f);                                    // bacino che scivola un po' in avanti
+            Rot(BodyPart.Abdomen, -10f + breath * breathAmplitude * 0.3f, 0f, 0f);  // schiena contro lo schienale
+            Rot(BodyPart.Chest, 6f - breath * breathAmplitude, 0f, 0f);            // spalle un po' curve
+            Rot(BodyPart.Neck, 8f, 0f, 0f);
+            Rot(BodyPart.Head, 4f, 0f, 0f);
+            Rot(BodyPart.ThighL, -80f, -8f, -6f);
+            Rot(BodyPart.ThighR, -80f, 8f, 6f);
+            Rot(BodyPart.ShinL, 72f, 0f, 0f);
+            Rot(BodyPart.ShinR, 80f, 0f, 0f);
+            Rot(BodyPart.FootL, 8f, 0f, 0f);
+            Rot(BodyPart.FootR, 0f, 0f, 0f);
+            Rot(BodyPart.UpperArmL, -20f, 0f, -12f);
+            Rot(BodyPart.UpperArmR, -20f, 0f, 12f);
+            Rot(BodyPart.ForearmL, -45f, 0f, 0f);
+            Rot(BodyPart.ForearmR, -45f, 0f, 0f);
             ApplyDisabledArms();
 
             float k = 1f - Mathf.Exp(-2.5f * dt); // ci si siede con calma
@@ -651,13 +660,29 @@ namespace FantaLandia.Characters.Body
                 pose[i] = Vector3.Lerp(pose[i], target[i], k);
                 if (rig.joints[i] != null) rig.joints[i].localRotation = Quaternion.Euler(pose[i]);
             }
-            // il bacino appoggiato sul cuscino (anca sopra il sedile + spessore della coscia)
-            Vector3 seated = new Vector3(0f, motor.SeatHeight + hipDrop + 0.075f, -0.05f);
+            // il bacino appoggiato sul cuscino (anca sopra il sedile + spessore della coscia), un po' indietro
+            Vector3 seated = new Vector3(0f, motor.SeatHeight + hipDrop + 0.06f, -0.08f);
             hips.localPosition = Vector3.Lerp(hips.localPosition, seated, k);
             desiredHipsLocal = seated;
             crouch = crouchVel = lastCrouch = 0f;
+
+            // mani appoggiate sulle cosce, a metà tra anca e ginocchio
+            seatHandW = Mathf.MoveTowards(seatHandW, 1f, dt * 0.8f);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                if (health != null && health.ArmDisabled(side)) continue;
+                Transform thigh = side < 0 ? thighL : thighR, knee = side < 0 ? shinL : shinR;
+                Vector3 onThigh = Vector3.Lerp(thigh.position, knee.position, 0.6f) + Vector3.up * 0.1f - transform.right * side * 0.02f;
+                Vector3 pole = transform.right * side * 0.8f - transform.forward * 0.6f + Vector3.down * 0.2f;
+                Transform a = side < 0 ? armL : armR, b = side < 0 ? foreL : foreR, c = side < 0 ? handL : handR;
+                TwoBoneIK.Solve(a, b, c, onThigh, pole, seatHandW, true);
+                // mano distesa sulla coscia: dita in avanti, palmo in giù
+                c.rotation = Quaternion.Slerp(c.rotation, PalmDown(side, transform.forward), seatHandW);
+            }
             for (int i = 0; i < 4; i++) ikWeight[i] = 0f;
         }
+
+        float seatHandW;
 
         /// <summary>Svenuto: steso sulla schiena, braccia e gambe abbandonate, respiro lento.</summary>
         void LyingUpdate(float dt)

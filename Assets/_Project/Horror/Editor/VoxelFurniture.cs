@@ -450,7 +450,9 @@ namespace FantaLandia.Horror.EditorTools
                         v.Set(4 + x, y, 4 + z, c);
                     }
             }
-            return Save("Albero", v, new Vector3(4.5f * v.size, 0f, 4.5f * v.size));
+            // le foglie ondeggiano al vento (dalla base della chioma in su), il tronco no
+            return Save("Albero", v, new Vector3(4.5f * v.size, 0f, 4.5f * v.size), true,
+                c => c.g > c.r * 1.15f ? EditorAssetUtil.WindMat("Vento foglie " + ColorUtility.ToHtmlStringRGB(c), c, 0.09f, 1.7f, 2.8f) : null);
         }
 
         public static GameObject Bush()
@@ -460,7 +462,8 @@ namespace FantaLandia.Horror.EditorTools
             v.Fill(0, 0, 0, 4, 2, 3, a);
             v.Fill(1, 2, 0, 3, 3, 3, b);
             v.Set(0, 2, 1, b);
-            return Save("Cespuglio", v, BottomCenter(v, 4, 3));
+            return Save("Cespuglio", v, BottomCenter(v, 4, 3), true,
+                c => EditorAssetUtil.WindMat("Vento cespuglio " + ColorUtility.ToHtmlStringRGB(c), c, 0.04f, 0.1f, 0.6f));
         }
 
         /// <summary>Auto anni '90 (cubetti da 15 cm, 4.5 x 1.3 x 1.8 m): berlina o station wagon. Il muso guarda +X.</summary>

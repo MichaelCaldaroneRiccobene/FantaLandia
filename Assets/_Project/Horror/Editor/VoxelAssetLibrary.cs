@@ -27,7 +27,7 @@ namespace FantaLandia.Horror.EditorTools
         // ------------------------------------------------------------------ salvataggio
 
         /// <summary>Crea il prefab: mesh a cubetti, un materiale per colore, collider a scatola.</summary>
-        public static GameObject Save(string name, VoxelBuilder v, Vector3 pivot, bool collider = true)
+        public static GameObject Save(string name, VoxelBuilder v, Vector3 pivot, bool collider = true, System.Func<Color, Material> materialFor = null)
         {
             EditorAssetUtil.EnsureFolder(Folder);
             Mesh mesh = v.Build(name, pivot, out Color[] colors);
@@ -46,7 +46,8 @@ namespace FantaLandia.Horror.EditorTools
 
             var mats = new Material[colors.Length];
             for (int i = 0; i < colors.Length; i++)
-                mats[i] = EditorAssetUtil.Mat("Voxel " + ColorUtility.ToHtmlStringRGB(colors[i]), colors[i], 0.15f);
+                mats[i] = (materialFor != null ? materialFor(colors[i]) : null)
+                          ?? EditorAssetUtil.Mat("Voxel " + ColorUtility.ToHtmlStringRGB(colors[i]), colors[i], 0.15f);
 
             var go = new GameObject(name);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;

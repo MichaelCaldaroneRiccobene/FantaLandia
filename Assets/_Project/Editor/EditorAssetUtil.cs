@@ -50,6 +50,30 @@ namespace FantaLandia.EditorTools
             return m;
         }
 
+        /// <summary>
+        /// Materiale "al vento" (shader FantaLandia/WindVegetation): chiome, cespugli, erba.
+        /// Senza colore dei vertici la piegatura dipende dall'altezza nell'oggetto (bendStart..bendStart+bendHeight).
+        /// </summary>
+        public static Material WindMat(string name, Color color, float strength, float bendStart, float bendHeight, bool useVertexColor = false)
+        {
+            Shader sh = Shader.Find("FantaLandia/WindVegetation");
+            if (sh == null) return Mat(name, color);
+            EnsureFolder(MaterialFolder);
+            string path = $"{MaterialFolder}/{name}.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
+            else if (m.shader != sh) m.shader = sh;
+            m.SetColor("_BaseColor", color);
+            m.SetFloat("_UseVertexColor", useVertexColor ? 1f : 0f);
+            m.SetFloat("_WindStrength", strength);
+            m.SetFloat("_WindSpeed", useVertexColor ? 1.3f : 0.8f);
+            m.SetFloat("_WindScale", useVertexColor ? 0.35f : 0.25f);
+            m.SetFloat("_BendStart", bendStart);
+            m.SetFloat("_BendHeight", bendHeight);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
         /// <summary>Crea (o aggiorna) un materiale URP/Lit con il colore dato.</summary>
         public static Material Mat(string name, Color color, float smoothness = 0.1f)
         {

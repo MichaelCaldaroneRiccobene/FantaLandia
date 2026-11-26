@@ -274,6 +274,7 @@ namespace FantaLandia.Horror.EditorTools
             SetLayer(tom, CharacterLayer);
 
             tom.AddComponent<NpcSpeaker>().speakerId = "tom";
+            tom.AddComponent<GrassPusher>();
             var talk = tom.AddComponent<Talkable>();
             talk.displayName = "Tom";
             talk.lines = new[]
@@ -369,6 +370,7 @@ namespace FantaLandia.Horror.EditorTools
             interactor.holdPoint = hold;
             interactor.body = fpc.body;
             root.AddComponent<PlayerActions>();
+            root.AddComponent<GrassPusher>();
 
             // la birra in mano all'inizio
             GameObject beer = Instance(VoxelAssetLibrary.Load("Birra"), null, root.transform.position, 0f);

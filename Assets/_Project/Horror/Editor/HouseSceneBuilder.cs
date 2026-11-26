@@ -30,6 +30,7 @@ namespace FantaLandia.Horror.EditorTools
 
         const float F0 = 0.3f, H = 3.0f, S = 0.25f, F1 = F0 + H, F2 = F1 + H, FB = F0 - 2.8f;
         const float X0 = -7f, X1 = 7f, Z0 = 0f, Z1 = 11f, ET = 0.25f, IT = 0.15f;
+        const float FenceHeight = 1.2f;
 
         static Material siding, trim, interior, interiorUp, wood, tiles, concrete, basementWall, roof, glass, grass,
                         asphalt, sidewalk, porchWood, fenceWood, deckWood, garageFloor, bathTiles, kitchenTiles, railing;
@@ -91,6 +92,19 @@ namespace FantaLandia.Horror.EditorTools
             seq.chairSeat = HorrorTestSceneBuilder.Marker("Sedile poltrona", world, armchair.position);
             seq.chairSeat.rotation = armchair.rotation;
             seq.seatHeight = 0.5f;
+
+            // erba al vento (si piega quando ci si passa in mezzo)
+            Material grassMat = EditorAssetUtil.WindMat("Erba al vento", Color.white, 0.06f, 0f, 1f, true);
+            foreach (var area in new[] { (new Vector2(-45f, -9f), new Vector2(45f, 23f), 11), (new Vector2(-45f, -40f), new Vector2(45f, -19f), 29) })
+            {
+                var grassGo = new GameObject("Prato d'erba");
+                grassGo.transform.SetParent(world, false);
+                var field = grassGo.AddComponent<GrassField>();
+                field.material = grassMat;
+                field.areaMin = area.Item1;
+                field.areaMax = area.Item2;
+                field.seed = area.Item3;
+            }
 
             var amb = new GameObject("Ambiente notturno (audio)").AddComponent<AmbientSound>();
             amb.clip = AmbientClip.Night;
@@ -206,7 +220,7 @@ namespace FantaLandia.Horror.EditorTools
             foreach (Transform t in s) if (t.name.StartsWith("Pavimento piano terra")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
             Floor("Piastrelle cucina", s, new Vector3(-1f, F0, 6.075f), new Vector3(6.75f, F0 + 0.01f, 10.75f), kitchenTiles, Surface.Concrete);
             Floor("Piastrelle bagno", s, new Vector3(3.575f, F0, 0.25f), new Vector3(6.75f, F0 + 0.01f, 2.925f), bathTiles, Surface.Concrete);
-            Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(1.9f, 0.9f, 1.4f, 4.2f));
+            Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(2.1f, 1.5f, 1.3f, 4.2f));
             foreach (Transform t in s) if (t.name.StartsWith("Pavimento primo piano")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
             Floor("Piastrelle bagno sopra", s, new Vector3(3.575f, F1, 0.25f), new Vector3(6.75f, F1 + 0.01f, 3.925f), bathTiles, Surface.Concrete);
             Box("Soffitto primo piano", s, new Vector3(X0, F2 - S, Z0), new Vector3(X1, F2, Z1), trim);
@@ -222,10 +236,9 @@ namespace FantaLandia.Horror.EditorTools
             Box("Ringhiera scala cantina", s, new Vector3(4.1f, F0, 4.85f), new Vector3(6.75f, F0 + 1f, 4.9f), railing);
 
             // scala per il primo piano (nell'ingresso, sale verso +Z)
-            Stairs(s, "Scala", false, 0.9f, 1, 1.9f, 3.3f, F0, 15, 0.2f, 0.28f, F0, wood, Surface.Wood);
-            Box("Ringhiera scala piano terra", s, new Vector3(1.85f, F0, 0.9f), new Vector3(1.9f, F0 + 1f, 2.0f), railing);
-            Box("Ringhiera corridoio", s, new Vector3(1.85f, F1, 0.9f), new Vector3(1.9f, F1 + 1f, 5.1f), railing);
-            Box("Ringhiera corridoio 2", s, new Vector3(1.85f, F1, 0.85f), new Vector3(3.3f, F1 + 1f, 0.9f), railing);
+            // contro il muro destro dell'ingresso, lasciando libero lo spazio davanti alla porta
+            Stairs(s, "Scala", false, 1.5f, 1, 2.1f, 3.4f, F0, 15, 0.2f, 0.28f, F0, wood, Surface.Wood);
+            StairBanister(s);
 
             // muri esterni: nucleo (colore interno) + rivestimento esterno (azzurro) con le stesse aperture
             var front0 = new[] { new Opening(-0.47f, 0.47f, F0, F0 + 2.15f, OpeningKind.Door), Window(-4.6f, 2f, F0 + 0.85f, F0 + 2.2f), Window(5.2f, 0.8f, F0 + 1.5f, F0 + 2.1f) };
@@ -249,9 +262,10 @@ namespace FantaLandia.Horror.EditorTools
             // muri interni piano terra
             float ih = F1 - S - F0;
             Wall(s, "Muro soggiorno", false, -2f, Z0 + ET, 6f, F0, ih, IT, interior, new[] { Arch(1.2f, 4.8f) }, null, trim);
-            Wall(s, "Muro centrale", true, 6f, X0 + ET, X1 - ET, F0, ih, IT, interior, new[] { Arch(-6f, -3f), Arch(-1.5f, 1.5f) }, null, trim);
+            Wall(s, "Muro centrale", true, 6f, X0 + ET, X1 - ET, F0, ih, IT, interior,
+                 new[] { Arch(-6f, -3f), Arch(-1.5f, 1.5f), HouseKit.Door(4.42f, 0.84f) }, null, trim); // porta cantina dalla cucina
             Wall(s, "Muro bagno", false, 3.5f, Z0 + ET, 6f, F0, ih, IT, interior,
-                 new[] { HouseKit.Door(1.45f, 0.84f), HouseKit.Door(4.35f, 0.84f) }, null, trim);
+                 new[] { HouseKit.Door(0.82f, 0.84f) }, null, trim);
             Wall(s, "Muro bagno-cantina", true, 3f, 3.5f, X1 - ET, F0, ih, IT, interior, null);
 
             // muri interni primo piano
@@ -261,7 +275,7 @@ namespace FantaLandia.Horror.EditorTools
             Wall(s, "Muro matrimoniale-cameretta", true, 6f, X0 + ET, -2f, F1, uh, IT, interiorUp, null);
             Wall(s, "Muro camera Tom", true, 7f, -2f, X1 - ET, F1, uh, IT, interiorUp, new[] { HouseKit.Door(0.7f, 0.84f) }, null, trim);
             Wall(s, "Muro bagno sopra", false, 3.5f, Z0 + ET, 7f, F1, uh, IT, interiorUp,
-                 new[] { HouseKit.Door(3.0f, 0.84f), HouseKit.Door(5.4f, 0.84f) }, null, trim);
+                 new[] { HouseKit.Door(0.85f, 0.84f), HouseKit.Door(6.5f, 0.84f) }, null, trim);
             Wall(s, "Muro bagno-ripostiglio", true, 4f, 3.5f, X1 - ET, F1, uh, IT, interiorUp, null);
 
             // tetto a gradoni (colmo lungo X) con timpani
@@ -274,16 +288,16 @@ namespace FantaLandia.Horror.EditorTools
             front.knockable = true;
             DoorAt(s, "Porta laterale", VoxelAssetLibrary.Load("Porta"), new Vector3(X1 - ET * 0.5f, F0, 8.0f), -90f);
             GameObject inner = VoxelFurniture.Get("Porta interna");
-            HorrorDoor bath = DoorAt(s, "Porta bagno (Jef)", inner, new Vector3(3.5f, F0, 1.45f + 0.4f), 90f);
+            HorrorDoor bath = DoorAt(s, "Porta bagno (Jef)", inner, new Vector3(3.5f, F0, 0.82f + 0.4f), 90f);
             bath.locked = true;
             bath.lockedText = "È occupato...";
-            DoorAt(s, "Porta cantina", inner, new Vector3(3.5f, F0, 4.35f + 0.4f), 90f);
+            DoorAt(s, "Porta cantina", inner, new Vector3(4.42f + 0.4f, F0, 6f), 180f); // dalla cucina verso la scala della cantina
             DoorAt(s, "Porta garage", inner, new Vector3(X1 - ET * 0.5f, F0, 5.85f), 90f);
             DoorAt(s, "Porta camera matrimoniale", inner, new Vector3(-2f, F1, 4.6f - 0.4f), -90f);
             DoorAt(s, "Porta cameretta", inner, new Vector3(-2f, F1, 7.0f - 0.4f), -90f);
             DoorAt(s, "Porta camera Tom", inner, new Vector3(0.7f - 0.4f, F1, 7f), 0f);
-            DoorAt(s, "Porta bagno sopra", inner, new Vector3(3.5f, F1, 3.0f + 0.4f), 90f);
-            DoorAt(s, "Porta ripostiglio", inner, new Vector3(3.5f, F1, 5.4f + 0.4f), 90f);
+            DoorAt(s, "Porta bagno sopra", inner, new Vector3(3.5f, F1, 0.85f + 0.4f), 90f);
+            DoorAt(s, "Porta ripostiglio", inner, new Vector3(3.5f, F1, 6.5f + 0.4f), 90f);
 
             // luci delle stanze (plafoniere)
             Color warm = Warm;
@@ -296,6 +310,36 @@ namespace FantaLandia.Horror.EditorTools
             RoomLight(s, "Luce corridoio sopra", new Vector3(0.5f, F2 - S, 3.5f), 6f, 0.9f, warm, false);
             RoomLight(s, "Luce camera Tom", new Vector3(2.5f, F2 - S, 9f), 6f, 0.9f, warm, false);
             return front;
+        }
+
+        /// <summary>Ringhiera della scala: colonnina su ogni gradino e corrimano a gradini; ringhiera al primo piano.</summary>
+        static void StairBanister(Transform s)
+        {
+            Transform g = Group("Ringhiera scala", s);
+            for (int i = 0; i < 15; i++)
+            {
+                float z0 = 1.5f + i * 0.28f, top = F0 + (i + 1) * 0.2f;
+                Box("Colonnina", g, new Vector3(2.11f, top, z0 + 0.11f), new Vector3(2.16f, top + 0.85f, z0 + 0.16f), railing);
+                Box("Corrimano", g, new Vector3(2.09f, top + 0.85f, z0), new Vector3(2.18f, top + 0.92f, z0 + 0.28f), porchWood);
+            }
+            Box("Pilastrino", g, new Vector3(2.08f, F0, 1.42f), new Vector3(2.2f, F0 + 1.1f, 1.56f), porchWood);
+            Railing(g, new Vector3(2.08f, F1, 1.48f), new Vector3(2.08f, F1, 5.7f));
+            Railing(g, new Vector3(2.08f, F1, 1.48f), new Vector3(3.4f, F1, 1.48f));
+        }
+
+        /// <summary>Ringhiera dritta: colonnine ogni 15 cm e corrimano.</summary>
+        static void Railing(Transform parent, Vector3 a, Vector3 b)
+        {
+            Vector3 d = b - a;
+            float len = d.magnitude;
+            Vector3 dir = d / len;
+            for (float t = 0f; t <= len; t += 0.15f)
+            {
+                Vector3 p = a + dir * t;
+                Box("Colonnina", parent, p + new Vector3(-0.025f, 0f, -0.025f), p + new Vector3(0.025f, 0.9f, 0.025f), railing);
+            }
+            Vector3 lo = Vector3.Min(a, b), hi = Vector3.Max(a, b);
+            Box("Corrimano", parent, lo + new Vector3(-0.045f, 0.9f, -0.045f), hi + new Vector3(0.045f, 0.97f, 0.045f), porchWood);
         }
 
         /// <summary>Muro esterno: nucleo con il colore interno + rivestimento esterno sottile con le stesse aperture.</summary>
@@ -505,9 +549,9 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Albero"), y, new Vector3(-9f, 0f, 19f), 0f);
             Floor("Vialetto laterale", y, new Vector3(7f, 0f, 7.2f), new Vector3(9f, 0.03f, 9.6f), sidewalk, Surface.Concrete);
 
-            Fence(y, "Staccionata retro", new Vector3(-13f, 0f, 22f), new Vector3(13f, 0f, 22f), 1.8f, fenceWood, fenceWood, true);
-            Fence(y, "Staccionata sinistra", new Vector3(-13f, 0f, 1f), new Vector3(-13f, 0f, 22f), 1.8f, fenceWood, fenceWood, true);
-            Fence(y, "Staccionata destra", new Vector3(13f, 0f, 1f), new Vector3(13f, 0f, 22f), 1.8f, fenceWood, fenceWood, true);
+            Fence(y, "Staccionata retro", new Vector3(-13f, 0f, 22f), new Vector3(13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
+            Fence(y, "Staccionata sinistra", new Vector3(-13f, 0f, 1f), new Vector3(-13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
+            Fence(y, "Staccionata destra", new Vector3(13f, 0f, 1f), new Vector3(13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
         }
 
         // ------------------------------------------------------------------ vicinato
@@ -515,11 +559,12 @@ namespace FantaLandia.Horror.EditorTools
         static void BuildNeighbors(Transform hood)
         {
             // vicini ai lati (stessa strada) e tre case di fronte
-            Shell(hood, "Casa vicini sinistra", new Vector3(-26f, 0f, 0f), 0f, "#c9b98f", true, new[] { true, false, true, false, true });
-            Shell(hood, "Casa vicini destra", new Vector3(26f, 0f, 0f), 0f, "#a9b99a", true, new[] { false, true, true, true, false });
-            Shell(hood, "Casa di fronte A", new Vector3(-26f, 0f, -27f), 180f, "#d8c8b0", false, new[] { false, false, true, false, false });
-            Shell(hood, "Casa di fronte B", new Vector3(0f, 0f, -27f), 180f, "#b8a8a8", false, new[] { true, false, false, false, true });
-            Shell(hood, "Casa di fronte C", new Vector3(26f, 0f, -27f), 180f, "#e2dfc9", false, new[] { false, false, false, true, false });
+            // (le staccionate sui confini in comune le costruisce una casa sola)
+            Shell(hood, "Casa vicini sinistra", new Vector3(-26f, 0f, 0f), 0f, "#c9b98f", true, new[] { true, false, true, false, true }, true, false);
+            Shell(hood, "Casa vicini destra", new Vector3(26f, 0f, 0f), 0f, "#a9b99a", true, new[] { false, true, true, true, false }, false, true);
+            Shell(hood, "Casa di fronte A", new Vector3(-26f, 0f, -27f), 180f, "#d8c8b0", false, new[] { false, false, true, false, false }, true, true);
+            Shell(hood, "Casa di fronte B", new Vector3(0f, 0f, -27f), 180f, "#b8a8a8", false, new[] { true, false, false, false, true }, false, false);
+            Shell(hood, "Casa di fronte C", new Vector3(26f, 0f, -27f), 180f, "#e2dfc9", false, new[] { false, false, false, true, false }, true, true);
 
             Place(VoxelFurniture.Get("Station wagon verde"), hood, new Vector3(-20f, 0.03f, -4.5f), 90f);
             Place(VoxelFurniture.Get("Auto rossa"), hood, new Vector3(-6f, 0.03f, -31f), -90f);
@@ -532,7 +577,8 @@ namespace FantaLandia.Horror.EditorTools
         /// Casa dei vicini "a guscio" (niente interni): due piani con finestre accese o buie, porta, veranda,
         /// tetto a gradoni. Fronte verso -Z prima della rotazione. Con 'deck' ha una pedana sul retro con ringhiera.
         /// </summary>
-        static void Shell(Transform parent, string name, Vector3 frontCenter, float yaw, string sidingHex, bool deck, bool[] lit)
+        static void Shell(Transform parent, string name, Vector3 frontCenter, float yaw, string sidingHex, bool deck, bool[] lit,
+                          bool fenceLeft, bool fenceRight)
         {
             Transform h = Group(name, parent);
             h.localPosition = frontCenter;
@@ -565,6 +611,11 @@ namespace FantaLandia.Horror.EditorTools
             Floor("Vialetto", h, new Vector3(-0.6f, 0f, -9f), new Vector3(0.6f, 0.03f, -2f), sidewalk, Surface.Concrete);
             Floor("Passo carraio", h, new Vector3(4.5f, 0f, -9f), new Vector3(7.5f, 0.03f, 0f), sidewalk, Surface.Concrete);
             Place(VoxelFurniture.Get("Cassetta posta"), h, new Vector3(-1.4f, 0f, -8.6f), 0f);
+
+            // giardino sul retro recintato
+            Fence(h, "Staccionata retro", new Vector3(-13f, 0f, 22f), new Vector3(13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
+            if (fenceLeft) Fence(h, "Staccionata lato A", new Vector3(-13f, 0f, 1f), new Vector3(-13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
+            if (fenceRight) Fence(h, "Staccionata lato B", new Vector3(13f, 0f, 1f), new Vector3(13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
 
             if (!deck) return;
             // pedana sul retro con ringhiera (i vicini ci si appoggeranno per guardare l'esplosione)
