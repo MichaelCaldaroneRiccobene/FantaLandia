@@ -133,7 +133,7 @@ namespace FantaLandia.Characters.Body
                 head.rotation = Quaternion.Slerp(head.rotation, want, lookW * 0.85f);
 
                 // il corpo si gira se il bersaglio è troppo di lato e il personaggio è fermo
-                if (turnBody && motor != null && !motor.IsTraversing && motor.CurrentSpeed < 0.1f)
+                if (turnBody && motor != null && !motor.IsTraversing && !motor.IsSeated && motor.CurrentSpeed < 0.1f)
                 {
                     float fullYaw = Mathf.Atan2(l.x, l.z) * Mathf.Rad2Deg;
                     if (Mathf.Abs(fullYaw) > 35f)

@@ -21,7 +21,7 @@ namespace FantaLandia.Horror.Interaction
         [Tooltip("Se chiusa, da fuori si può bussare (la storia decide cosa succede)")]
         public bool knockable;
         [Tooltip("Punto dove si bussa, nello spazio della porta (lato esterno = -Z)")]
-        public Vector3 knockLocal = new Vector3(0.45f, 1.4f, -0.03f);
+        public Vector3 knockLocal = new Vector3(0.45f, 1.62f, -0.03f);
 
         /// <summary>Il giocatore ha bussato (a gesto finito).</summary>
         public event Action<HorrorDoor> PlayerKnocked;

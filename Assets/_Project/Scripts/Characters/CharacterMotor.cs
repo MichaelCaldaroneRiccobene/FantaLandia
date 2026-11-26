@@ -78,6 +78,55 @@ namespace FantaLandia.Characters
         public float HealthSpeedMultiplier { get; private set; } = 1f;
         /// <summary>Con le gambe messe male non si può scattare.</summary>
         public bool CanSprint { get; private set; } = true;
+        /// <summary>Seduto (su una poltrona, una sedia...): niente NavMesh, posa seduta.</summary>
+        public bool IsSeated { get; private set; }
+        /// <summary>Altezza del sedile rispetto ai piedi del personaggio (m).</summary>
+        public float SeatHeight { get; private set; } = 0.5f;
+
+        /// <summary>Si siede: si gira, scivola nel sedile e si abbassa. 'seatPosition' è il punto a terra sotto il sedile.</summary>
+        public void SitDown(Vector3 seatPosition, Quaternion facing, float seatHeight)
+        {
+            StartCoroutine(SitRoutine(seatPosition, facing, seatHeight));
+        }
+
+        System.Collections.IEnumerator SitRoutine(Vector3 seatPosition, Quaternion facing, float seatHeight)
+        {
+            if (agent.enabled)
+            {
+                if (agent.isOnNavMesh) agent.ResetPath();
+                agent.enabled = false;
+            }
+            Vector3 p0 = transform.position;
+            Quaternion r0 = transform.rotation;
+            seatPosition.y = p0.y;
+            // prima si gira, poi arretra nel sedile mentre si siede
+            float t = 0f;
+            while (t < 1f)
+            {
+                t = Mathf.Min(1f, t + Time.deltaTime / 0.45f);
+                transform.rotation = Quaternion.Slerp(r0, facing, t * t * (3f - 2f * t));
+                yield return null;
+            }
+            SeatHeight = seatHeight;
+            IsSeated = true;
+            t = 0f;
+            while (t < 1f)
+            {
+                t = Mathf.Min(1f, t + Time.deltaTime / 0.6f);
+                transform.position = Vector3.Lerp(p0, seatPosition, t * t * (3f - 2f * t));
+                yield return null;
+            }
+        }
+
+        /// <summary>Si alza e torna sulla NavMesh nel punto indicato.</summary>
+        public void StandUp(Vector3 standPosition)
+        {
+            IsSeated = false;
+            transform.position = standPosition;
+            agent.enabled = true;
+            if (NavMesh.SamplePosition(standPosition, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) agent.Warp(hit.position);
+        }
+
         /// <summary>Svenuto: non si muove e non accetta ordini.</summary>
         public bool IsIncapacitated { get; private set; }
 

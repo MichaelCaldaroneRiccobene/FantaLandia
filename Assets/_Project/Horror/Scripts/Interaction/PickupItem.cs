@@ -5,6 +5,7 @@ using UnityEngine;
 namespace FantaLandia.Horror.Interaction
 {
     /// <summary>Oggetto che si può prendere in mano (uno alla volta) e posare in un PlaceSpot.</summary>
+    [DefaultExecutionOrder(300)] // dopo l'animatore del corpo: segue la mano nella sua posa finale
     public class PickupItem : Interactable
     {
         public string itemId = "oggetto";
@@ -17,8 +18,8 @@ namespace FantaLandia.Horror.Interaction
         [Tooltip("Posizione e rotazione rispetto al polso sinistro quando è portato a mano")]
         public Vector3 handOffset = new Vector3(0f, -0.25f, 0f);
         public Vector3 handEuler = new Vector3(0f, 90f, 0f);
-        [Tooltip("Altezza del manico sopra la base (m): serve per posarlo con la mano")]
-        public float handleHeight = 0.19f;
+        [Tooltip("Distanza tra il polso e la base dell'oggetto quando è appeso alla mano (m)")]
+        public float handleHeight = 0.25f;
         [Tooltip("Se falso non si può più raccogliere (es. dopo che è stato posato per la storia)")]
         public bool canPickUp = true;
 
@@ -55,6 +56,7 @@ namespace FantaLandia.Horror.Interaction
         public void AttachToHand(Transform wrist, bool instant)
         {
             IsHeld = true;
+            inHand = true;
             SetColliders(false);
             MoveTo(wrist, handOffset, Quaternion.Euler(handEuler), instant);
         }
@@ -63,6 +65,7 @@ namespace FantaLandia.Horror.Interaction
         public void PlaceAt(Transform spot)
         {
             IsHeld = false;
+            inHand = false;
             MoveTo(spot, Vector3.zero, Quaternion.identity, false);
             SetColliders(true);
         }
@@ -79,8 +82,17 @@ namespace FantaLandia.Horror.Interaction
             if (instant) { transform.localPosition = localPos; transform.localRotation = localRot; }
         }
 
+        bool inHand;
+
         void LateUpdate()
         {
+            if (inHand && moveT >= 1f && moveTarget != null)
+            {
+                // appeso per il manico: resta dritto sotto il polso, come un peso vero
+                transform.position = moveTarget.position + Vector3.down * handleHeight;
+                transform.rotation = Quaternion.Euler(0f, moveTarget.root.eulerAngles.y + handEuler.y, 0f);
+                return;
+            }
             if (moveT >= 1f || moveTarget == null) return;
             moveT = Mathf.Min(1f, moveT + Time.deltaTime / 0.25f);
             float e = moveT * moveT * (3f - 2f * moveT);

@@ -70,6 +70,8 @@ namespace FantaLandia.Core
         public static bool RunHeld => Shift;
         public static bool AdvanceDialogue => Pressed(Key.E) || Pressed(Key.Space) || LeftDown;
         public static bool RetroToggle => Pressed(Key.F2);
+        public static bool DropDown => Pressed(Key.Q);
+        public static bool DropHeld => Held(Key.Q);
 
         /// <summary>Restituisce 1-9 se è stato premuto un tasto numerico in questo frame, altrimenti 0.</summary>
         public static int DigitPressed()
@@ -125,6 +127,8 @@ namespace FantaLandia.Core
         public static bool RunHeld => Shift;
         public static bool AdvanceDialogue => Pressed(KeyCode.E) || Pressed(KeyCode.Space) || LeftDown;
         public static bool RetroToggle => Pressed(KeyCode.F2);
+        public static bool DropDown => Pressed(KeyCode.Q);
+        public static bool DropHeld => Held(KeyCode.Q);
 
         public static int DigitPressed()
         {

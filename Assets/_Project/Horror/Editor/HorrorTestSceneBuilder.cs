@@ -59,7 +59,12 @@ namespace FantaLandia.Horror.EditorTools
             seq.door = door;
             seq.tom = tom;
             seq.tomAtDoor = Marker("Tom alla porta", world, new Vector3(0f, FloorY, 1.3f));
-            seq.tomInLiving = Marker("Tom in soggiorno", world, new Vector3(-1.4f, FloorY, 5.2f));
+            seq.tomBesideDoor = Marker("Tom accanto alla porta", world, new Vector3(1.0f, FloorY, 1.1f));
+            seq.tomCloseDoor = Marker("Tom chiude la porta", world, new Vector3(0.35f, FloorY, 1.05f));
+            seq.chairFront = Marker("Davanti alla poltrona", world, new Vector3(-3.2f, FloorY, 3.5f));
+            seq.chairSeat = Marker("Sedile poltrona", world, new Vector3(-2.35f, FloorY, 3.5f));
+            seq.chairSeat.localRotation = Quaternion.Euler(0f, -90f, 0f); // seduti si guarda la TV
+            seq.seatHeight = 0.5f;
 
             var amb = new GameObject("Ambiente notturno (audio)").AddComponent<AmbientSound>();
             amb.clip = AmbientClip.Night;
@@ -149,7 +154,7 @@ namespace FantaLandia.Horror.EditorTools
             door.hingeSign = 1f;
             door.locked = true;
             door.knockable = true;
-            door.knockLocal = new Vector3(0.45f, 1.4f, -0.03f);
+            door.knockLocal = new Vector3(0.45f, 1.62f, -0.03f);
             SetLayer(doorRoot, DoorLayer);
             return door;
         }
@@ -368,7 +373,7 @@ namespace FantaLandia.Horror.EditorTools
             item.carryInLeftHand = true; // per il manico, lungo il fianco
             item.handOffset = new Vector3(0f, -0.25f, 0f);
             item.handEuler = new Vector3(0f, 90f, 0f);
-            item.handleHeight = 0.19f;
+            item.handleHeight = 0.25f;
             interactor.startHeld = item;
         }
 

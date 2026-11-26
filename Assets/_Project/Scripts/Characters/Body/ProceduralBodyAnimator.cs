@@ -198,6 +198,13 @@ namespace FantaLandia.Characters.Body
                 feetInitialized = false;
             }
 
+            // seduto: posa seduta, niente passi
+            if (motor != null && motor.IsSeated)
+            {
+                SeatedUpdate(dt);
+                return;
+            }
+
             bool traversing = motor != null && motor.IsTraversing && !motor.IsStunned;
             if (wasTraversing && !traversing) OnTraversalEnded();
             if (traversing) airVy = vy;
@@ -580,9 +587,9 @@ namespace FantaLandia.Characters.Body
         {
             if (carryLeft)
             {
-                // braccio teso lungo il fianco, un po' staccato per non urtare la gamba
-                Rot(BodyPart.UpperArmL, 0f, 0f, -7f);
-                Rot(BodyPart.ForearmL, -4f, 0f, 0f);
+                // braccio un po' in avanti (la confezione si vede guardando in basso) e staccato dalla gamba
+                Rot(BodyPart.UpperArmL, -28f, 0f, -9f);
+                Rot(BodyPart.ForearmL, -22f, 0f, 0f);
                 Rot(BodyPart.HandL, 0f, 0f, 0f);
                 if (!extActive[2]) ikTargetWeight[2] = 0f;
             }
@@ -617,6 +624,39 @@ namespace FantaLandia.Characters.Body
                 Rot(side < 0 ? BodyPart.HandL : BodyPart.HandR, 0f, 0f, 0f);
                 ikTargetWeight[side < 0 ? 2 : 3] = 0f;
             }
+        }
+
+        /// <summary>Seduto: cosce in avanti, ginocchia piegate, schiena appoggiata, avambracci sui braccioli.</summary>
+        void SeatedUpdate(float dt)
+        {
+            feetInitialized = false;
+            breathPhase += dt * Mathf.PI * 2f * (breathRate + exertion * 0.55f);
+            float breath = Mathf.Sin(breathPhase);
+            System.Array.Clear(target, 0, N);
+            Rot(BodyPart.Abdomen, -6f + breath * breathAmplitude * 0.3f, 0f, 0f);
+            Rot(BodyPart.Chest, -4f - breath * breathAmplitude, 0f, 0f);
+            Rot(BodyPart.ThighL, -88f, 0f, -4f);
+            Rot(BodyPart.ThighR, -88f, 0f, 4f);
+            Rot(BodyPart.ShinL, 86f, 0f, 0f);
+            Rot(BodyPart.ShinR, 92f, 0f, 0f);
+            Rot(BodyPart.UpperArmL, -18f, 0f, -14f);
+            Rot(BodyPart.UpperArmR, -18f, 0f, 14f);
+            Rot(BodyPart.ForearmL, -50f, 0f, 0f);
+            Rot(BodyPart.ForearmR, -50f, 0f, 0f);
+            ApplyDisabledArms();
+
+            float k = 1f - Mathf.Exp(-6f * dt);
+            for (int i = 0; i < N; i++)
+            {
+                pose[i] = Vector3.Lerp(pose[i], target[i], k);
+                if (rig.joints[i] != null) rig.joints[i].localRotation = Quaternion.Euler(pose[i]);
+            }
+            // il bacino appoggiato sul cuscino (anca sopra il sedile + spessore della coscia)
+            Vector3 seated = new Vector3(0f, motor.SeatHeight + hipDrop + 0.075f, -0.05f);
+            hips.localPosition = Vector3.Lerp(hips.localPosition, seated, k);
+            desiredHipsLocal = seated;
+            crouch = crouchVel = lastCrouch = 0f;
+            for (int i = 0; i < 4; i++) ikWeight[i] = 0f;
         }
 
         /// <summary>Svenuto: steso sulla schiena, braccia e gambe abbandonate, respiro lento.</summary>

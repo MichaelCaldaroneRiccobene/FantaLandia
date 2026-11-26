@@ -95,7 +95,7 @@ namespace FantaLandia.Horror.Player
             Vector3 outward = door.OutwardWorld;
             Vector3 stand = surface + outward * 0.62f + Vector3.Cross(Vector3.up, outward) * -0.1f;
             float yaw = Quaternion.LookRotation(-outward).eulerAngles.y;
-            yield return MoveToPose(stand, yaw, 4f, 0.45f);
+            yield return MoveToPose(stand, yaw, -2f, 0.45f);
 
             // mano destra: nocche verso la porta
             Quaternion fist = ProceduralBodyAnimator.PalmDown(1, -outward);
@@ -145,8 +145,8 @@ namespace FantaLandia.Horror.Player
             yield return MoveToPose(stand + right * 0.2f, yaw, 32f, 0.45f);
 
             PickupItem item = interactor.Held;
-            float handleHeight = item != null ? item.handleHeight : 0.2f;
-            Vector3 wristOnSpot = target.position + Vector3.up * (handleHeight + 0.04f);
+            float handleHeight = item != null ? item.handleHeight : 0.25f;
+            Vector3 wristOnSpot = target.position + Vector3.up * (handleHeight + 0.01f);
             Vector3 above = wristOnSpot + Vector3.up * 0.12f;
             Vector3 pole = Vector3.down * 0.5f - right * 0.8f;
             Vector3 start = anim != null ? anim.HandPosition(-1) : above;
