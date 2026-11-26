@@ -40,6 +40,7 @@ namespace FantaLandia.Horror.EditorTools
         static readonly List<Light> cellarBulbs = new List<Light>();
         static HorrorDoor backDoor, bathDoor, cellarDoor, sideDoor;
         static GeneratorStarter generator;
+        static Transform cellarRadio;
         static CharacterMotor royMotor, jefMotor;
         static readonly List<NpcActor> neighborActors = new List<NpcActor>();
 
@@ -57,6 +58,7 @@ namespace FantaLandia.Horror.EditorTools
             neighborActors.Clear();
             backDoor = bathDoor = cellarDoor = sideDoor = null;
             generator = null;
+            cellarRadio = null;
             royMotor = jefMotor = null;
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -163,6 +165,7 @@ namespace FantaLandia.Horror.EditorTools
             story.tv = tv;
             story.house = power;
             story.generator = generator;
+            story.cellarRadio = cellarRadio;
             story.cellarBulbs = cellarBulbs.ToArray();
 
             // l'esplosione: un edificio a qualche isolato, dietro i giardini, e altre case sullo sfondo
@@ -844,13 +847,16 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Scatola grande"), b, new Vector3(0.9f, FB, 2.4f), 15f);
             Box("Materasso", b, new Vector3(6.45f, FB, 6.3f), new Vector3(6.68f, FB + 1.9f, 7.25f), mattress);
             Place(VoxelFurniture.Get("Tanica"), b, new Vector3(-3.9f, FB, 10.35f), -10f);
+            // una vecchia radio per terra, girata verso la scala (a volte si accende da sola...)
+            GameObject radio = Place(VoxelFurniture.Get("Radio"), b, new Vector3(-0.8f, FB, 8.6f), 200f);
+            if (radio != null) cellarRadio = radio.transform;
 
             // pile di scatoloni lungo i muri (non sul passaggio scala → generatore e non davanti alle cose)
             Vector2 stairFoot = new Vector2(4.4f, 3.0f), genFront = new Vector2(-5.3f, 8.9f);
             var taken = new List<Vector2> { new Vector2(-1.8f, 1.05f), new Vector2(-4.3f, 1.1f), new Vector2(1.3f, 0.7f), new Vector2(-6.45f, 8.1f),
                 new Vector2(-3.1f, 0.65f), new Vector2(2.7f, 1.0f), new Vector2(3.3f, 0.9f), new Vector2(6.2f, 8.5f), new Vector2(0.9f, 2.4f),
                 new Vector2(6.55f, 6.8f), new Vector2(-6.45f, 2.8f), new Vector2(-6.45f, 6.2f), new Vector2(5.6f, 10.2f), new Vector2(3.6f, 10.3f),
-                new Vector2(0.2f, 10.4f), new Vector2(-5.3f, 9.9f), new Vector2(-3.9f, 10.35f) };
+                new Vector2(0.2f, 10.4f), new Vector2(-5.3f, 9.9f), new Vector2(-3.9f, 10.35f), new Vector2(-0.8f, 8.6f) };
             string[] kinds = { "Scatola grande", "Scatola", "Scatola piccola" };
             float[] heights = { 0.4f, 0.3f, 0.2f };
             int placed = 0;

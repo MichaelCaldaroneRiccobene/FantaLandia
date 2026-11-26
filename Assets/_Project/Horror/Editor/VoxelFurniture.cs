@@ -19,7 +19,7 @@ namespace FantaLandia.Horror.EditorTools
             Sofa(); CoffeeTable(); Rug(); DiningTable(); Chair(); Fridge(); Stove(); CounterSink(); Island();
             Toilet(); BathSink(); Bathtub(); BedDouble(); BedSingle(); Nightstand(); Wardrobe(); Desk(); Bookshelf();
             Phone(); HallTable(); MetalShelf(); Box("Scatola", 4, 3, 4); Box("Scatola piccola", 3, 2, 3); Box("Scatola grande", 5, 4, 5);
-            Generator(); FuelCan(); WaterHeater(); WashingMachine(); Workbench(); InteriorDoor(); GarageDoor();
+            Generator(); Radio(); FuelCan(); WaterHeater(); WashingMachine(); Workbench(); InteriorDoor(); GarageDoor();
             Mailbox(); Tree(); Bush(); Car("Auto rossa", "#a3262a", false); Car("Auto blu", "#2a4a8a", false);
             Car("Station wagon verde", "#3c5e3a", true); Car("Station wagon beige", "#b9a77f", true); Car("Auto bianca", "#d8d8d2", false);
             Grill(); LawnChair(); TrashCan(); CeilingLamp(); Bulb(); PorchPillar();
@@ -373,6 +373,43 @@ namespace FantaLandia.Horror.EditorTools
             // maniglia della corda d'avviamento
             v.Fill(1, 4, 8, 3, 5, 9, cord);
             return Save("Generatore", v, BottomCenter(v, 14, 9));
+        }
+
+        /// <summary>
+        /// Stereo portatile anni '90 (50 x 25 x 12 cm, cubetti da 2.5 cm): due casse tonde con il cono al centro,
+        /// pannello argentato con la piastra delle cassette, tasti sopra (uno rosso), manico e antenna.
+        /// Il davanti è il lato -Z.
+        /// </summary>
+        public static GameObject Radio()
+        {
+            var v = new VoxelBuilder(0.025f);
+            int body = v.C("#2b2b2e"), silver = v.C("#9a9ca0"), grill = v.C("#141416"), cone = v.C("#3c3c42"), cap = v.C("#77787e"),
+                tape = v.C("#4f5e66"), reel = v.C("#d8d2c0"), key = v.C("#c9c9c9"), red = v.C("#b02a24"), handle = v.C("#1e1e20"), metal = v.C("#b8b8bc"),
+                dust = v.C("#6d6a62");
+            v.Fill(0, 0, 0, 20, 9, 5, body);
+            // casse: griglia scura, cono e cupola centrale
+            foreach (int cx in new[] { 4, 15 })
+                for (int x = cx - 4; x <= cx + 4; x++)
+                    for (int y = 0; y <= 9; y++)
+                    {
+                        float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - 4.5f) * (y - 4.5f));
+                        if (d > 3.6f || x < 0 || x > 19 || y > 8) continue;
+                        v.Set(x, y, 0, d < 1f ? cap : d < 2.2f ? cone : grill);
+                    }
+            // pannello centrale con la piastra delle cassette (finestrella e due bobine)
+            v.Fill(8, 1, 0, 12, 8, 1, silver);
+            v.Fill(9, 3, 0, 11, 6, 1, tape);
+            v.Set(9, 4, 0, reel); v.Set(10, 4, 0, reel);
+            // tasti sopra (registrazione rossa) e manopole
+            for (int x = 7; x < 13; x++) v.Set(x, 9, 2, x == 7 ? red : key);
+            v.Set(2, 9, 1, metal); v.Set(17, 9, 1, metal);
+            // manico
+            v.Fill(1, 9, 2, 2, 13, 3, handle); v.Fill(18, 9, 2, 19, 13, 3, handle); v.Fill(1, 12, 2, 19, 13, 3, handle);
+            // antenna sfilata, un po' storta
+            for (int y = 9; y < 20; y++) v.Set(19 - (y > 15 ? 1 : 0), y, 4, metal);
+            // polvere sopra (è in cantina da anni)
+            v.Set(4, 9, 3, dust); v.Set(5, 9, 4, dust); v.Set(14, 9, 3, dust); v.Set(15, 9, 1, dust);
+            return Save("Radio", v, BottomCenter(v, 20, 5));
         }
 
         public static GameObject FuelCan()

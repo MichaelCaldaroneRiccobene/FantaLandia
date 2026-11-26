@@ -72,7 +72,7 @@ namespace FantaLandia.Horror.EditorTools
                 }
             EditorUtility.SetDirty(rp);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Grafica] Pipeline aggiornata: HDR, ombre 4K, SSAO più marcato");
+            Debug.Log($"[Grafica] Pipeline '{rp.name}' aggiornata: HDR, ombre 4K, SSAO più marcato");
         }
 
         static void SetInt(SerializedObject so, string name, int v) { var p = so.FindProperty(name); if (p != null) { if (p.propertyType == SerializedPropertyType.Boolean) p.boolValue = v != 0; else p.intValue = v; } }
@@ -90,6 +90,9 @@ namespace FantaLandia.Horror.EditorTools
             data.renderShadows = true;
             data.stopNaN = true;
             data.dithering = true;  // niente bande nei gradienti scuri
+            // i volumi di post-processing stanno sul layer Ignore Raycast (2): la camera deve vederli
+            data.volumeLayerMask = (1 << 0) | (1 << 2);
+            data.volumeTrigger = cam.transform;
         }
 
         // ------------------------------------------------------------------ volumi di post-processing

@@ -74,6 +74,8 @@ namespace FantaLandia.Horror.Story
         public NeighborhoodPower neighborhood;
         public SmokeColumn smoke;
         public GeneratorStarter generator;
+        [Tooltip("La vecchia radio per terra in cantina (uno degli spaventi: si accende da sola)")]
+        public Transform cellarRadio;
         public Light[] cellarBulbs;
         public AmbientSound nightAmbience;
 
@@ -676,6 +678,7 @@ namespace FantaLandia.Horror.Story
         IEnumerator ScareDirector()
         {
             var pool = new List<int> { 0, 1, 2, 3, 4 };
+            if (cellarRadio != null) pool.Add(5);
             float calmUntil = Time.time + Random.Range(3f, 6f);
             while (!generatorRunning && pool.Count > 0)
             {
@@ -733,6 +736,19 @@ namespace FantaLandia.Horror.Story
                     HorrorAudio.PlayAt(ProceduralAudio.Whisper(), player.position + player.right * (Random.value < 0.5f ? -1.2f : 1.2f) - player.forward * 0.6f + Vector3.up * 1.6f, 0.45f, 0.85f, 5f);
                     yield return new WaitForSeconds(2.6f);
                     break;
+                case 5: // la vecchia radio si accende da sola: neve e una voce che non si capisce
+                {
+                    Vector3 rp = cellarRadio.position + Vector3.up * 0.15f;
+                    HorrorAudio.PlayAt(ProceduralAudio.Click(), rp, 0.7f, 0.8f, 12f);
+                    HorrorAudio.PlayAt(ProceduralAudio.TvStatic(), rp, 0.55f, 0.9f, 14f);
+                    yield return new WaitForSeconds(0.6f);
+                    HorrorAudio.PlayAt(ProceduralAudio.Whisper(), rp, 0.6f, 0.75f, 10f);
+                    yield return new WaitForSeconds(1.6f);
+                    HorrorAudio.PlayAt(ProceduralAudio.Click(), rp, 0.7f, 0.7f, 12f);
+                    yield return new WaitForSeconds(0.8f);
+                    DialogueSystem.Bark(Speakers.Muark, "...La radio? Ma è staccata.");
+                    break;
+                }
                 case 4: // la torcia sfarfalla
                     if (flashlight != null && flashlight.isOn)
                     {
