@@ -17,6 +17,9 @@ namespace FantaLandia.Horror.Interaction
         [Tooltip("Oggetto già in mano all'inizio (es. la birra)")]
         public PickupItem startHeld;
 
+        [Tooltip("Il corpo del giocatore: gli oggetti 'a mano' vanno nella mano sinistra")]
+        public FantaLandia.Characters.Body.BodyRig body;
+
         public PickupItem Held { get; private set; }
         public Interactable Target { get; private set; }
 
@@ -56,7 +59,14 @@ namespace FantaLandia.Horror.Interaction
         {
             if (Held != null || item == null) return;
             Held = item;
-            item.AttachTo(holdPoint != null ? holdPoint : cam.transform, instant);
+            Transform wrist = body != null ? body.Joint(FantaLandia.Characters.Body.BodyPart.HandL) : null;
+            if (item.carryInLeftHand && wrist != null)
+            {
+                item.AttachToHand(wrist, instant);
+                var anim = body.GetComponent<FantaLandia.Characters.Body.ProceduralBodyAnimator>();
+                if (anim != null) anim.carryLeft = true;
+            }
+            else item.AttachTo(holdPoint != null ? holdPoint : cam.transform, instant);
         }
 
         /// <summary>Toglie l'oggetto dalle mani (lo prende in carico chi lo riceve).</summary>
@@ -64,6 +74,11 @@ namespace FantaLandia.Horror.Interaction
         {
             PickupItem item = Held;
             Held = null;
+            if (body != null)
+            {
+                var anim = body.GetComponent<FantaLandia.Characters.Body.ProceduralBodyAnimator>();
+                if (anim != null) anim.carryLeft = false;
+            }
             return item;
         }
 

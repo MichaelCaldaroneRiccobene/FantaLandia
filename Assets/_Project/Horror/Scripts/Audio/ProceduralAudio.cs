@@ -92,6 +92,21 @@ namespace FantaLandia.Horror.Audio
             }, 7);
         }
 
+        /// <summary>Un singolo colpo di nocche su una porta di legno (per bussare a mano, colpo per colpo).</summary>
+        public static AudioClip KnockOnce(int variant)
+        {
+            return Build($"colpo_{variant}", 0.18f, (d, r) =>
+            {
+                float f = 100f + variant * 9f;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    d[i] = Mathf.Sin(2f * Mathf.PI * f * t) * Mathf.Exp(-t * 30f) + Noise(r) * Mathf.Exp(-t * 95f) * 0.55f;
+                }
+                LowPass(d, 1500f);
+            }, 8 + variant);
+        }
+
         public static AudioClip DoorCreak(int variant)
         {
             return Build($"cigolio_{variant}", 0.9f, (d, r) =>

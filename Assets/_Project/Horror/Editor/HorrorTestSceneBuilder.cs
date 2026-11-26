@@ -1,4 +1,10 @@
+using FantaLandia.Characters;
 using FantaLandia.Characters.Body;
+using FantaLandia.Horror.Dialogue;
+using FantaLandia.Horror.Story;
+using FantaLandia.World;
+using Unity.AI.Navigation;
+using UnityEngine.AI;
 using FantaLandia.EditorTools;
 using FantaLandia.Horror.Audio;
 using FantaLandia.Horror.Interaction;
@@ -21,6 +27,9 @@ namespace FantaLandia.Horror.EditorTools
         const string ScenePath = "Assets/_Project/Horror/Scenes/Test_PrimaPersona.unity";
         const float FloorY = 0.1f, WallH = 3.3f, WallT = 0.15f;
 
+        /// <summary>Layer delle porte e dei personaggi: cliccabili, ma fuori dalla NavMesh.</summary>
+        public const int DoorLayer = 6, CharacterLayer = 7;
+
         static Material grass, concrete, asphalt, woodFloor, wall, ceiling, porchWood, baseboard, railing;
 
         [MenuItem("FantaLandia Horror/Crea scena test prima persona")]
@@ -42,8 +51,15 @@ namespace FantaLandia.Horror.EditorTools
             CrtTv tv;
             LightSwitch sw;
             BuildInterior(world, out tv, out sw);
-            BuildTom(world, malePrefab);
+            CharacterMotor tom = BuildTom(world, malePrefab);
             BuildPlayer(malePrefab);
+            BuildNavMesh();
+
+            var seq = new GameObject("Sequenza arrivo").AddComponent<TestIntroSequence>();
+            seq.door = door;
+            seq.tom = tom;
+            seq.tomAtDoor = Marker("Tom alla porta", world, new Vector3(0f, FloorY, 1.3f));
+            seq.tomInLiving = Marker("Tom in soggiorno", world, new Vector3(-1.4f, FloorY, 5.2f));
 
             var amb = new GameObject("Ambiente notturno (audio)").AddComponent<AmbientSound>();
             amb.clip = AmbientClip.Night;
@@ -131,6 +147,10 @@ namespace FantaLandia.Horror.EditorTools
             var door = doorRoot.AddComponent<HorrorDoor>();
             door.hinge = hinge;
             door.hingeSign = 1f;
+            door.locked = true;
+            door.knockable = true;
+            door.knockLocal = new Vector3(0.45f, 1.4f, -0.03f);
+            SetLayer(doorRoot, DoorLayer);
             return door;
         }
 
@@ -213,12 +233,27 @@ namespace FantaLandia.Horror.EditorTools
 
         // ------------------------------------------------------------------ personaggi
 
-        static void BuildTom(Transform world, GameObject malePrefab)
+        static CharacterMotor BuildTom(Transform world, GameObject malePrefab)
         {
             var tom = new GameObject("Tom");
             tom.transform.SetParent(world, false);
             tom.transform.localPosition = new Vector3(-1.4f, FloorY, 5.2f);
             tom.transform.localRotation = Quaternion.Euler(0f, 200f, 0f);
+
+            var agent = tom.AddComponent<NavMeshAgent>();
+            agent.radius = 0.3f;
+            agent.height = 1.8f;
+            agent.speed = 1.3f;
+            agent.acceleration = 8f;
+            agent.angularSpeed = 360f;
+            agent.stoppingDistance = 0.05f;
+            agent.autoTraverseOffMeshLink = false;
+            agent.enabled = false; // lo attiva CharacterMotor dopo la costruzione della NavMesh
+            var motor = tom.AddComponent<CharacterMotor>();
+            motor.walkSpeed = 1.3f;
+            motor.jogSpeed = 2.8f;
+            motor.sprintSpeed = 4.5f;
+
             var col = tom.AddComponent<CapsuleCollider>();
             col.radius = 0.3f;
             col.height = 1.8f;
@@ -226,20 +261,47 @@ namespace FantaLandia.Horror.EditorTools
             var model = (GameObject)PrefabUtility.InstantiatePrefab(malePrefab);
             model.name = "Modello";
             model.transform.SetParent(tom.transform, false);
+            var anim = model.GetComponent<ProceduralBodyAnimator>();
+            if (anim != null) anim.footIgnoreLayers = (1 << 2) | (1 << CharacterLayer);
+            SetLayer(tom, CharacterLayer);
 
+            tom.AddComponent<NpcSpeaker>().speakerId = "tom";
             var talk = tom.AddComponent<Talkable>();
             talk.displayName = "Tom";
             talk.lines = new[]
             {
-                new Talkable.Line { speaker = "tom", text = "Ehi Muark! Finalmente, pensavo ti fossi perso." },
-                new Talkable.Line { speaker = "tom", text = "Hai portato la birra? Mettila sul bancone in cucina." },
+                new Talkable.Line { speaker = "tom", text = "Allora, la birra l'hai messa sul bancone?" },
             };
-            talk.choices = new[] { "Certo che l'ho portata. Per chi mi hai preso?", "Dov'è Jef?" };
+            talk.choices = new[] { "Sì, è in cucina.", "Dov'è Jef?" };
             talk.replies = new[]
             {
-                new Talkable.Line { speaker = "tom", text = "Per uno che l'anno scorso ha portato il succo di mela." },
-                new Talkable.Line { speaker = "tom", text = "In bagno. Da mezz'ora. Non chiedere." },
+                new Talkable.Line { speaker = "tom", text = "Grande. Adesso manca solo la pizza." },
+                new Talkable.Line { speaker = "tom", text = "Sempre in bagno. Ha mangiato messicano, credo." },
             };
+            return motor;
+        }
+
+        static void BuildNavMesh()
+        {
+            var go = new GameObject("NavMesh");
+            var surface = go.AddComponent<NavMeshSurface>();
+            surface.collectObjects = CollectObjects.All;
+            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            surface.layerMask = ~((1 << 2) | (1 << DoorLayer) | (1 << CharacterLayer));
+            go.AddComponent<RuntimeNavMeshBaker>();
+        }
+
+        static Transform Marker(string name, Transform parent, Vector3 pos)
+        {
+            var t = new GameObject(name).transform;
+            t.SetParent(parent, false);
+            t.localPosition = pos;
+            return t;
+        }
+
+        static void SetLayer(GameObject go, int layer)
+        {
+            foreach (Transform t in go.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = layer;
         }
 
         static void BuildPlayer(GameObject malePrefab)
@@ -294,6 +356,8 @@ namespace FantaLandia.Horror.EditorTools
             var interactor = root.AddComponent<Interactor>();
             interactor.cam = cam;
             interactor.holdPoint = hold;
+            interactor.body = fpc.body;
+            root.AddComponent<PlayerActions>();
 
             // la birra in mano all'inizio
             GameObject beer = Instance(VoxelAssetLibrary.Load("Birra"), null, root.transform.position, 0f);
@@ -301,6 +365,10 @@ namespace FantaLandia.Horror.EditorTools
             item.itemId = "birra";
             item.displayName = "la birra";
             item.holdEuler = new Vector3(0f, -20f, 0f);
+            item.carryInLeftHand = true; // per il manico, lungo il fianco
+            item.handOffset = new Vector3(0f, -0.25f, 0f);
+            item.handEuler = new Vector3(0f, 90f, 0f);
+            item.handleHeight = 0.19f;
             interactor.startHeld = item;
         }
 

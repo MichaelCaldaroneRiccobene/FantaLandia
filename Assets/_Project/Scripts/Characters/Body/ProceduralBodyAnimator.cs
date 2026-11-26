@@ -45,6 +45,34 @@ namespace FantaLandia.Characters.Body
         /// <summary>Un piede ha appena toccato terra (lato -1/+1, punto d'appoggio): per i suoni dei passi.</summary>
         public event System.Action<int, Vector3> FootPlanted;
 
+        [Tooltip("Porta qualcosa nella mano sinistra (braccio teso lungo il fianco, niente oscillazione)")]
+        public bool carryLeft;
+
+        // mani guidate dall'esterno (bussare, posare oggetti...): valgono per un solo frame
+        readonly Vector3[] extTarget = new Vector3[2];
+        readonly Vector3[] extPole = new Vector3[2];
+        readonly float[] extWeight = new float[2];
+        readonly Quaternion[] extRot = new Quaternion[2];
+        readonly bool[] extHasRot = new bool[2];
+        readonly bool[] extActive = new bool[4];
+
+        /// <summary>
+        /// Guida una mano (lato -1 sinistra, +1 destra) verso un punto per questo frame.
+        /// Va chiamata ogni frame (es. da Update) finché serve; peso applicato senza ritardo.
+        /// </summary>
+        public void SetExternalHandIK(int side, Vector3 wristTarget, Vector3 elbowPole, float weight, Quaternion? handRotation = null)
+        {
+            int k = side < 0 ? 0 : 1;
+            extTarget[k] = wristTarget;
+            extPole[k] = elbowPole;
+            extWeight[k] = Mathf.Clamp01(weight);
+            extHasRot[k] = handRotation.HasValue;
+            if (handRotation.HasValue) extRot[k] = handRotation.Value;
+        }
+
+        /// <summary>Posizione attuale del polso (per partire da lì con un movimento guidato).</summary>
+        public Vector3 HandPosition(int side) => side < 0 ? handL.position : handR.position;
+
         struct GaitParams
         {
             public float stride, swingFrac, stepHeight, arm, elbow, lean, bob, stance;
@@ -185,6 +213,7 @@ namespace FantaLandia.Characters.Body
             if (traversing) BuildTraversal(motor.Traversal, breath);
             else BuildGround(dt, breath);
             ApplyDisabledArms();
+            ApplyCarryAndExternal();
 
             // FK con transizioni morbide
             float k = 1f - Mathf.Exp(-poseSharpness * dt);
@@ -545,6 +574,27 @@ namespace FantaLandia.Characters.Body
             Vector3 d = motor.Agent.destination - transform.position;
             d.y = 0f;
             return d.magnitude;
+        }
+
+        void ApplyCarryAndExternal()
+        {
+            if (carryLeft)
+            {
+                // braccio teso lungo il fianco, un po' staccato per non urtare la gamba
+                Rot(BodyPart.UpperArmL, 0f, 0f, -7f);
+                Rot(BodyPart.ForearmL, -4f, 0f, 0f);
+                Rot(BodyPart.HandL, 0f, 0f, 0f);
+                if (!extActive[2]) ikTargetWeight[2] = 0f;
+            }
+            for (int k = 0; k < 2; k++)
+            {
+                int limb = 2 + k;
+                extActive[limb] = extWeight[k] > 0.001f;
+                if (!extActive[limb]) continue;
+                SetIK(limb, extTarget[k], extPole[k], extWeight[k]);
+                if (extHasRot[k]) SetEnd(limb, extRot[k]);
+                extWeight[k] = 0f; // vale solo per questo frame
+            }
         }
 
         /// <summary>La gamba ferita si solleva poco: il piede quasi striscia.</summary>
@@ -932,7 +982,7 @@ namespace FantaLandia.Characters.Body
             float k = 1f - Mathf.Exp(-(fast ? 40f : 20f) * dt);
             for (int i = 0; i < 4; i++)
             {
-                ikWeight[i] = Mathf.Lerp(ikWeight[i], ikTargetWeight[i], k);
+                ikWeight[i] = extActive[i] ? ikTargetWeight[i] : Mathf.Lerp(ikWeight[i], ikTargetWeight[i], k);
                 float w = ikWeight[i];
                 if (w <= 0.001f) continue;
                 switch (i)
@@ -964,7 +1014,7 @@ namespace FantaLandia.Characters.Body
         }
 
         /// <summary>Mano appoggiata: palmo verso il basso, dita in avanti.</summary>
-        static Quaternion PalmDown(int side, Vector3 dir)
+        public static Quaternion PalmDown(int side, Vector3 dir)
         {
             Vector3 y = -dir;                                   // le dita puntano lungo il -Y locale
             Vector3 x = side < 0 ? Vector3.down : Vector3.up;   // il palmo è sul lato interno della mano

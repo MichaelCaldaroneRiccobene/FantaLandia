@@ -41,6 +41,7 @@ namespace FantaLandia.Horror.Player
         public bool IsCrouching { get; private set; }
         public bool IsRunning { get; private set; }
         public float Yaw => yaw;
+        public float Pitch => pitch;
 
         CharacterController controller;
         ProceduralBodyAnimator animator;
@@ -93,6 +94,7 @@ namespace FantaLandia.Horror.Player
                 yaw += md.x;
                 pitch = Mathf.Clamp(pitch - md.y, -85f, 85f);
             }
+            else if (DialogueSystem.IsBlocking) LookAtSpeaker(dt);
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
             // --- movimento
@@ -107,9 +109,13 @@ namespace FantaLandia.Horror.Player
             velocity.x = horizontal.x;
             velocity.z = horizontal.z;
 
-            if (controller.isGrounded && velocity.y < 0f) velocity.y = -2f;
-            velocity.y -= gravity * dt;
-            controller.Move(velocity * dt);
+            if (controller.enabled)
+            {
+                if (controller.isGrounded && velocity.y < 0f) velocity.y = -2f;
+                velocity.y -= gravity * dt;
+                controller.Move(velocity * dt);
+            }
+            else velocity = Vector3.zero; // posizionato da un'azione guidata
 
             // --- abbassarsi: capsula più bassa e camera più giù
             crouchT = Mathf.MoveTowards(crouchT, IsCrouching ? 1f : 0f, dt * 4f);
@@ -132,6 +138,27 @@ namespace FantaLandia.Horror.Player
                 animator.speedOverride = IsRunning ? runSpeed : walkSpeed;
                 animator.externalCrouch = crouchT * 0.5f;
             }
+        }
+
+        Dialogue.NpcSpeaker dialogueFocus;
+
+        /// <summary>Durante i dialoghi lo sguardo si porta da solo su chi parla (o sull'ultimo che ha parlato).</summary>
+        void LookAtSpeaker(float dt)
+        {
+            Speaker sp = DialogueSystem.CurrentSpeaker;
+            if (sp != null && sp.id != Speakers.Muark.id)
+            {
+                var npc = Dialogue.NpcSpeaker.Find(sp.id);
+                if (npc != null) dialogueFocus = npc;
+            }
+            if (dialogueFocus == null || cam == null) return;
+            Vector3 dir = dialogueFocus.EyePoint - cam.transform.position;
+            if (dir.sqrMagnitude < 0.01f) return;
+            float wantYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+            float wantPitch = -Mathf.Atan2(dir.y, new Vector2(dir.x, dir.z).magnitude) * Mathf.Rad2Deg;
+            float k = 1f - Mathf.Exp(-4f * dt);
+            yaw = Mathf.LerpAngle(yaw, wantYaw, k);
+            pitch = Mathf.Lerp(pitch, Mathf.Clamp(wantPitch, -60f, 60f), k);
         }
 
         public void SetLook(float newYaw, float newPitch)

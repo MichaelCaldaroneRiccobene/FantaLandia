@@ -18,6 +18,16 @@ namespace FantaLandia.Horror.Interaction
         public float speed = 2.2f; // aperture al secondo
         public bool locked;
         public string lockedText = "È chiusa a chiave";
+        [Tooltip("Se chiusa, da fuori si può bussare (la storia decide cosa succede)")]
+        public bool knockable;
+        [Tooltip("Punto dove si bussa, nello spazio della porta (lato esterno = -Z)")]
+        public Vector3 knockLocal = new Vector3(0.45f, 1.4f, -0.03f);
+
+        /// <summary>Il giocatore ha bussato (a gesto finito).</summary>
+        public event Action<HorrorDoor> PlayerKnocked;
+
+        public Vector3 KnockPointWorld => transform.TransformPoint(knockLocal);
+        public Vector3 OutwardWorld => -transform.forward;
 
         public bool IsOpen => targetOpen;
         public event Action<HorrorDoor> Opened;
@@ -27,12 +37,24 @@ namespace FantaLandia.Horror.Interaction
         int openSide = 1;
         float t; // 0 chiusa .. 1 aperta
 
-        public override string Prompt(Interactor who) => locked ? lockedText : targetOpen ? "Chiudi la porta" : "Apri la porta";
+        public override string Prompt(Interactor who)
+        {
+            if (locked && knockable && IsOutside(who)) return "Bussa";
+            return locked ? lockedText : targetOpen ? "Chiudi la porta" : "Apri la porta";
+        }
+
+        bool IsOutside(Interactor who) => transform.InverseTransformPoint(who.transform.position).z < 0f;
+
+        public void NotifyKnocked() => PlayerKnocked?.Invoke(this);
+
+        public void Unlock() => locked = false;
 
         public override void Interact(Interactor who)
         {
             if (locked)
             {
+                var actions = who.GetComponent<FantaLandia.Horror.Player.PlayerActions>();
+                if (knockable && IsOutside(who) && actions != null) { actions.Knock(this); return; }
                 HorrorAudio.PlayAt(ProceduralAudio.DoorLocked(), transform.position, 0.8f);
                 return;
             }

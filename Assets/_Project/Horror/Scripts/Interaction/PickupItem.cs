@@ -12,6 +12,13 @@ namespace FantaLandia.Horror.Interaction
         [Tooltip("Posizione e rotazione quando è in mano (rispetto al punto di presa)")]
         public Vector3 holdOffset = Vector3.zero;
         public Vector3 holdEuler = Vector3.zero;
+        [Tooltip("Portato nella mano sinistra del corpo (es. la confezione per il manico) invece che davanti alla camera")]
+        public bool carryInLeftHand;
+        [Tooltip("Posizione e rotazione rispetto al polso sinistro quando è portato a mano")]
+        public Vector3 handOffset = new Vector3(0f, -0.25f, 0f);
+        public Vector3 handEuler = new Vector3(0f, 90f, 0f);
+        [Tooltip("Altezza del manico sopra la base (m): serve per posarlo con la mano")]
+        public float handleHeight = 0.19f;
         [Tooltip("Se falso non si può più raccogliere (es. dopo che è stato posato per la storia)")]
         public bool canPickUp = true;
 
@@ -42,6 +49,14 @@ namespace FantaLandia.Horror.Interaction
             IsHeld = true;
             SetColliders(false);
             MoveTo(parent, holdOffset, Quaternion.Euler(holdEuler), instant);
+        }
+
+        /// <summary>Attacca l'oggetto al polso sinistro (lo si porta per il manico, lungo il fianco).</summary>
+        public void AttachToHand(Transform wrist, bool instant)
+        {
+            IsHeld = true;
+            SetColliders(false);
+            MoveTo(wrist, handOffset, Quaternion.Euler(handEuler), instant);
         }
 
         /// <summary>Posa l'oggetto in un punto del mondo.</summary>

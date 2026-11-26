@@ -97,6 +97,16 @@ namespace FantaLandia.Horror.Dialogue
             foreach (var l in lines) self.steps.Insert(self.insertCursor++, new Step { speaker = l.who, text = l.text });
         }
 
+        /// <summary>Una sillaba della voce di qualcuno (per muovere la bocca).</summary>
+        public static event Action<Speaker> SyllableSpoken;
+        /// <summary>Qualcuno inizia una battuta (anche di sottofondo): chi ascolta si gira a guardarlo.</summary>
+        public static event Action<Speaker, string> LineStarted;
+        public static event Action ConversationEnded;
+
+        /// <summary>Chi sta parlando adesso nella conversazione (null se nessuno).</summary>
+        public static Speaker CurrentSpeaker =>
+            instance != null && instance.active && instance.index >= 0 && instance.index < instance.steps.Count ? instance.steps[instance.index].speaker : null;
+
         /// <summary>True mentre una conversazione blocca il giocatore.</summary>
         public static bool IsBlocking => instance != null && instance.active;
 
@@ -105,7 +115,8 @@ namespace FantaLandia.Horror.Dialogue
         {
             var self = Instance;
             self.barks.Add(new BarkLine { speaker = who, text = text, until = Time.time + 2.5f + text.Length * 0.05f });
-            self.PlayVoiceSyllable(who, position);
+            LineStarted?.Invoke(who, text);
+            self.StartCoroutine(self.BarkVoice(who, text, position));
         }
 
         // ------------------------------------------------------------------ stato
@@ -170,6 +181,7 @@ namespace FantaLandia.Horror.Dialogue
                 hoveredChoice = -1;
                 Cursor.lockState = s.options != null ? CursorLockMode.None : CursorLockMode.Locked;
                 Cursor.visible = s.options != null;
+                if (s.options == null) LineStarted?.Invoke(s.speaker, s.text);
                 return;
             }
         }
@@ -182,6 +194,7 @@ namespace FantaLandia.Horror.Dialogue
             Cursor.visible = false;
             Action end = onEnd;
             onEnd = null;
+            ConversationEnded?.Invoke();
             end?.Invoke();
         }
 
@@ -229,9 +242,19 @@ namespace FantaLandia.Horror.Dialogue
             if (GameInput.AdvanceDialogue) Next();
         }
 
+        System.Collections.IEnumerator BarkVoice(Speaker who, string text, Vector3? position)
+        {
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (char.IsLetter(text[i]) && i % 2 == 0) PlayVoiceSyllable(who, position);
+                yield return new WaitForSeconds(1f / typingSpeed);
+            }
+        }
+
         void PlayVoiceSyllable(Speaker who, Vector3? position)
         {
             if (who == null) return;
+            SyllableSpoken?.Invoke(who);
             var clip = ProceduralAudio.Syllable(UnityEngine.Random.Range(0, ProceduralAudio.SyllableCount));
             float pitch = who.pitch * UnityEngine.Random.Range(0.94f, 1.08f);
             if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, voiceVolume, pitch, 15f);
