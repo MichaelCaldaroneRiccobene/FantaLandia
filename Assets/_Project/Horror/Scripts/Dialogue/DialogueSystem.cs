@@ -151,7 +151,9 @@ namespace FantaLandia.Horror.Dialogue
         public static void Bark(Speaker who, string text, Vector3? position = null, bool overhead = false)
         {
             var self = Instance;
-            self.barks.Add(new BarkLine { speaker = who, text = text, until = Time.time + 2.5f + text.Length * 0.05f,
+            AudioClip voice = self.realVoices ? VoiceFor(who, text) : null;
+            float shownFor = Mathf.Max(2.5f + text.Length * 0.05f, voice != null ? voice.length + 1f : 0f);
+            self.barks.Add(new BarkLine { speaker = who, text = text, until = Time.time + shownFor,
                                           overhead = overhead && position.HasValue, position = position ?? Vector3.zero });
             LineStarted?.Invoke(who, text);
             self.StartCoroutine(self.BarkVoice(who, text, position));
@@ -176,6 +178,35 @@ namespace FantaLandia.Horror.Dialogue
         [Tooltip("Pausa dopo una battuta prima della successiva (secondi + per lettera)")]
         public float holdBase = 1.1f;
         public float holdPerChar = 0.035f;
+        [Header("Voci vere")]
+        [Tooltip("Usa le voci registrate in Resources/Voci (generate da Tools/Voci/genera_voci.py); senza, il borbottio")]
+        public bool realVoices = true;
+        public float realVoiceVolume = 1f;
+
+        AudioSource voiceSource;
+        AudioClip lineVoice;          // la voce della battuta in corso (null = borbottio)
+        Speaker lineSpeaker;
+        float mouthClock;
+        readonly float[] rmsBuffer = new float[256];
+        static readonly Dictionary<string, AudioClip> voiceCache = new Dictionary<string, AudioClip>();
+
+        /// <summary>La voce registrata per questa battuta (Resources/Voci/&lt;id&gt;_&lt;md5 del testo&gt;), o null.</summary>
+        public static AudioClip VoiceFor(Speaker who, string text)
+        {
+            if (who == null || string.IsNullOrEmpty(text)) return null;
+            string key;
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] h = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(text));
+                var sb = new System.Text.StringBuilder(who.id).Append('_');
+                for (int i = 0; i < 5; i++) sb.Append(h[i].ToString("x2"));
+                key = sb.ToString();
+            }
+            if (voiceCache.TryGetValue(key, out AudioClip c)) return c;
+            c = Resources.Load<AudioClip>("Voci/" + key);
+            voiceCache[key] = c;
+            return c;
+        }
 
         List<Step> steps = new List<Step>();
         int index = -1;
@@ -201,6 +232,47 @@ namespace FantaLandia.Horror.Dialogue
         {
             if (instance != null && instance != this) { Destroy(gameObject); return; }
             instance = this;
+            var go = new GameObject("Voce");
+            go.transform.SetParent(transform, false);
+            voiceSource = go.AddComponent<AudioSource>();
+            voiceSource.playOnAwake = false;
+            voiceSource.rolloffMode = AudioRolloffMode.Linear;
+            voiceSource.minDistance = 2f;
+            voiceSource.maxDistance = 30f;
+            voiceSource.dopplerLevel = 0f;
+        }
+
+        /// <summary>Fa partire la voce vera della battuta (se c'è), dal punto in cui si trova chi parla.</summary>
+        void PlayLineVoice(Step s)
+        {
+            if (voiceSource != null) voiceSource.Stop();
+            lineSpeaker = s.speaker;
+            lineVoice = realVoices && s.options == null ? VoiceFor(s.speaker, s.text) : null;
+            if (lineVoice == null) return;
+            Vector3? pos = SpeakerPosition(s.speaker);
+            voiceSource.spatialBlend = pos.HasValue ? 0.85f : 0f; // un po' "in testa" anche da lontano: si capisce sempre
+            if (pos.HasValue) voiceSource.transform.position = pos.Value;
+            voiceSource.clip = lineVoice;
+            voiceSource.volume = realVoiceVolume;
+            voiceSource.pitch = 1f;
+            voiceSource.Play();
+        }
+
+        /// <summary>La bocca segue il volume della voce vera (una "sillaba" quando la voce è forte).</summary>
+        void UpdateVoiceMouth()
+        {
+            if (voiceSource == null || !voiceSource.isPlaying || lineSpeaker == null) return;
+            Vector3? pos = SpeakerPosition(lineSpeaker);
+            if (pos.HasValue) voiceSource.transform.position = pos.Value;
+            if (Time.time < mouthClock) return;
+            voiceSource.GetOutputData(rmsBuffer, 0);
+            float sum = 0f;
+            foreach (float x in rmsBuffer) sum += x * x;
+            if (Mathf.Sqrt(sum / rmsBuffer.Length) > 0.02f)
+            {
+                SyllableSpoken?.Invoke(lineSpeaker);
+                mouthClock = Time.time + UnityEngine.Random.Range(0.1f, 0.16f);
+            }
         }
 
         void Begin(Builder b)
@@ -238,11 +310,13 @@ namespace FantaLandia.Horror.Dialogue
             lineDoneAt = -1f;
             insertCursor = index + 1;
             choiceStart = Time.time;
+            PlayLineVoice(s);
             if (s.options == null) LineStarted?.Invoke(s.speaker, s.text);
         }
 
         void Finish()
         {
+            if (voiceSource != null) voiceSource.Stop();
             active = false;
             blocking = false;
             paused = false;
@@ -289,6 +363,7 @@ namespace FantaLandia.Horror.Dialogue
             }
             if (paused)
             {
+                if (voiceSource != null && voiceSource.isPlaying) voiceSource.Stop();
                 if (Time.time > pausedNagAt && anchorSpeaker != null)
                 {
                     pausedNagAt = Time.time + 12f;
@@ -316,22 +391,38 @@ namespace FantaLandia.Horror.Dialogue
             }
 
             int len = s.text.Length;
+            UpdateVoiceMouth();
             if (visibleChars < len)
             {
-                visibleChars = Mathf.Min(len, visibleChars + typingSpeed * Time.deltaTime);
-                int shown = (int)visibleChars;
-                // una sillaba ogni 2 lettere (spazi e punteggiatura esclusi)
-                for (; lastVoiceChar < shown; lastVoiceChar++)
+                if (lineVoice != null)
                 {
-                    char c = s.text[lastVoiceChar];
-                    if (char.IsLetter(c) && lastVoiceChar % 2 == 0) PlayVoiceSyllable(s.speaker, SpeakerPosition(s.speaker));
+                    // con la voce vera il testo scorre alla stessa velocità del parlato
+                    float speed = len / Mathf.Max(0.4f, lineVoice.length * 0.85f);
+                    visibleChars = Mathf.Min(len, visibleChars + speed * Time.deltaTime);
                 }
-                if (Skip()) visibleChars = len; // completa subito
+                else
+                {
+                    visibleChars = Mathf.Min(len, visibleChars + typingSpeed * Time.deltaTime);
+                    int shown = (int)visibleChars;
+                    // una sillaba ogni 2 lettere (spazi e punteggiatura esclusi)
+                    for (; lastVoiceChar < shown; lastVoiceChar++)
+                    {
+                        char c = s.text[lastVoiceChar];
+                        if (char.IsLetter(c) && lastVoiceChar % 2 == 0) PlayVoiceSyllable(s.speaker, SpeakerPosition(s.speaker));
+                    }
+                }
+                if (Skip()) { visibleChars = len; if (voiceSource != null) voiceSource.Stop(); } // completa subito
                 return;
             }
 
+            if (lineVoice != null && voiceSource != null && voiceSource.isPlaying)
+            {
+                if (Skip()) voiceSource.Stop();
+                return; // si aspetta che finisca di parlare
+            }
             if (lineDoneAt < 0f) lineDoneAt = Time.time;
-            if (Skip() || Time.time - lineDoneAt > holdBase + len * holdPerChar) Next();
+            float hold = lineVoice != null ? 0.55f : holdBase + len * holdPerChar;
+            if (Skip() || Time.time - lineDoneAt > hold) Next();
         }
 
         bool Skip() => blocking ? GameInput.AdvanceDialogue : GameInput.SkipLine;
@@ -350,6 +441,19 @@ namespace FantaLandia.Horror.Dialogue
 
         System.Collections.IEnumerator BarkVoice(Speaker who, string text, Vector3? position)
         {
+            AudioClip clip = realVoices ? VoiceFor(who, text) : null;
+            if (clip != null)
+            {
+                if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, realVoiceVolume, 1f, 30f);
+                else HorrorAudio.Play2D(clip, realVoiceVolume);
+                // la bocca si muove per tutta la frase
+                for (float t = 0f; t < clip.length; t += 0.13f)
+                {
+                    SyllableSpoken?.Invoke(who);
+                    yield return new WaitForSeconds(0.13f);
+                }
+                yield break;
+            }
             for (int i = 0; i < text.Length; i++)
             {
                 if (char.IsLetter(text[i]) && i % 2 == 0) PlayVoiceSyllable(who, position);
