@@ -32,6 +32,19 @@ namespace FantaLandia.Characters.Body
         public float poseSharpness = 14f;
         public float hipsSharpness = 14f;
 
+        [Header("Senza CharacterMotor (es. giocatore in prima persona)")]
+        [Tooltip("Andatura usata quando il personaggio non ha un CharacterMotor")]
+        public Gait gaitOverride = Gait.Walk;
+        [Tooltip("Velocità di riferimento dell'andatura quando non c'è un CharacterMotor")]
+        public float speedOverride = 1.8f;
+        [Tooltip("Accovacciamento imposto dall'esterno (m): il bacino scende, le gambe si piegano")]
+        public float externalCrouch;
+        [Tooltip("Layer ignorati dai raggi dei piedi (di default: Ignore Raycast, dove sta il giocatore)")]
+        public LayerMask footIgnoreLayers = 1 << 2;
+
+        /// <summary>Un piede ha appena toccato terra (lato -1/+1, punto d'appoggio): per i suoni dei passi.</summary>
+        public event System.Action<int, Vector3> FootPlanted;
+
         struct GaitParams
         {
             public float stride, swingFrac, stepHeight, arm, elbow, lean, bob, stance;
@@ -217,7 +230,7 @@ namespace FantaLandia.Characters.Body
 
             float rate;
             float speed = flatVel.magnitude;
-            Gait g = motor != null ? motor.CurrentGait : Gait.Walk;
+            Gait g = motor != null ? motor.CurrentGait : gaitOverride;
             if (speed < 0.3f) rate = -0.08f;
             else if (g == Gait.Sprint) rate = 0.12f;
             else if (g == Gait.Jog) rate = 0.03f;
@@ -244,7 +257,7 @@ namespace FantaLandia.Characters.Body
         bool Ground(Vector3 p, out Vector3 point, out Vector3 normal)
         {
             Vector3 origin = new Vector3(p.x, p.y + 0.8f, p.z);
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 1.8f, ~0, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 1.8f, ~footIgnoreLayers.value, QueryTriggerInteraction.Ignore))
             {
                 point = hit.point;
                 normal = Vector3.Angle(hit.normal, Vector3.up) < 40f ? hit.normal : Vector3.up;
@@ -259,13 +272,13 @@ namespace FantaLandia.Characters.Body
 
         void BuildGround(float dt, float breath)
         {
-            Gait g = motor != null ? motor.CurrentGait : Gait.Walk;
+            Gait g = motor != null ? motor.CurrentGait : gaitOverride;
             gait = GaitParams.Lerp(gait, ParamsFor(g), 1f - Mathf.Exp(-6f * dt));
 
             Vector3 fwd = transform.forward, right = transform.right, root = transform.position;
             float speed = flatVel.magnitude;
             Vector3 velDir = speed > 0.05f ? flatVel / speed : fwd;
-            float gaitSpeed = motor != null ? motor.SpeedFor(g) : 2f;
+            float gaitSpeed = motor != null ? motor.SpeedFor(g) : speedOverride;
             float sf = Mathf.Clamp01(speed / Mathf.Max(0.5f, gaitSpeed * 0.7f));
             float idle = 1f - Mathf.Clamp01(speed / 0.6f);
             bool stunned = motor != null && motor.IsStunned;
@@ -315,7 +328,7 @@ namespace FantaLandia.Characters.Body
             float restY = root.y + hipsRest.y;
             float stepLift = 0f;
             foreach (Foot f in feet) if (f.stepping) stepLift = Mathf.Max(stepLift, Mathf.Sin(Mathf.PI * Mathf.Clamp01(f.t)));
-            float hipY = Mathf.Min(restY, reach) + gait.bob * sf * stepLift;
+            float hipY = Mathf.Min(restY, reach) + gait.bob * sf * stepLift - externalCrouch;
             float hipsX = 0f;
             if (female) { hipsX = 0.035f * supportSide * idle; hipY -= 0.012f * idle; }
             else hipsX = Mathf.Sin(Time.time * 0.4f) * 0.01f * idle;
@@ -465,6 +478,7 @@ namespace FantaLandia.Characters.Body
                             f.stepping = false;
                             f.plant = f.to;
                             f.normal = f.toNormal;
+                            FootPlanted?.Invoke(f.side, f.plant);
                         }
                         f.pos = f.plant;
                     }
@@ -485,6 +499,7 @@ namespace FantaLandia.Characters.Body
                     f.stepping = false;
                     f.plant = f.pos = f.to;
                     f.normal = f.toNormal;
+                    FootPlanted?.Invoke(f.side, f.plant);
                 }
             }
             if (feet[0].stepping || feet[1].stepping) return;

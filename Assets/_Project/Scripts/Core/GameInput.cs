@@ -62,6 +62,15 @@ namespace FantaLandia.Core
         public static bool DebugHeal => Pressed(Key.H);
         public static bool DebugProsthetic => Pressed(Key.P);
 
+        // --- prima persona (horror)
+        public static Vector2 MouseDelta => Ms != null ? Ms.delta.ReadValue() : Vector2.zero;
+        public static bool Interact => Pressed(Key.E);
+        public static bool FlashlightToggle => Pressed(Key.F);
+        public static bool CrouchHeld => Held(Key.C) || Held(Key.LeftCtrl);
+        public static bool RunHeld => Shift;
+        public static bool AdvanceDialogue => Pressed(Key.E) || Pressed(Key.Space) || LeftDown;
+        public static bool RetroToggle => Pressed(Key.F2);
+
         /// <summary>Restituisce 1-9 se è stato premuto un tasto numerico in questo frame, altrimenti 0.</summary>
         public static int DigitPressed()
         {
@@ -107,6 +116,15 @@ namespace FantaLandia.Core
         public static bool DebugHit => Pressed(KeyCode.J);
         public static bool DebugHeal => Pressed(KeyCode.H);
         public static bool DebugProsthetic => Pressed(KeyCode.P);
+
+        // --- prima persona (horror)
+        public static Vector2 MouseDelta => new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * 10f;
+        public static bool Interact => Pressed(KeyCode.E);
+        public static bool FlashlightToggle => Pressed(KeyCode.F);
+        public static bool CrouchHeld => Held(KeyCode.C) || Held(KeyCode.LeftControl);
+        public static bool RunHeld => Shift;
+        public static bool AdvanceDialogue => Pressed(KeyCode.E) || Pressed(KeyCode.Space) || LeftDown;
+        public static bool RetroToggle => Pressed(KeyCode.F2);
 
         public static int DigitPressed()
         {
