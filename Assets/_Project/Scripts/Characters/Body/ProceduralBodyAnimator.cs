@@ -71,6 +71,9 @@ namespace FantaLandia.Characters.Body
         const int N = BodyRig.PartCount;
 
         BodyRig rig;
+        BodyHealth health;
+        float koBlend;
+        bool lying;
         CharacterMotor motor;
         Transform hips, thighL, shinL, footL, thighR, shinR, footR, armL, foreL, handL, armR, foreR, handR;
         Vector3 hipsRest, armLRest, armRRest;
@@ -107,6 +110,7 @@ namespace FantaLandia.Characters.Body
         {
             rig = GetComponent<BodyRig>();
             motor = GetComponentInParent<CharacterMotor>();
+            health = GetComponentInParent<BodyHealth>();
 
             hips = rig.Joint(BodyPart.Pelvis);
             thighL = rig.Joint(BodyPart.ThighL); shinL = rig.Joint(BodyPart.ShinL); footL = rig.Joint(BodyPart.FootL);
@@ -137,6 +141,22 @@ namespace FantaLandia.Characters.Body
 
             UpdateKinematics(dt);
 
+            // svenuto: si accascia a terra; al risveglio si rialza
+            bool ko = health != null && health.IsUnconscious;
+            koBlend = Mathf.MoveTowards(koBlend, ko ? 1f : 0f, dt * (ko ? 1.8f : 0.8f));
+            if (ko || koBlend > 0.001f)
+            {
+                LyingUpdate(dt);
+                return;
+            }
+            if (lying)
+            {
+                lying = false;
+                transform.localRotation = Quaternion.identity;
+                transform.localPosition = Vector3.zero;
+                feetInitialized = false;
+            }
+
             bool traversing = motor != null && motor.IsTraversing && !motor.IsStunned;
             if (wasTraversing && !traversing) OnTraversalEnded();
             if (traversing) airVy = vy;
@@ -151,6 +171,7 @@ namespace FantaLandia.Characters.Body
 
             if (traversing) BuildTraversal(motor.Traversal, breath);
             else BuildGround(dt, breath);
+            ApplyDisabledArms();
 
             // FK con transizioni morbide
             float k = 1f - Mathf.Exp(-poseSharpness * dt);
@@ -298,6 +319,20 @@ namespace FantaLandia.Characters.Body
             float hipsX = 0f;
             if (female) { hipsX = 0.035f * supportSide * idle; hipY -= 0.012f * idle; }
             else hipsX = Mathf.Sin(Time.time * 0.4f) * 0.01f * idle;
+            // zoppia: il bacino cede quando il peso è sulla gamba ferita
+            int limpSide = health != null ? health.LimpSide : 0;
+            float limp = health != null ? health.LimpAmount : 0f;
+            if (limpSide != 0 && limp > 0.05f && cycleMoving)
+            {
+                Foot inj = feet[limpSide < 0 ? 0 : 1], oth = feet[limpSide < 0 ? 1 : 0];
+                if (!inj.stepping && oth.stepping)
+                {
+                    float dip = Mathf.Sin(Mathf.PI * Mathf.Clamp01(oth.t));
+                    hipY -= 0.07f * limp * dip;
+                    Add(BodyPart.Pelvis, 0f, 0f, -limpSide * 7f * limp * dip);
+                    Add(BodyPart.Chest, 0f, 0f, limpSide * 4f * limp * dip);
+                }
+            }
             desiredHipsLocal = new Vector3(hipsX, hipY - root.y, 0f);
 
             // --- busto e braccia che controbilanciano i passi
@@ -420,7 +455,7 @@ namespace FantaLandia.Characters.Body
                         f.toNormal = n;
                         f.t = u;
                         f.duration = gait.swingFrac * cycle;
-                        f.lift = gait.stepHeight * Mathf.Lerp(0.6f, 1f, sf) + (Mathf.Abs(to.y - f.from.y) > 0.05f ? 0.06f : 0f);
+                        f.lift = gait.stepHeight * Mathf.Lerp(0.6f, 1f, sf) * LimpLift(f.side) + (Mathf.Abs(to.y - f.from.y) > 0.05f ? 0.06f : 0f);
                         f.pos = SwingPosition(f, u);
                     }
                     else
@@ -495,6 +530,64 @@ namespace FantaLandia.Characters.Body
             Vector3 d = motor.Agent.destination - transform.position;
             d.y = 0f;
             return d.magnitude;
+        }
+
+        /// <summary>La gamba ferita si solleva poco: il piede quasi striscia.</summary>
+        float LimpLift(int side)
+        {
+            if (health == null || health.LimpSide != side) return 1f;
+            return 1f - 0.6f * health.LimpAmount;
+        }
+
+        /// <summary>Braccio inutilizzabile: pende lungo il fianco, niente oscillazioni né IK.</summary>
+        void ApplyDisabledArms()
+        {
+            if (health == null) return;
+            for (int k = 0; k < 2; k++)
+            {
+                int side = k == 0 ? -1 : 1;
+                if (!health.ArmDisabled(side)) continue;
+                Rot(side < 0 ? BodyPart.UpperArmL : BodyPart.UpperArmR, 4f, 0f, side * 2f);
+                Rot(side < 0 ? BodyPart.ForearmL : BodyPart.ForearmR, -4f, 0f, 0f);
+                Rot(side < 0 ? BodyPart.HandL : BodyPart.HandR, 0f, 0f, 0f);
+                ikTargetWeight[side < 0 ? 2 : 3] = 0f;
+            }
+        }
+
+        /// <summary>Svenuto: steso sulla schiena, braccia e gambe abbandonate, respiro lento.</summary>
+        void LyingUpdate(float dt)
+        {
+            lying = true;
+            float e = Smooth01(koBlend);
+            transform.localRotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(-90f, 0f, 0f), e);
+            transform.localPosition = new Vector3(0f, 0.12f * e, 0f);
+
+            breathPhase += dt * Mathf.PI * 2f * 0.2f;
+            float breath = Mathf.Sin(breathPhase);
+            System.Array.Clear(target, 0, N);
+            Rot(BodyPart.Head, 0f, 35f, 8f);
+            Rot(BodyPart.Chest, -breath * 1.5f, 0f, 0f);
+            Rot(BodyPart.UpperArmL, -10f, 0f, -40f);
+            Rot(BodyPart.UpperArmR, -5f, 0f, 30f);
+            Rot(BodyPart.ForearmL, -25f, 0f, 0f);
+            Rot(BodyPart.ForearmR, -10f, 0f, 0f);
+            Rot(BodyPart.ThighL, -8f, 0f, -4f);
+            Rot(BodyPart.ThighR, -2f, 0f, 6f);
+            Rot(BodyPart.ShinL, 15f, 0f, 0f);
+            Rot(BodyPart.ShinR, 5f, 0f, 0f);
+            Rot(BodyPart.FootL, 35f, 0f, 0f);
+            Rot(BodyPart.FootR, 35f, 0f, 0f);
+
+            float k = 1f - Mathf.Exp(-8f * dt);
+            for (int i = 0; i < N; i++)
+            {
+                pose[i] = Vector3.Lerp(pose[i], target[i], k);
+                if (rig.joints[i] != null) rig.joints[i].localRotation = Quaternion.Euler(pose[i]);
+            }
+            hips.localPosition = Vector3.Lerp(hips.localPosition, hipsRest, k);
+            desiredHipsLocal = hipsRest;
+            crouch = crouchVel = lastCrouch = 0f;
+            for (int i = 0; i < 4; i++) ikWeight[i] = 0f;
         }
 
         Quaternion FootRotation(Foot f, Vector3 fwd, float yawOut)

@@ -113,13 +113,128 @@ namespace FantaLandia.Characters.Body
             return Sever(part, impulse);
         }
 
-        /// <summary>Debug: riattacca tutto e rimuove i pezzi caduti.</summary>
+        /// <summary>Debug: riattacca tutto, rimuove protesi e pezzi caduti.</summary>
         public void RestoreAll()
         {
             foreach (var p in pieces) if (p != null) Destroy(p);
             pieces.Clear();
             severed.Clear();
+            foreach (Transform j in joints)
+            {
+                if (j == null) continue;
+                Transform pr = j.Find(ProstheticLayer);
+                if (pr != null) Destroy(pr.gameObject);
+            }
             foreach (Renderer r in GetComponentsInChildren<Renderer>(true)) r.enabled = true;
+        }
+
+        // ------------------------------------------------------------------ protesi
+
+        public const string ProstheticLayer = "Protesi";
+        static Material metal, darkMetal, brass;
+
+        /// <summary>
+        /// Monta una protesi meccanica sulla parte staccata e su quelle sotto di lei (es. avambraccio + mano).
+        /// La forma segue le misure dell'arto originale (dalla mesh "Pelle" del segmento).
+        /// </summary>
+        public void AttachProsthetic(BodyPart part)
+        {
+            Transform root = Joint(part);
+            if (root == null) return;
+            for (int i = 0; i < PartCount; i++)
+            {
+                Transform j = joints[i];
+                if (j == null || !j.IsChildOf(root) || !severed.Contains((BodyPart)i)) continue;
+                severed.Remove((BodyPart)i);
+                BuildProsthetic((BodyPart)i, j);
+            }
+        }
+
+        void BuildProsthetic(BodyPart part, Transform joint)
+        {
+            EnsureMaterials();
+            Transform old = joint.Find(ProstheticLayer);
+            if (old != null) Destroy(old.gameObject);
+
+            var layer = new GameObject(ProstheticLayer).transform;
+            layer.SetParent(joint, false);
+
+            // misure dell'arto originale
+            Bounds b = new Bounds(new Vector3(0f, -0.15f, 0f), new Vector3(0.1f, 0.3f, 0.1f));
+            Transform skin = joint.Find("Pelle");
+            if (skin != null && skin.TryGetComponent(out MeshFilter mf) && mf.sharedMesh != null)
+            {
+                b = mf.sharedMesh.bounds;
+                b.center = Vector3.Scale(b.center, skin.localScale);
+                b.size = Vector3.Scale(b.size, skin.localScale);
+            }
+            Vector3 c = b.center, sz = b.size;
+            float w = Mathf.Min(sz.x, sz.z);
+
+            bool hand = part == BodyPart.HandL || part == BodyPart.HandR;
+            bool foot = part == BodyPart.FootL || part == BodyPart.FootR;
+
+            if (hand)
+            {
+                Piece(layer, new Vector3(0f, -sz.y * 0.25f, 0f), new Vector3(sz.x * 0.9f, sz.y * 0.45f, sz.z * 0.9f), darkMetal); // palmo
+                for (int k = 0; k < 3; k++)
+                {
+                    float z = (k - 1) * sz.z * 0.3f;
+                    Piece(layer, new Vector3(0f, -sz.y * 0.68f, z), new Vector3(sz.x * 0.5f, sz.y * 0.45f, sz.z * 0.16f), metal);    // dita
+                    Piece(layer, new Vector3(0f, -sz.y * 0.5f, z), new Vector3(sz.x * 0.6f, sz.y * 0.07f, sz.z * 0.2f), brass);      // nocche
+                }
+                Piece(layer, new Vector3(0f, -sz.y * 0.3f, sz.z * 0.55f), new Vector3(sz.x * 0.5f, sz.y * 0.35f, sz.z * 0.18f), metal); // pollice
+                Piece(layer, Vector3.zero, Vector3.one * w * 0.6f, brass);                                                             // polso
+                return;
+            }
+
+            if (foot)
+            {
+                Piece(layer, new Vector3(c.x, b.min.y + sz.y * 0.15f, c.z), new Vector3(sz.x * 0.95f, sz.y * 0.3f, sz.z), darkMetal); // suola
+                Piece(layer, new Vector3(0f, (b.min.y + 0f) * 0.5f, 0f), new Vector3(w * 0.35f, Mathf.Abs(b.min.y) * 0.8f, w * 0.35f), metal); // caviglia
+                Piece(layer, new Vector3(c.x, b.min.y + sz.y * 0.4f, b.max.z - sz.z * 0.15f), new Vector3(sz.x * 0.8f, sz.y * 0.25f, sz.z * 0.28f), metal); // punta
+                Piece(layer, Vector3.zero, Vector3.one * w * 0.5f, brass);
+                return;
+            }
+
+            // arto lungo: asta centrale, piastre laterali, giunto in ottone, rivetti
+            Piece(layer, c, new Vector3(w * 0.38f, sz.y * 0.95f, w * 0.38f), metal);
+            Piece(layer, c + new Vector3(sz.x * 0.3f, 0f, 0f), new Vector3(sz.x * 0.12f, sz.y * 0.6f, sz.z * 0.7f), darkMetal);
+            Piece(layer, c - new Vector3(sz.x * 0.3f, 0f, 0f), new Vector3(sz.x * 0.12f, sz.y * 0.6f, sz.z * 0.7f), darkMetal);
+            Piece(layer, new Vector3(0f, b.max.y - w * 0.3f, 0f), Vector3.one * w * 0.75f, brass);                   // giunto
+            Piece(layer, new Vector3(0f, b.min.y + w * 0.15f, 0f), new Vector3(w * 0.6f, w * 0.3f, w * 0.6f), darkMetal); // attacco
+            for (int k = -1; k <= 1; k += 2)
+                Piece(layer, c + new Vector3(k * sz.x * 0.37f, sz.y * 0.2f, 0f), Vector3.one * w * 0.12f, brass);     // rivetti
+        }
+
+        static void Piece(Transform parent, Vector3 center, Vector3 size, Material mat)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = "Pezzo";
+            Destroy(go.GetComponent<Collider>());
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = center;
+            go.transform.localScale = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+            go.GetComponent<Renderer>().sharedMaterial = mat;
+        }
+
+        static void EnsureMaterials()
+        {
+            if (metal != null) return;
+            metal = MakeMetal(new Color(0.55f, 0.57f, 0.6f), 0.7f, 0.9f);
+            darkMetal = MakeMetal(new Color(0.22f, 0.23f, 0.25f), 0.5f, 0.8f);
+            brass = MakeMetal(new Color(0.78f, 0.6f, 0.28f), 0.75f, 1f);
+        }
+
+        static Material MakeMetal(Color color, float smoothness, float metallic)
+        {
+            Shader sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null) sh = Shader.Find("Standard");
+            var m = new Material(sh) { color = color };
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", smoothness);
+            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", metallic);
+            return m;
         }
     }
 }

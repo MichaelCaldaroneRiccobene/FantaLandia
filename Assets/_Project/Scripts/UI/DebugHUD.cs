@@ -24,9 +24,15 @@ namespace FantaLandia.UI
         {
             if (GameInput.HelpToggle) showHelp = !showHelp;
             var focus = SelectionController.Instance != null ? SelectionController.Instance.Focus : null;
-            var body = focus != null ? focus.GetComponentInChildren<BodyRig>() : null;
-            if (body != null && GameInput.DebugSever) body.SeverRandomLimb();
-            if (body != null && GameInput.DebugRestore) body.RestoreAll();
+            var health = focus != null ? focus.GetComponent<BodyHealth>() : null;
+            if (health != null)
+            {
+                if (GameInput.DebugHit) DebugHit(health);
+                if (GameInput.DebugSever) DebugCut(health);
+                if (GameInput.DebugHeal) health.HealMagic(60f);
+                if (GameInput.DebugProsthetic) health.AttachAllProsthetics();
+                if (GameInput.DebugRestore) health.RestoreAll();
+            }
 
             if (GameInput.WallModeCycle)
                 BuildingVisibility.Mode = (BuildingVisibility.WallMode)(((int)BuildingVisibility.Mode + 1) % 2);
@@ -82,11 +88,101 @@ namespace FantaLandia.UI
                     "Rotellina: zoom\n" +
                     "F: segui on/off   Spazio: centra\n" +
                     "V: modalità muri\n" +
-                    "K / L: (debug) stacca / riattacca un arto", style);
+                    "J: (debug) colpo contundente a caso\n" +
+                    "K: (debug) fendente che stacca un arto\n" +
+                    "H: cura magica   P: protesi sugli arti staccati\n" +
+                    "L: (debug) tutto come nuovo", style);
             }
 
             GUILayout.EndVertical();
             GUILayout.EndArea();
+
+            if (focus != null)
+            {
+                var health = focus.GetComponent<BodyHealth>();
+                if (health != null) DrawBody(focus.displayName, health);
+            }
+        }
+
+        // ------------------------------------------------------------------ corpo
+
+        static readonly BodyPart[] DisplayOrder =
+        {
+            BodyPart.Head, BodyPart.Neck, BodyPart.Chest, BodyPart.Abdomen, BodyPart.Pelvis,
+            BodyPart.UpperArmL, BodyPart.ForearmL, BodyPart.HandL,
+            BodyPart.UpperArmR, BodyPart.ForearmR, BodyPart.HandR,
+            BodyPart.ThighL, BodyPart.ShinL, BodyPart.FootL,
+            BodyPart.ThighR, BodyPart.ShinR, BodyPart.FootR,
+        };
+
+        void DrawBody(string name, BodyHealth h)
+        {
+            GUILayout.BeginArea(new Rect(Screen.width - 290, 10, 280, Screen.height - 20));
+            GUILayout.BeginVertical(GUI.skin.box);
+            GUILayout.Label($"<b>Corpo di {name}</b>", style);
+            if (h.IsUnconscious) GUILayout.Label("<color=#ff5050><b>SVENUTO</b></color>", style);
+            if (h.LimpSide != 0) GUILayout.Label($"<color=#ffb040>Zoppica ({(h.LimpSide < 0 ? "gamba sinistra" : "gamba destra")})</color>", style);
+
+            foreach (BodyPart p in DisplayOrder)
+            {
+                var ph = h.Get(p);
+                PartState st = h.State(p);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(BodyRig.DisplayName(p), style, GUILayout.Width(140));
+                Rect r = GUILayoutUtility.GetRect(80, 14, GUILayout.Width(80));
+                r.y += 4f;
+                GUI.color = new Color(0f, 0f, 0f, 0.6f);
+                GUI.DrawTexture(r, Texture2D.whiteTexture);
+                float frac = st == PartState.Severed ? 0f : Mathf.Clamp01(ph.hp / ph.max);
+                GUI.color = StateColor(st, frac);
+                GUI.DrawTexture(new Rect(r.x, r.y, r.width * frac, r.height), Texture2D.whiteTexture);
+                GUI.color = Color.white;
+                GUILayout.Label(StateName(st, ph), style);
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
+        }
+
+        static Color StateColor(PartState st, float frac)
+        {
+            if (st == PartState.Prosthetic) return new Color(0.6f, 0.65f, 0.75f);
+            return Color.Lerp(new Color(0.9f, 0.2f, 0.15f), new Color(0.3f, 0.85f, 0.3f), frac);
+        }
+
+        static string StateName(PartState st, BodyHealth.PartHealth ph)
+        {
+            switch (st)
+            {
+                case PartState.Severed: return "<color=#ff5050>staccato</color>";
+                case PartState.Disabled: return "<color=#ff8040>inutilizzabile</color>";
+                case PartState.Prosthetic: return "<color=#a0b0d0>protesi</color>";
+                case PartState.Injured: return $"<color=#ffd040>{Mathf.CeilToInt(ph.hp)}</color>";
+                default: return Mathf.CeilToInt(ph.hp).ToString();
+            }
+        }
+
+        static void DebugHit(BodyHealth h)
+        {
+            var p = (BodyPart)Random.Range(0, BodyRig.PartCount);
+            h.Damage(p, Random.Range(15f, 30f), DamageType.Blunt);
+        }
+
+        static void DebugCut(BodyHealth h)
+        {
+            BodyPart[] limbs =
+            {
+                BodyPart.UpperArmL, BodyPart.ForearmL, BodyPart.HandL, BodyPart.UpperArmR, BodyPart.ForearmR, BodyPart.HandR,
+                BodyPart.ThighL, BodyPart.ShinL, BodyPart.FootL, BodyPart.ThighR, BodyPart.ShinR, BodyPart.FootR,
+            };
+            for (int tries = 0; tries < 20; tries++)
+            {
+                BodyPart p = limbs[Random.Range(0, limbs.Length)];
+                if (h.Get(p).severed) continue;
+                h.Damage(p, h.Get(p).max * 2f, DamageType.Cut);
+                return;
+            }
         }
 
         static string ActionName(CharacterMotor m)

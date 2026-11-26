@@ -73,6 +73,35 @@ namespace FantaLandia.Characters
         /// <summary>Limite di velocità imposto dal movimento di gruppo (0 = nessun limite).</summary>
         public float SpeedCap { get; private set; }
         public event Action<Gait> GaitChanged;
+
+        /// <summary>Riduzione della velocità dovuta alle ferite (la imposta BodyHealth).</summary>
+        public float HealthSpeedMultiplier { get; private set; } = 1f;
+        /// <summary>Con le gambe messe male non si può scattare.</summary>
+        public bool CanSprint { get; private set; } = true;
+        /// <summary>Svenuto: non si muove e non accetta ordini.</summary>
+        public bool IsIncapacitated { get; private set; }
+
+        public void SetHealthLimits(float speedMultiplier, bool canSprint)
+        {
+            if (Mathf.Abs(speedMultiplier - HealthSpeedMultiplier) < 0.001f && canSprint == CanSprint) return;
+            HealthSpeedMultiplier = speedMultiplier;
+            CanSprint = canSprint;
+            ApplySpeed();
+        }
+
+        public void SetIncapacitated(bool value)
+        {
+            IsIncapacitated = value;
+            if (agent == null || !agent.enabled) return;
+            if (value)
+            {
+                hasPending = false;
+                detouring = false;
+                if (agent.isOnNavMesh && !agent.isOnOffMeshLink) agent.ResetPath();
+                agent.isStopped = true;
+            }
+            else agent.isStopped = false;
+        }
         public bool IsTraversing { get; private set; }
         public bool IsStunned { get; private set; }
         public TraversalKind CurrentTraversal { get; private set; }
@@ -125,7 +154,7 @@ namespace FantaLandia.Characters
 
         public void MoveTo(Vector3 destination, bool allowDangerousJumps)
         {
-            if (!agent.enabled) return;
+            if (!agent.enabled || IsIncapacitated) return;
             if (detouring)
             {
                 // Sta già andando verso una corsia libera: aggiorna solo la meta finale.
@@ -223,12 +252,14 @@ namespace FantaLandia.Characters
         /// <summary>Velocità massima di questo personaggio con l'andatura data.</summary>
         public float SpeedFor(Gait gait)
         {
+            float speed;
             switch (gait)
             {
-                case Gait.Walk: return walkSpeed;
-                case Gait.Sprint: return sprintSpeed;
-                default: return jogSpeed;
+                case Gait.Walk: speed = walkSpeed; break;
+                case Gait.Sprint: speed = CanSprint ? sprintSpeed : jogSpeed; break;
+                default: speed = jogSpeed; break;
             }
+            return speed * HealthSpeedMultiplier;
         }
 
         /// <summary>Movimento di gruppo: nessuno supera questa velocità. 0 toglie il limite.</summary>

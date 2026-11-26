@@ -461,6 +461,7 @@ namespace FantaLandia.EditorTools
             motor.jogSpeed = jog;
             motor.sprintSpeed = sprint;
             root.AddComponent<NavMeshModifier>().ignoreFromBuild = true; // il personaggio non deve "bucare" la NavMesh
+            root.AddComponent<FantaLandia.Characters.Body.BodyHealth>();
             var selectable = root.AddComponent<SelectableCharacter>();
             selectable.displayName = name;
 
