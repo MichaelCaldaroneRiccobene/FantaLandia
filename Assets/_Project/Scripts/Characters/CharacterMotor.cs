@@ -280,7 +280,9 @@ namespace FantaLandia.Characters
             Measure(kind, start, end, obstacle, dy);
             TraversalStarted?.Invoke(kind);
 
-            if (Traversal.dir.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(Traversal.dir);
+            // Durante l'attraversamento la rotazione la decidiamo noi: sempre rivolti verso l'ostacolo.
+            agent.updateRotation = false;
+            FaceTraversal();
 
             switch (kind)
             {
@@ -303,7 +305,9 @@ namespace FantaLandia.Characters
             }
 
             transform.position = end;
+            FaceTraversal();
             agent.CompleteOffMeshLink();
+            agent.updateRotation = true;
             if (lane != null && lane.Occupant == this) lane.Occupant = null;
             CurrentTraversal = TraversalKind.None;
             Traversal.phase = TraversalPhase.None;
@@ -406,8 +410,8 @@ namespace FantaLandia.Characters
                                                   TraversalPhase.Approach, Ease.None));
 
             // Radice (= piedi a gambe tese): le gambe raccolte passano sopra il bordo.
-            float peak = Mathf.Max(t.topY - (parkour ? 0.35f : 0.45f), Mathf.Max(t.start.y, t.end.y) + 0.05f);
-            float duration = parkour ? 0.6f : 0.45f;
+            float peak = Mathf.Max(t.topY - (parkour ? 0.3f : 0.25f), Mathf.Max(t.start.y, t.end.y) + 0.12f);
+            float duration = parkour ? 0.6f : 0.5f;
             Vector3 a = takeoff, b = t.end;
             float h = peak - (a.y + b.y) * 0.5f;
             t.phase = TraversalPhase.Vault;
@@ -417,6 +421,7 @@ namespace FantaLandia.Characters
                 time += Time.deltaTime;
                 float u = Mathf.Clamp01(time / duration);
                 t.phaseT = u;
+                FaceTraversal();
                 Vector3 p = Vector3.Lerp(a, b, u);
                 p.y = Mathf.Lerp(a.y, b.y, u) + 4f * h * u * (1f - u);
                 transform.position = p;
@@ -486,6 +491,11 @@ namespace FantaLandia.Characters
 
         enum Ease { None, Out, InOut }
 
+        void FaceTraversal()
+        {
+            if (Traversal.dir.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(Traversal.dir);
+        }
+
         IEnumerator MovePhase(Vector3 from, Vector3 to, float duration, TraversalPhase phase, Ease ease)
         {
             Traversal.phase = phase;
@@ -497,6 +507,7 @@ namespace FantaLandia.Characters
                 t += Time.deltaTime;
                 float u = Mathf.Clamp01(t / duration);
                 Traversal.phaseT = u;
+                FaceTraversal();
                 float e = ease == Ease.Out ? 1f - (1f - u) * (1f - u) : ease == Ease.InOut ? u * u * (3f - 2f * u) : u;
                 transform.position = Vector3.Lerp(from, to, e);
                 yield return null;
@@ -514,6 +525,7 @@ namespace FantaLandia.Characters
                 t += Time.deltaTime;
                 float u = Mathf.Clamp01(t / duration);
                 Traversal.phaseT = u;
+                FaceTraversal();
                 Vector3 p = Vector3.Lerp(from, to, u);
                 p.y = from.y + (to.y - from.y) * u * u;
                 transform.position = p;

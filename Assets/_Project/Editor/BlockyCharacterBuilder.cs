@@ -15,6 +15,9 @@ namespace FantaLandia.EditorTools
     {
         public const string Folder = "Assets/_Project/Generated/Characters";
 
+        /// <summary>Ingrandimento della testa rispetto alle proporzioni reali.</summary>
+        public const float HeadScale = 1.28f;
+
         /// <summary>Proporzioni e colori di un modello. Misure in metri.</summary>
         public class Shape
         {
@@ -162,6 +165,9 @@ namespace FantaLandia.EditorTools
             Layers(chest, chestSkin, chestUnder, meshes, $"{s.id} Chest");
             Layers(neck, Neck(s, m), null, meshes, $"{s.id} Neck");
             Layers(head, Head(s, m), null, meshes, $"{s.id} Head");
+            // Testa più grande (stile): ingrandisce viso e capelli insieme, partendo dal collo.
+            Transform headSkin = head.Find("Pelle");
+            if (headSkin != null) headSkin.localScale = Vector3.one * HeadScale;
 
             // --- salvataggio: tutte le mesh in un unico asset, poi il prefab
             AssetDatabase.CreateAsset(meshes[0], meshPath);

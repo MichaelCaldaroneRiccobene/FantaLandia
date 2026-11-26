@@ -34,12 +34,12 @@ namespace FantaLandia.Characters.Body
 
         struct GaitParams
         {
-            public float swing, thr, overlap, stepHeight, arm, elbow, lean, bob, stance;
+            public float stride, swingFrac, stepHeight, arm, elbow, lean, bob, stance;
 
             public static GaitParams Lerp(GaitParams a, GaitParams b, float t) => new GaitParams
             {
-                swing = Mathf.Lerp(a.swing, b.swing, t), thr = Mathf.Lerp(a.thr, b.thr, t),
-                overlap = Mathf.Lerp(a.overlap, b.overlap, t), stepHeight = Mathf.Lerp(a.stepHeight, b.stepHeight, t),
+                stride = Mathf.Lerp(a.stride, b.stride, t), swingFrac = Mathf.Lerp(a.swingFrac, b.swingFrac, t),
+                stepHeight = Mathf.Lerp(a.stepHeight, b.stepHeight, t),
                 arm = Mathf.Lerp(a.arm, b.arm, t), elbow = Mathf.Lerp(a.elbow, b.elbow, t),
                 lean = Mathf.Lerp(a.lean, b.lean, t), bob = Mathf.Lerp(a.bob, b.bob, t), stance = Mathf.Lerp(a.stance, b.stance, t),
             };
@@ -50,11 +50,11 @@ namespace FantaLandia.Characters.Body
             switch (g)
             {
                 case Gait.Walk:
-                    return new GaitParams { swing = 0.38f, thr = 0.30f, overlap = 1.01f, stepHeight = 0.07f, arm = 22f, elbow = -15f, lean = 3f, bob = 0.02f, stance = 0.10f };
+                    return new GaitParams { stride = 1.35f, swingFrac = 0.40f, stepHeight = 0.07f, arm = 22f, elbow = -15f, lean = 3f, bob = 0.02f, stance = 0.10f };
                 case Gait.Sprint:
-                    return new GaitParams { swing = 0.24f, thr = 0.12f, overlap = 0.45f, stepHeight = 0.20f, arm = 55f, elbow = -95f, lean = 15f, bob = 0.035f, stance = 0.075f };
+                    return new GaitParams { stride = 3.0f, swingFrac = 0.62f, stepHeight = 0.20f, arm = 55f, elbow = -95f, lean = 15f, bob = 0.035f, stance = 0.075f };
                 default:
-                    return new GaitParams { swing = 0.30f, thr = 0.17f, overlap = 0.65f, stepHeight = 0.13f, arm = 35f, elbow = -75f, lean = 8f, bob = 0.03f, stance = 0.085f };
+                    return new GaitParams { stride = 2.1f, swingFrac = 0.55f, stepHeight = 0.13f, arm = 35f, elbow = -75f, lean = 8f, bob = 0.03f, stance = 0.085f };
             }
         }
 
@@ -246,7 +246,6 @@ namespace FantaLandia.Characters.Body
             Vector3 velDir = speed > 0.05f ? flatVel / speed : fwd;
             float gaitSpeed = motor != null ? motor.SpeedFor(g) : 2f;
             float sf = Mathf.Clamp01(speed / Mathf.Max(0.5f, gaitSpeed * 0.7f));
-            bool moving = speed > 0.15f;
             float idle = 1f - Mathf.Clamp01(speed / 0.6f);
             bool stunned = motor != null && motor.IsStunned;
             bool female = rig.female;
@@ -287,7 +286,7 @@ namespace FantaLandia.Characters.Body
                 home[i] = root + right * (f.side * half) + idleOffset * idle;
                 footYaw[i] *= idle;
             }
-            UpdateFeet(dt, home, velDir, speed, sf, moving);
+            UpdateFeet(dt, home, velDir, speed, sf);
 
             // --- bacino: si abbassa sul piede più basso, sobbalza a ogni passo
             float yLow = Mathf.Min(feet[0].GroundY, feet[1].GroundY);
@@ -371,20 +370,81 @@ namespace FantaLandia.Characters.Body
             }
         }
 
-        void UpdateFeet(float dt, Vector3[] home, Vector3 velDir, float speed, float sf, bool moving)
+        float cyclePhase;
+        bool cycleMoving;
+
+        /// <summary>
+        /// In movimento: ciclo del passo legato alla velocità (i due piedi sono sfasati di mezzo ciclo).
+        /// Il punto d'atterraggio del piede in volo viene ricalcolato ogni frame, così segue curve e inversioni.
+        /// Da fermo: i piedi tornano uno alla volta nella posa di riposo.
+        /// </summary>
+        void UpdateFeet(float dt, Vector3[] home, Vector3 velDir, float speed, float sf)
         {
-            // passi in corso
+            bool wasMoving = cycleMoving;
+            cycleMoving = cycleMoving ? speed > 0.12f : speed > 0.25f;
+
+            if (cycleMoving)
+            {
+                if (!wasMoving)
+                {
+                    // parte per primo il piede più indietro
+                    float bL = -Vector3.Dot(feet[0].plant - home[0], velDir);
+                    float bR = -Vector3.Dot(feet[1].plant - home[1], velDir);
+                    cyclePhase = bL >= bR ? 0f : 0.5f;
+                    foreach (Foot f in feet)
+                        if (f.stepping) { f.stepping = false; PlantFootAt(f, f.pos); }
+                }
+
+                float cycle = Mathf.Clamp(gait.stride / Mathf.Max(0.1f, speed), 0.3f, 1.6f);
+                cyclePhase = Mathf.Repeat(cyclePhase + dt / cycle, 1f);
+                float lead = speed * cycle * (1f - gait.swingFrac) * 0.5f;
+                float remain = DistanceToDestination();
+
+                for (int i = 0; i < 2; i++)
+                {
+                    Foot f = feet[i];
+                    float p = Mathf.Repeat(cyclePhase - (i == 0 ? 0f : 0.5f), 1f);
+                    if (p < gait.swingFrac)
+                    {
+                        float u = p / gait.swingFrac;
+                        if (!f.stepping)
+                        {
+                            f.stepping = true;
+                            f.from = f.plant;
+                        }
+                        float remainingTime = (gait.swingFrac - p) * cycle;
+                        Vector3 ahead = flatVel * remainingTime + velDir * lead;
+                        if (ahead.magnitude > remain) ahead = ahead.normalized * remain; // non oltrepassare la meta
+                        Ground(home[i] + ahead, out Vector3 to, out Vector3 n);
+                        f.to = to;
+                        f.toNormal = n;
+                        f.t = u;
+                        f.duration = gait.swingFrac * cycle;
+                        f.lift = gait.stepHeight * Mathf.Lerp(0.6f, 1f, sf) + (Mathf.Abs(to.y - f.from.y) > 0.05f ? 0.06f : 0f);
+                        f.pos = SwingPosition(f, u);
+                    }
+                    else
+                    {
+                        if (f.stepping)
+                        {
+                            f.stepping = false;
+                            f.plant = f.to;
+                            f.normal = f.toNormal;
+                        }
+                        f.pos = f.plant;
+                    }
+                }
+                settleTimer = 0f;
+                return;
+            }
+
+            // --- da fermo: completa i passi in corso, poi riallinea i piedi uno alla volta
             foreach (Foot f in feet)
             {
                 if (!f.stepping) { f.pos = f.plant; continue; }
-                f.t += dt / f.duration;
+                f.t += dt / Mathf.Max(0.05f, f.duration);
                 float u = Mathf.Clamp01(f.t);
-                float h = u * u * (3f - 2f * u);
-                Vector3 p = Vector3.Lerp(f.from, f.to, h);
-                float dy = f.to.y - f.from.y;
-                float yu = dy > 0.02f ? Smooth01(u / 0.6f) : dy < -0.02f ? Smooth01((u - 0.4f) / 0.6f) : h;
-                p.y = f.from.y + dy * yu + f.lift * Mathf.Sin(Mathf.PI * u);
-                f.pos = p;
+                f.pos = SwingPosition(f, u);
                 if (u >= 1f)
                 {
                     f.stepping = false;
@@ -392,50 +452,49 @@ namespace FantaLandia.Characters.Body
                     f.normal = f.toNormal;
                 }
             }
+            if (feet[0].stepping || feet[1].stepping) return;
 
-            // nuovo passo? al massimo uno per frame, alternando i piedi
-            if (moving) settleTimer = 0f; else settleTimer += dt;
-            float thr = Mathf.Max(0.07f, speed * gait.thr);
+            settleTimer += dt;
+            if (settleTimer < 0.12f) return;
             int best = -1;
-            float bestErr = 0f;
+            float bestErr = 0.06f;
             for (int i = 0; i < 2; i++)
             {
-                Foot f = feet[i], other = feet[1 - i];
-                if (f.stepping) continue;
-                if (other.stepping && other.t < gait.overlap) continue;
-                Vector3 off = home[i] - f.plant;
+                Vector3 off = home[i] - feet[i].plant;
                 off.y = 0f;
-                float err;
-                bool want;
-                if (moving)
-                {
-                    float behind = -Vector3.Dot(f.plant - home[i], velDir);
-                    want = behind > thr || off.magnitude > thr * 1.6f + 0.1f;
-                    err = Mathf.Max(behind, off.magnitude);
-                }
-                else
-                {
-                    want = settleTimer > 0.1f && off.magnitude > 0.06f;
-                    err = off.magnitude;
-                }
-                if (!want) continue;
-                if (i == lastStepped) err *= 0.7f; // preferisci l'altro piede
+                float err = off.magnitude * (i == lastStepped ? 0.8f : 1f);
                 if (err > bestErr) { bestErr = err; best = i; }
             }
             if (best < 0) return;
 
             Foot s = feet[best];
-            float duration = moving ? gait.swing * Mathf.Lerp(1.25f, 1f, sf) : 0.28f;
-            Vector3 aim = moving ? home[best] + flatVel * duration + velDir * (thr * 0.8f) : home[best];
-            Ground(aim, out Vector3 to, out Vector3 n);
+            Ground(home[best], out Vector3 dest, out Vector3 dn);
             s.from = s.plant;
-            s.to = to;
-            s.toNormal = n;
-            s.duration = duration;
-            s.lift = (moving ? gait.stepHeight * Mathf.Lerp(0.6f, 1f, sf) : 0.05f) + (Mathf.Abs(to.y - s.from.y) > 0.05f ? 0.06f : 0f);
+            s.to = dest;
+            s.toNormal = dn;
+            s.duration = 0.28f;
+            s.lift = 0.05f + (Mathf.Abs(dest.y - s.from.y) > 0.05f ? 0.06f : 0f);
             s.t = 0f;
             s.stepping = true;
             lastStepped = best;
+        }
+
+        Vector3 SwingPosition(Foot f, float u)
+        {
+            float h = u * u * (3f - 2f * u);
+            Vector3 p = Vector3.Lerp(f.from, f.to, h);
+            float dy = f.to.y - f.from.y;
+            float yu = dy > 0.02f ? Smooth01(u / 0.6f) : dy < -0.02f ? Smooth01((u - 0.4f) / 0.6f) : h;
+            p.y = f.from.y + dy * yu + f.lift * Mathf.Sin(Mathf.PI * u);
+            return p;
+        }
+
+        float DistanceToDestination()
+        {
+            if (motor == null || motor.Agent == null || !motor.Agent.enabled || !motor.Agent.hasPath) return float.MaxValue;
+            Vector3 d = motor.Agent.destination - transform.position;
+            d.y = 0f;
+            return d.magnitude;
         }
 
         Quaternion FootRotation(Foot f, Vector3 fwd, float yawOut)
@@ -484,7 +543,7 @@ namespace FantaLandia.Characters.Body
                 {
                     // Volteggio laterale (parkour): mano destra sul bordo, gambe insieme di lato a sinistra.
                     float bell = Mathf.Sin(Mathf.PI * u);
-                    Rot(BodyPart.Pelvis, 0f, -45f * bell, 18f * bell);
+                    Rot(BodyPart.Pelvis, 0f, -30f * bell, 15f * bell);
                     Rot(BodyPart.Abdomen, 15f, 0f, -8f * bell);
                     Rot(BodyPart.Chest, 12f, 20f * bell, -6f * bell);
                     Rot(BodyPart.Head, -10f, 25f * bell, 0f);
@@ -672,7 +731,8 @@ namespace FantaLandia.Characters.Body
 
         void SolveIK(float dt)
         {
-            float k = 1f - Mathf.Exp(-20f * dt);
+            bool fast = motor != null && motor.IsTraversing;
+            float k = 1f - Mathf.Exp(-(fast ? 40f : 20f) * dt);
             for (int i = 0; i < 4; i++)
             {
                 ikWeight[i] = Mathf.Lerp(ikWeight[i], ikTargetWeight[i], k);
