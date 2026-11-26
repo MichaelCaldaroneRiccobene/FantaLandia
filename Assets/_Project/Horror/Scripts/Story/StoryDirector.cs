@@ -785,6 +785,8 @@ namespace FantaLandia.Horror.Story
         {
             if (torchPickup == null) return;
             Transform t = torchPickup.transform;
+            torchPickup.enabled = true;
+            foreach (var c in t.GetComponentsInChildren<Collider>()) c.enabled = true;
             if (Vector3.Distance(t.position, torchHomePos) < 0.3f) return;
             var rb = t.GetComponent<Rigidbody>();
             if (rb != null) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; rb.isKinematic = true; }
@@ -1159,6 +1161,7 @@ namespace FantaLandia.Horror.Story
 
         void Update()
         {
+            NpcActor.PlayerIndoors = PlayerInside;
             if (fireGlow != null) fireGlow.intensity = 2.2f * (0.75f + 0.35f * Mathf.PerlinNoise(Time.time * 4f, 1.7f));
             UpdateHints();
             BarrierLine();

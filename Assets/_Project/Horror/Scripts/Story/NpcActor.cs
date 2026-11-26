@@ -24,6 +24,10 @@ namespace FantaLandia.Horror.Story
         public string[] ambientLines;
         public float ambientDistance = 12f;
         public Vector2 ambientInterval = new Vector2(8f, 15f);
+        [Tooltip("Chiacchiera solo se il giocatore è fuori casa (i vicini non si sentono attraverso i muri)")]
+        public bool onlyWhenPlayerOutside;
+        /// <summary>Il giocatore è dentro una casa (lo aggiorna la regia della storia).</summary>
+        public static bool PlayerIndoors;
 
         [Header("Vita di sottofondo")]
         [Tooltip("Da fermo, ogni tanto guarda qualcuno: il giocatore, gli altri, la TV")]
@@ -191,6 +195,7 @@ namespace FantaLandia.Horror.Story
         void AmbientChatter()
         {
             if (ambientLines == null || ambientLines.Length == 0 || Time.time < nextLine || DialogueSystem.IsTalking) return;
+            if (onlyWhenPlayerOutside && PlayerIndoors) return;
             nextLine = Time.time + Random.Range(ambientInterval.x, ambientInterval.y);
             Camera cam = Camera.main;
             if (cam == null || Vector3.Distance(cam.transform.position, transform.position) > ambientDistance) return;

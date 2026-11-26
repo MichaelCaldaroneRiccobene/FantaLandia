@@ -304,6 +304,8 @@ namespace FantaLandia.Horror.EditorTools
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m == null) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
             else m.shader = sh;
+            m.SetFloat("_Intensity", 0.7f); // solo il contorno, senza illuminare la stanza
+            EditorUtility.SetDirty(m);
             return m;
         }
 
@@ -394,6 +396,7 @@ namespace FantaLandia.Horror.EditorTools
             actor.leanOnStart = true;
             actor.leanPoint = rail;
             actor.ambientLines = chatter;
+            actor.onlyWhenPlayerOutside = true;
             neighborActors.Add(actor);
         }
 
@@ -781,6 +784,10 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Telefono"), f, counter.transform.localPosition + new Vector3(-0.5f, 0.9f, 0.05f), 180f);
             GameObject torch = Place(VoxelAssetLibrary.Load("Torcia"), f, counter.transform.localPosition + new Vector3(0.4f, 0.9f, 0f), 60f);
             torchPickup = torch.AddComponent<FlashlightPickup>();
+            // la torcia è piccola: una zona più grande (solo per mirarla con E) così si prende facilmente
+            var grab = torch.AddComponent<BoxCollider>();
+            grab.isTrigger = true;
+            grab.size = new Vector3(0.3f, 0.2f, 0.4f);
 
             // bagnetto (Jef è chiuso dentro)
             Place(VoxelFurniture.Get("WC"), f, new Vector3(6.3f, F0, 1.2f), -90f);
