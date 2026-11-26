@@ -96,6 +96,12 @@ namespace FantaLandia.Characters
             agent.autoTraverseOffMeshLink = false;
         }
 
+        /// <summary>Tutti i personaggi attivi (porte, sensori, NPC li leggono da qui).</summary>
+        public static readonly System.Collections.Generic.List<CharacterMotor> All = new System.Collections.Generic.List<CharacterMotor>();
+
+        void OnEnable() => All.Add(this);
+        void OnDisable() => All.Remove(this);
+
         void Start()
         {
             // L'agente nasce disattivato: la NavMesh viene costruita a runtime (RuntimeNavMeshBaker.Awake).

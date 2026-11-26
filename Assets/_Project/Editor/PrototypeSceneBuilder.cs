@@ -140,7 +140,8 @@ namespace FantaLandia.EditorTools
             Box("Pilastro est", b, new Vector3(MoatX1 - 0.4f, -MoatDepth, z - 0.25f), new Vector3(MoatX1, -deckT, z + 0.25f), matStone);
 
             // Salto del varco (solo con Alt): nei due sensi
-            Vector3 west = new Vector3(g0 - 0.6f, top, z), east = new Vector3(g1 + 0.6f, top, z);
+            // Estremi ben dentro la zona calpestabile (la NavMesh è erosa di 0.5 m dai bordi), così il link si aggancia sempre.
+            Vector3 west = new Vector3(g0 - 1.0f, top, z), east = new Vector3(g1 + 1.0f, top, z);
             Link(b, "Salto del varco", west, east, 1.2f, true, CharacterMotor.DangerousJumpArea, 0f, true);
         }
 
@@ -240,6 +241,10 @@ namespace FantaLandia.EditorTools
                 Wall(walls[f], "Muro est", false, HalfX - WallT / 2f, -HalfZ + WallT, HalfZ - WallT, y0, h, east);
             }
 
+            // Porte a due ante: ingresso (piano terra, muro sud) e balcone (primo piano, muro est)
+            BuildDoor(walls[0], "Porta d'ingresso", new Vector3(0f, 0f, -HalfZ + WallT / 2f), 0f);
+            BuildDoor(walls[1], "Porta del balcone", new Vector3(HalfX - WallT / 2f, FloorH, 0f), 90f);
+
             // Balcone sul lato est del primo piano
             Box("Balcone", structure[1], new Vector3(HalfX, FloorH - Slab, -2.5f), new Vector3(HalfX + 2f, FloorH, 2.5f), matWood);
             Box("Ringhiera", structure[1], new Vector3(HalfX + 1.9f, FloorH, -2.5f), new Vector3(HalfX + 2f, FloorH + 1f, 2.5f), matDark);
@@ -257,6 +262,47 @@ namespace FantaLandia.EditorTools
 
             Label(house, "Ingresso", house.TransformPoint(new Vector3(0f, 0.05f, -HalfZ - 1.5f)));
             Label(house, "Alt + clic sinistro: salta dal balcone / tetto", house.TransformPoint(new Vector3(HalfX + 4f, 0.05f, -4f)));
+        }
+
+        /// <summary>
+        /// Porta a due ante larga 2 m nel vano di una parete. Non entra nella NavMesh (altrimenti chiuderebbe il passaggio)
+        /// e sta sul layer "Ignore Raycast" così i clic la attraversano.
+        /// </summary>
+        static void BuildDoor(Transform parent, string name, Vector3 localPos, float yaw)
+        {
+            const float width = 2f, height = 2.35f, thick = 0.06f;
+            var root = new GameObject(name);
+            root.transform.SetParent(parent, false);
+            root.transform.localPosition = localPos;
+            root.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            root.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
+
+            var leaves = new Transform[2];
+            for (int i = 0; i < 2; i++)
+            {
+                int side = i == 0 ? -1 : 1;                    // cardine a sinistra / destra
+                var hinge = new GameObject(side < 0 ? "Anta sinistra" : "Anta destra").transform;
+                hinge.SetParent(root.transform, false);
+                hinge.localPosition = new Vector3(side * width * 0.5f, 0f, 0f);
+                leaves[i] = hinge;
+
+                float cx = -side * width * 0.25f;              // centro dell'anta rispetto al cardine
+                float w = width * 0.5f - 0.02f;
+                Box("Assi", hinge, new Vector3(cx - w * 0.5f, 0f, -thick * 0.5f), new Vector3(cx + w * 0.5f, height, thick * 0.5f), matWood);
+                for (int k = 0; k < 2; k++)
+                {
+                    float y = k == 0 ? 0.45f : height - 0.55f;
+                    Box("Traversa", hinge, new Vector3(cx - w * 0.45f, y, -thick * 0.5f - 0.02f), new Vector3(cx + w * 0.45f, y + 0.12f, thick * 0.5f + 0.02f), matWood);
+                }
+                float hx = cx - side * (w * 0.5f - 0.1f);        // maniglia vicino al bordo libero
+                Box("Maniglia", hinge, new Vector3(hx - 0.02f, 1.0f, -thick * 0.5f - 0.05f), new Vector3(hx + 0.02f, 1.15f, thick * 0.5f + 0.05f), matDark);
+            }
+
+            foreach (Transform t in root.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = 2; // Ignore Raycast
+
+            var door = root.AddComponent<AutoDoor>();
+            door.leaves = leaves;
+            door.leafSign = new[] { -1f, 1f };
         }
 
         static void SlabWithHole(Transform parent, string name, float topY, Rect hole, Material mat)
