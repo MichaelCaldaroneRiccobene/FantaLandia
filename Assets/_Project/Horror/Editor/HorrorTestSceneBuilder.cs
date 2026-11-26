@@ -113,7 +113,7 @@ namespace FantaLandia.Horror.EditorTools
             GameObject lamp = Instance(VoxelAssetLibrary.Load("Lampione"), o, new Vector3(5f, 0f, -9.5f), 0f);
             var l = new GameObject("Luce lampione").AddComponent<Light>();
             l.transform.SetParent(lamp.transform, false);
-            l.transform.localPosition = new Vector3(0f, 4.0f, 0.55f);
+            l.transform.localPosition = new Vector3(0f, 4.0f, 0.6f);
             l.type = LightType.Spot;
             l.spotAngle = 110f;
             l.range = 14f;
@@ -154,7 +154,7 @@ namespace FantaLandia.Horror.EditorTools
             door.hingeSign = 1f;
             door.locked = true;
             door.knockable = true;
-            door.knockLocal = new Vector3(0.45f, 1.62f, -0.03f);
+            door.knockLocal = new Vector3(0.45f, 1.62f, -0.055f); // superficie esterna della porta (spessa 10 cm)
             SetLayer(doorRoot, DoorLayer);
             return door;
         }
@@ -210,7 +210,7 @@ namespace FantaLandia.Horror.EditorTools
             ceilingLight.shadows = LightShadows.Soft;
 
             Instance(VoxelAssetLibrary.Load("Lampada stelo"), r, new Vector3(-4.5f, FloorY, 5.6f), 0f);
-            GameObject shade = Instance(VoxelAssetLibrary.Load("Lampada paralume"), r, new Vector3(-4.5f, FloorY + 1.4f, 5.6f), 0f);
+            GameObject shade = Instance(VoxelAssetLibrary.Load("Lampada paralume"), r, new Vector3(-4.5f, FloorY + 1.44f, 5.6f), 0f);
             var lampLight = new GameObject("Luce lampada").AddComponent<Light>();
             lampLight.transform.SetParent(shade.transform, false);
             lampLight.transform.localPosition = new Vector3(0f, 0.1f, 0f);
@@ -373,7 +373,7 @@ namespace FantaLandia.Horror.EditorTools
             item.carryInLeftHand = true; // per il manico, lungo il fianco
             item.handOffset = new Vector3(0f, -0.25f, 0f);
             item.handEuler = new Vector3(0f, 90f, 0f);
-            item.handleHeight = 0.25f;
+            item.handleHeight = VoxelAssetLibrary.BeerHang;
             interactor.startHeld = item;
         }
 

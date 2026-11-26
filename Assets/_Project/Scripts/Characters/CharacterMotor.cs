@@ -103,8 +103,8 @@ namespace FantaLandia.Characters
             float t = 0f;
             while (t < 1f)
             {
-                t = Mathf.Min(1f, t + Time.deltaTime / 0.45f);
-                transform.rotation = Quaternion.Slerp(r0, facing, t * t * (3f - 2f * t));
+                t = Mathf.Min(1f, t + Time.deltaTime / 0.9f);
+                transform.rotation = Quaternion.Slerp(r0, facing, Smoother(t));
                 yield return null;
             }
             SeatHeight = seatHeight;
@@ -112,11 +112,14 @@ namespace FantaLandia.Characters
             t = 0f;
             while (t < 1f)
             {
-                t = Mathf.Min(1f, t + Time.deltaTime / 0.6f);
-                transform.position = Vector3.Lerp(p0, seatPosition, t * t * (3f - 2f * t));
+                t = Mathf.Min(1f, t + Time.deltaTime / 1.5f);
+                transform.position = Vector3.Lerp(p0, seatPosition, Smoother(t));
                 yield return null;
             }
         }
+
+        /// <summary>Accelerazione e frenata molto morbide (smootherstep).</summary>
+        static float Smoother(float t) => t * t * t * (t * (t * 6f - 15f) + 10f);
 
         /// <summary>Si alza e torna sulla NavMesh nel punto indicato.</summary>
         public void StandUp(Vector3 standPosition)

@@ -645,7 +645,7 @@ namespace FantaLandia.Characters.Body
             Rot(BodyPart.ForearmR, -50f, 0f, 0f);
             ApplyDisabledArms();
 
-            float k = 1f - Mathf.Exp(-6f * dt);
+            float k = 1f - Mathf.Exp(-2.5f * dt); // ci si siede con calma
             for (int i = 0; i < N; i++)
             {
                 pose[i] = Vector3.Lerp(pose[i], target[i], k);

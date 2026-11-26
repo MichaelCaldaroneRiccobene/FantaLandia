@@ -16,6 +16,23 @@ namespace FantaLandia.Horror.Voxel
 
         public VoxelBuilder(float voxelSize) { size = voxelSize; }
 
+        [Tooltip("Variazione di luminosità tra un cubetto e l'altro (0 = colore piatto)")]
+        public float shadeVariation = 0.07f;
+
+        /// <summary>Ogni cubetto è un po' più chiaro o più scuro (deterministico): la griglia dei voxel si legge.</summary>
+        int ShadeLevel(Vector3Int p)
+        {
+            if (shadeVariation <= 0f) return 0;
+            unchecked
+            {
+                int h = p.x * 73856093 ^ p.y * 19349663 ^ p.z * 83492791;
+                h ^= h >> 13;
+                h *= 0x5bd1e995;
+                h ^= h >> 15;
+                return (h & 0x7fffffff) % 3 - 1; // -1, 0, +1
+            }
+        }
+
         public IReadOnlyList<Color> Palette => palette;
 
         /// <summary>Indice di un colore nella tavolozza (lo aggiunge se nuovo).</summary>
@@ -90,18 +107,22 @@ namespace FantaLandia.Horror.Voxel
             var norms = new List<Vector3>();
             var uvs = new List<Vector2>();
             var tris = new List<List<int>>();
-            var colorToSub = new Dictionary<int, int>();
+            var colorToSub = new Dictionary<int, int>(); // chiave: colore * 3 + livello di tono
             var subColors = new List<Color>();
 
             foreach (var kv in cells)
             {
                 Vector3Int p = kv.Key;
-                if (!colorToSub.TryGetValue(kv.Value, out int sub))
+                int level = ShadeLevel(p);
+                int key = kv.Value * 3 + level + 1;
+                if (!colorToSub.TryGetValue(key, out int sub))
                 {
                     sub = tris.Count;
-                    colorToSub[kv.Value] = sub;
+                    colorToSub[key] = sub;
                     tris.Add(new List<int>());
-                    subColors.Add(palette[kv.Value]);
+                    Color baseColor = palette[kv.Value];
+                    float k = 1f + level * shadeVariation;
+                    subColors.Add(new Color(Mathf.Clamp01(baseColor.r * k), Mathf.Clamp01(baseColor.g * k), Mathf.Clamp01(baseColor.b * k), baseColor.a));
                 }
                 Vector3 center = ((Vector3)p + Vector3.one * 0.5f) * size - pivot;
                 foreach (Vector3Int d in Dirs)

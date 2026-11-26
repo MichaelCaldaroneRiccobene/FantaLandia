@@ -28,7 +28,7 @@ namespace FantaLandia.Horror.Player
         [Tooltip("Posizione della torcia rispetto al polso, lungo la direzione della mano")]
         public float gripDown = 0.05f;
         [Tooltip("Distanza tra il centro della torcia e la lente (m)")]
-        public float lensForward = 0.11f;
+        public float lensForward = 0.13f;
 
         public bool HasFlashlight => torch != null;
 

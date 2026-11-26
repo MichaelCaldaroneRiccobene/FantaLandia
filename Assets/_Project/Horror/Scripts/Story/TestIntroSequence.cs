@@ -69,6 +69,13 @@ namespace FantaLandia.Horror.Story
             door.knockable = false;
         }
 
+        IEnumerator WaitBesideDoor()
+        {
+            tom.MoveTo(tomBesideDoor.position, false);
+            yield return WaitArrive(tom, tomBesideDoor.position, 8f);
+            if (phase == Phase.WaitingAtDoor) yield return Face(tom, door.KnockPointWorld, 0.6f);
+        }
+
         IEnumerator CloseThenSit()
         {
             tom.MoveTo(tomCloseDoor.position, false);
@@ -122,9 +129,9 @@ namespace FantaLandia.Horror.Story
                 .Say(Speakers.Tom, "Jef è in bagno. Da mezz'ora. Non chiedere.")
                 .OnEnd(() =>
                 {
-                    // si sposta di lato per far entrare Muark, e aspetta lì
-                    tom.MoveTo(tomBesideDoor.position, false);
+                    // si sposta di lato per far entrare Muark, e aspetta lì rivolto verso la porta
                     phase = Phase.WaitingAtDoor;
+                    StartCoroutine(WaitBesideDoor());
                 })
                 .Start();
         }
