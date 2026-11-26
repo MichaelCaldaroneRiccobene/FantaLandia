@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using FantaLandia.Characters;
 using FantaLandia.EditorTools;
 using FantaLandia.Horror.Audio;
+using FantaLandia.Horror.Dialogue;
 using FantaLandia.Horror.Interaction;
 using FantaLandia.Horror.Story;
 using FantaLandia.Horror.World;
@@ -36,6 +37,11 @@ namespace FantaLandia.Horror.EditorTools
                         asphalt, sidewalk, porchWood, fenceWood, deckWood, garageFloor, bathTiles, kitchenTiles, railing, stairSide, stairTread;
 
         static readonly List<Light> houseLights = new List<Light>();
+        static readonly List<Light> cellarBulbs = new List<Light>();
+        static HorrorDoor backDoor, bathDoor, cellarDoor;
+        static GeneratorStarter generator;
+        static CharacterMotor royMotor, jefMotor;
+        static readonly List<NpcActor> neighborActors = new List<NpcActor>();
 
         [MenuItem("FantaLandia Horror/Crea casa e quartiere")]
         public static void Build()
@@ -47,6 +53,11 @@ namespace FantaLandia.Horror.EditorTools
             Dictionary<string, GameObject> cast = HorrorCast.BuildAll();
             Materials();
             houseLights.Clear();
+            cellarBulbs.Clear();
+            neighborActors.Clear();
+            backDoor = bathDoor = cellarDoor = null;
+            generator = null;
+            royMotor = jefMotor = null;
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             HorrorTestSceneBuilder.SetupNight();
@@ -60,8 +71,9 @@ namespace FantaLandia.Horror.EditorTools
             HorrorDoor frontDoor = null;
             CrtTv tv = null;
             Transform armchair = null;
+            PlaceSpot island = null;
             Step("struttura della casa", () => frontDoor = BuildHouseStructure(house));
-            Step("arredamento", () => tv = BuildFurniture(house, out armchair, out _));
+            Step("arredamento", () => tv = BuildFurniture(house, out armchair, out island));
             Step("garage", () => BuildGarage(house));
             Step("veranda", () => BuildPorch(house));
             Step("giardino", () => BuildYard(house));
@@ -100,18 +112,56 @@ namespace FantaLandia.Horror.EditorTools
             power.switches = new LightSwitch[0];
             power.glowRenderers = new Renderer[0];
 
-            var seq = new GameObject("Sequenza arrivo").AddComponent<TestIntroSequence>();
-            seq.door = frontDoor;
-            seq.tom = tom;
-            seq.tomAtDoor = HorrorTestSceneBuilder.Marker("Tom alla porta", world, new Vector3(0f, F0, 1.4f));
-            seq.tomBesideDoor = HorrorTestSceneBuilder.Marker("Tom accanto alla porta", world, new Vector3(-1.3f, F0, 1.0f));
-            seq.tomCloseDoor = HorrorTestSceneBuilder.Marker("Tom chiude la porta", world, new Vector3(0.3f, F0, 1.05f));
+            Transform marks = Group("Punti della storia", world);
+            Transform M2(string n, Vector3 p, float yaw = 0f) { var t = HorrorTestSceneBuilder.Marker(n, marks, p); t.rotation = Quaternion.Euler(0f, yaw, 0f); return t; }
+            var story = new GameObject("Regia della storia").AddComponent<StoryDirector>();
+            story.frontDoor = frontDoor;
+            story.backDoor = backDoor;
+            story.bathDoor = bathDoor;
+            story.cellarDoor = cellarDoor;
+            story.tom = tom;
+            story.roy = royMotor;
+            story.jef = jefMotor;
+            story.neighbors = neighborActors.ToArray();
+            story.tomAtDoor = M2("Tom alla porta", new Vector3(0f, F0, 1.4f));
+            story.tomBesideDoor = M2("Tom accanto alla porta", new Vector3(-1.3f, F0, 1.0f));
+            story.tomCloseDoor = M2("Tom chiude la porta", new Vector3(0.3f, F0, 1.05f));
             Vector3 chairDir = armchair.rotation * Vector3.forward;
-            seq.chairFront = HorrorTestSceneBuilder.Marker("Davanti alla poltrona", world, armchair.position + chairDir * 0.85f);
+            story.chairFront = M2("Davanti alla poltrona", armchair.position + chairDir * 0.85f);
             // seduto un po' avanti sul cuscino: le ginocchia escono dal bordo e gli stinchi scendono davanti alla poltrona
-            seq.chairSeat = HorrorTestSceneBuilder.Marker("Sedile poltrona", world, armchair.position + chairDir * 0.14f);
-            seq.chairSeat.rotation = armchair.rotation;
-            seq.seatHeight = 0.5f;
+            story.chairSeat = M2("Sedile poltrona", armchair.position + chairDir * 0.14f);
+            story.chairSeat.rotation = armchair.rotation;
+            story.chairHeight = 0.5f;
+            // divano a x -2.75 rivolto verso la TV (-X): Roy a destra, Jef a sinistra
+            story.sofaFrontRoy = M2("Davanti al divano (Roy)", new Vector3(-3.65f, F0, 3.6f), -90f);
+            story.sofaSeatRoy = M2("Divano (Roy)", new Vector3(-2.9f, F0, 3.6f), -90f);
+            story.sofaFrontJef = M2("Davanti al divano (Jef)", new Vector3(-3.65f, F0, 2.4f), -90f);
+            story.sofaSeatJef = M2("Divano (Jef)", new Vector3(-2.9f, F0, 2.4f), -90f);
+            story.sofaHeight = 0.5f;
+            story.royDoorstep = M2("Roy sulla soglia", new Vector3(0.05f, F0, -0.6f), 0f);
+            story.deckTom = M2("Pedana: Tom", new Vector3(-0.6f, 0.15f, 13.3f));
+            story.deckRoy = M2("Pedana: Roy", new Vector3(0.8f, 0.15f, 12.9f));
+            story.deckJef = M2("Pedana: Jef", new Vector3(-2.5f, 0.15f, 12.1f));
+            story.livingRoom = M2("Soggiorno", new Vector3(-4.3f, F0, 3.2f), -90f);
+            story.playerKitchen = M2("Prova: cucina", new Vector3(1.4f, F0, 7.2f), 90f);
+            story.playerCellarTop = M2("Prova: in cima alla cantina", new Vector3(3.6f, F0, 6.9f), -90f);
+            story.cellarScratch = M2("Graffi nel muro", new Vector3(6.6f, FB + 1.2f, 2f));
+            story.basementFloorY = FB;
+            story.houseBounds = new Bounds(new Vector3((X0 + X1) * 0.5f, 3f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0, 12f, Z1 - Z0));
+            story.island = island;
+            story.tv = tv;
+            story.house = power;
+            story.generator = generator;
+            story.cellarBulbs = cellarBulbs.ToArray();
+
+            // l'esplosione: dietro le case, a qualche isolato
+            var smokeGo = new GameObject("Esplosione (fumo)");
+            smokeGo.transform.SetParent(world, false);
+            smokeGo.transform.localPosition = new Vector3(9f, 0f, 58f);
+            var smokeCol = smokeGo.AddComponent<SmokeColumn>();
+            smokeCol.smokeMaterial = SmokeMat("Fumo", false, 0.7f, 0.6f);
+            smokeCol.glowMaterial = SmokeMat("Bagliore incendio", true, 0.9f, 0.3f);
+            story.smoke = smokeCol;
 
             // erba al vento (si piega quando ci si passa in mezzo)
             Material grassMat = EditorAssetUtil.WindMat("Erba al vento", Color.white, 0.06f, 0f, 1f, true);
@@ -130,11 +180,8 @@ namespace FantaLandia.Horror.EditorTools
             amb.clip = AmbientClip.Night;
             amb.volume = 0.3f;
 
-            var dbg = new GameObject("Tasti di prova").AddComponent<HorrorDebugKeys>();
-            dbg.frontDoor = frontDoor;
-            dbg.tv = tv;
-            dbg.power = power;
-            dbg.switches = new LightSwitch[0];
+            story.nightAmbience = amb;
+            Step("corrente del quartiere", () => story.neighborhood = BuildNeighborhoodPower(world, tv));
 
             // controllo finale: oggetti senza mesh (se ce ne sono, qualcosa è andato storto nella creazione dei prefab)
             int missing = 0;
@@ -144,6 +191,53 @@ namespace FantaLandia.Horror.EditorTools
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log("[FantaLandia Horror] Casa e quartiere creati: " + ScenePath);
+        }
+
+        static Material SmokeMat(string name, bool additive, float softness, float breakup)
+        {
+            string path = $"{EditorAssetUtil.MaterialFolder}/{name}.mat";
+            EditorAssetUtil.EnsureFolder(EditorAssetUtil.MaterialFolder);
+            Shader sh = Shader.Find("FantaLandia/Smoke");
+            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
+            else m.shader = sh;
+            if (m.HasProperty("_SrcBlend"))
+            {
+                m.SetFloat("_SrcBlend", additive ? (float)UnityEngine.Rendering.BlendMode.One : (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                m.SetFloat("_DstBlend", additive ? (float)UnityEngine.Rendering.BlendMode.One : (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            }
+            if (m.HasProperty("_Softness")) m.SetFloat("_Softness", softness);
+            if (m.HasProperty("_Breakup")) m.SetFloat("_Breakup", breakup);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        /// <summary>
+        /// La corrente del quartiere: tutte le luci (lampioni, verande, lampade di casa) tranne luna, TV, lampadine
+        /// della cantina; e tutti i renderer con un materiale luminoso (finestre accese, lampade), tranne la TV.
+        /// </summary>
+        static NeighborhoodPower BuildNeighborhoodPower(Transform world, CrtTv tv)
+        {
+            var np = new GameObject("Corrente del quartiere").AddComponent<NeighborhoodPower>();
+            var lights = new List<Light>();
+            foreach (var l in world.GetComponentsInChildren<Light>(true))
+            {
+                if (l.type == LightType.Directional || cellarBulbs.Contains(l)) continue;
+                if (tv != null && l.transform.IsChildOf(tv.transform)) continue;
+                lights.Add(l);
+            }
+            var glow = new List<Renderer>();
+            foreach (var r in world.GetComponentsInChildren<Renderer>(true))
+            {
+                if (tv != null && r.transform.IsChildOf(tv.transform)) continue;
+                foreach (var m in r.sharedMaterials)
+                    if (m != null && m.IsKeywordEnabled("_EMISSION")) { glow.Add(r); break; }
+            }
+            np.lights = lights.ToArray();
+            np.glowRenderers = glow.ToArray();
+            np.darkMaterial = M("Finestra buia", "#141a22", 0.8f);
+            return np;
         }
 
         /// <summary>Esegue un pezzo della costruzione: se va in errore lo segnala e continua con il resto.</summary>
@@ -162,9 +256,10 @@ namespace FantaLandia.Horror.EditorTools
         static void BuildCast(Transform world, Dictionary<string, GameObject> cast)
         {
             Transform people = Group("Personaggi", world);
-            HorrorTestSceneBuilder.BuildNpc(people, cast["jef"], "Jef", "jef", new Vector3(5.6f, F0, 1.9f), 200f);
-            // Roy è nascosto del tutto: la sequenza lo attiverà quando bussa alla porta
-            HorrorTestSceneBuilder.BuildNpc(people, cast["roy"], "Roy", "roy", new Vector3(-8.3f, 0f, 1.2f), 90f).gameObject.SetActive(false);
+            jefMotor = HorrorTestSceneBuilder.BuildNpc(people, cast["jef"], "Jef", "jef", new Vector3(5.6f, F0, 1.9f), 200f);
+            // Roy è nascosto del tutto: la storia lo attiverà quando bussa alla porta
+            royMotor = HorrorTestSceneBuilder.BuildNpc(people, cast["roy"], "Roy", "roy", new Vector3(-8.3f, 0f, 1.2f), 90f);
+            royMotor.gameObject.SetActive(false);
 
             // vicini: pedana alta 0.6 m, corrimano a 1.58 m sul lato verso il fondo del giardino (z = 13)
             Neighbor(people, cast["frank"], "Frank", "frank", new Vector3(-27.1f, 0.6f, 12.3f), new Vector3(-27.1f, 1.58f, 12.95f),
@@ -182,6 +277,7 @@ namespace FantaLandia.Horror.EditorTools
             actor.leanOnStart = true;
             actor.leanPoint = rail;
             actor.ambientLines = chatter;
+            neighborActors.Add(actor);
         }
 
         // ------------------------------------------------------------------ materiali
@@ -301,7 +397,7 @@ namespace FantaLandia.Horror.EditorTools
             // muri esterni: nucleo (colore interno) + rivestimento esterno (azzurro) con le stesse aperture
             var front0 = new[] { new Opening(-0.47f, 0.47f, F0, F0 + 2.15f, OpeningKind.Door), Window(-4.6f, 2f, F0 + 0.85f, F0 + 2.2f), Window(5.2f, 0.8f, F0 + 1.5f, F0 + 2.1f) };
             var front1 = new[] { Window(-4.6f, 2f), Window(0.6f, 1f), Window(5.2f, 0.8f, 1.4f, 2.0f) };
-            var back0 = new[] { Window(-4.5f, 1.8f, F0 + 0.85f, F0 + 2.2f), Window(2.5f, 1.6f, F0 + 1.15f, F0 + 2.15f) };
+            var back0 = new[] { Window(-4.5f, 1.8f, F0 + 0.85f, F0 + 2.2f), new Opening(-1.97f, -1.03f, F0, F0 + 2.15f, OpeningKind.Door), Window(2.5f, 1.6f, F0 + 1.15f, F0 + 2.15f) };
             var back1 = new[] { Window(-4.5f, 1.8f), Window(2.5f, 1.8f) };
             var left0 = new[] { Window(3f, 1.8f, F0 + 0.85f, F0 + 2.2f), Window(8.5f, 1.8f, F0 + 0.85f, F0 + 2.2f) };
             var left1 = new[] { Window(3f, 1.6f), Window(8.5f, 1.6f) };
@@ -345,11 +441,13 @@ namespace FantaLandia.Horror.EditorTools
             front.locked = true;
             front.knockable = true;
             DoorAt(s, "Porta laterale", VoxelAssetLibrary.Load("Porta"), new Vector3(X1 - ET * 0.5f, F0, 8.0f), -90f);
+            // porta sul retro: dalla sala da pranzo alla pedana del giardino
+            backDoor = DoorAt(s, "Porta sul retro", VoxelAssetLibrary.Load("Porta"), new Vector3(-1.05f, F0, Z1 - ET * 0.5f), 180f);
             GameObject inner = VoxelFurniture.Get("Porta interna");
-            HorrorDoor bath = DoorAt(s, "Porta bagno (Jef)", inner, new Vector3(3.5f, F0, 0.82f + 0.4f), 90f);
+            HorrorDoor bath = bathDoor = DoorAt(s, "Porta bagno (Jef)", inner, new Vector3(3.5f, F0, 0.82f + 0.4f), 90f);
             bath.locked = true;
             bath.lockedText = "È occupato...";
-            DoorAt(s, "Porta cantina", inner, new Vector3(4.42f + 0.4f, F0, 6f), 180f); // dalla cucina verso la scala della cantina
+            cellarDoor = DoorAt(s, "Porta cantina", inner, new Vector3(4.42f + 0.4f, F0, 6f), 180f); // dalla cucina verso la scala della cantina
             DoorAt(s, "Porta garage", inner, new Vector3(X1 - ET * 0.5f, F0, 5.85f), 90f);
             DoorAt(s, "Porta camera matrimoniale", inner, new Vector3(-2f, F1, 4.6f - 0.4f), -90f);
             DoorAt(s, "Porta cameretta", inner, new Vector3(-2f, F1, 6.5f - 0.4f), -90f);
@@ -576,7 +674,8 @@ namespace FantaLandia.Horror.EditorTools
 
             // cantina: sporca e piena di roba, luce spenta (la accenderà il generatore)
             Transform b = Group("Cantina", f);
-            Place(VoxelFurniture.Get("Generatore"), b, new Vector3(-5.3f, FB, 9.9f), 180f);
+            GameObject gen = Place(VoxelFurniture.Get("Generatore"), b, new Vector3(-5.3f, FB, 9.9f), 180f);
+            if (gen != null) generator = gen.AddComponent<GeneratorStarter>();
             Place(VoxelFurniture.Get("Tanica"), b, new Vector3(-4.3f, FB, 10.3f), 20f);
             Place(VoxelFurniture.Get("Scaffale"), b, new Vector3(-6.45f, FB, 2.8f), 90f);
             Place(VoxelFurniture.Get("Scaffale"), b, new Vector3(-6.45f, FB, 6.2f), 90f);
@@ -593,6 +692,7 @@ namespace FantaLandia.Horror.EditorTools
                 Place(VoxelFurniture.Get("Lampadina"), b, p, 0f);
                 var bulb = PointLight(b, "Luce cantina (spenta)", p + Vector3.down * 0.5f, 6f, 1f, new Color(1f, 0.85f, 0.6f), false);
                 bulb.enabled = false;
+                cellarBulbs.Add(bulb);
             }
             return tv;
         }
@@ -611,6 +711,11 @@ namespace FantaLandia.Horror.EditorTools
             quad.transform.localScale = new Vector3(ss.x, ss.y, 1f);
             tv.screen = quad.GetComponent<Renderer>();
             tv.screenLight = PointLight(tvGo.transform, "Luce schermo", new Vector3(0f, 0.3f, 0.6f), 4.5f, 1.2f, Color.white, false);
+            // la "voce" della TV nei dialoghi: lo sguardo di chi ascolta va sullo schermo (il punto degli occhi è 1.6 m sopra)
+            var voice = new GameObject("Voce TV");
+            voice.transform.SetParent(tvGo.transform, false);
+            voice.transform.position = quad.transform.position + Vector3.down * 1.6f;
+            voice.AddComponent<NpcSpeaker>().speakerId = "tv";
             return tv;
         }
 

@@ -278,6 +278,236 @@ namespace FantaLandia.Horror.Audio
             }, 62);
         }
 
+
+        // ------------------------------------------------------------------ storia: esplosione, sirene, paura
+
+        /// <summary>Esplosione lontana: colpo sordo e un lungo brontolio che si spegne (con qualche eco).</summary>
+        public static AudioClip Explosion()
+        {
+            return Build("esplosione", 5f, (d, r) =>
+            {
+                var rumble = new float[d.Length];
+                for (int i = 0; i < d.Length; i++) rumble[i] = Noise(r);
+                LowPass(rumble, 120f);
+                LowPass(rumble, 120f);
+                foreach (float echo in new[] { 0f, 0.42f, 0.95f })
+                {
+                    int s0 = (int)(echo * Rate);
+                    float g = echo == 0f ? 1f : 0.35f / (1f + echo);
+                    for (int i = s0; i < d.Length; i++)
+                    {
+                        float t = (i - s0) / (float)Rate;
+                        float env = Mathf.Clamp01(t / 0.02f) * Mathf.Exp(-t * 0.9f);
+                        float thump = Mathf.Sin(2f * Mathf.PI * (38f + 30f * Mathf.Exp(-t * 6f)) * t) * Mathf.Exp(-t * 3f);
+                        d[i] += g * (rumble[i - s0] * 14f * env + thump * 0.9f);
+                    }
+                }
+                // crepitio di detriti
+                for (int k = 0; k < 40; k++)
+                {
+                    int s0 = (int)((0.1f + (float)r.NextDouble() * 2.5f) * Rate);
+                    float a = 0.05f + (float)r.NextDouble() * 0.12f;
+                    for (int i = s0; i < s0 + Rate / 40 && i < d.Length; i++) d[i] += Noise(r) * a * Mathf.Exp(-(i - s0) / (float)Rate * 120f);
+                }
+                LowPass(d, 900f);
+            }, 301);
+        }
+
+        /// <summary>Sirene lontane (polizia e pompieri): due ululati che salgono e scendono, sfasati. In loop.</summary>
+        public static AudioClip Siren()
+        {
+            return Build("sirene", 12f, (d, r) =>
+            {
+                float p1 = 0f, p2 = 0f;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    // l'ululato: un ciclo ogni 4 s (loop perfetto su 12 s)
+                    float w1 = 0.5f - 0.5f * Mathf.Cos(2f * Mathf.PI * t / 4f);
+                    float w2 = 0.5f - 0.5f * Mathf.Cos(2f * Mathf.PI * (t / 3f + 0.3f));
+                    p1 += (620f + 560f * w1) / Rate;
+                    p2 += (720f + 380f * w2) / Rate;
+                    float a = Mathf.Sin(2f * Mathf.PI * p1) + 0.3f * Mathf.Sin(4f * Mathf.PI * p1);
+                    float b = Mathf.Sin(2f * Mathf.PI * p2) + 0.25f * Mathf.Sin(6f * Mathf.PI * p2);
+                    d[i] = a * 0.5f + b * 0.35f;
+                }
+                LowPass(d, 1800f); // la distanza smussa gli acuti
+            }, 302);
+        }
+
+        /// <summary>Colpo da spavento: accordo dissonante di archi e un tonfo grave.</summary>
+        public static AudioClip Sting()
+        {
+            return Build("spavento", 2.2f, (d, r) =>
+            {
+                float[] f = { 233f, 247f, 349f, 370f, 466f, 494f, 740f };
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float env = Mathf.Clamp01(t / 0.01f) * Mathf.Exp(-t * 1.6f);
+                    float v = 0f;
+                    for (int k = 0; k < f.Length; k++)
+                    {
+                        float saw = ((t * f[k] * (1f + 0.004f * Mathf.Sin(t * 30f + k))) % 1f) * 2f - 1f;
+                        v += saw * 0.18f;
+                    }
+                    v += Mathf.Sin(2f * Mathf.PI * 45f * t) * Mathf.Exp(-t * 4f) * 1.2f + Noise(r) * Mathf.Exp(-t * 25f) * 0.5f;
+                    d[i] = v * env;
+                }
+                LowPass(d, 4000f);
+            }, 303);
+        }
+
+        /// <summary>Blackout: il ronzio della corrente che cala e muore, con uno schiocco.</summary>
+        public static AudioClip PowerDown()
+        {
+            return Build("blackout", 1.8f, (d, r) =>
+            {
+                float ph = 0f;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float f = 120f * Mathf.Exp(-t * 1.6f) + 20f;
+                    ph += f / Rate;
+                    float hum = Mathf.Sin(2f * Mathf.PI * ph) + 0.5f * Mathf.Sin(6f * Mathf.PI * ph);
+                    d[i] = hum * Mathf.Exp(-t * 1.8f) * 0.6f + (t < 0.03f ? Noise(r) * (1f - t / 0.03f) : 0f);
+                }
+            }, 304);
+        }
+
+        /// <summary>Strappo della corda d'avviamento.</summary>
+        public static AudioClip CordPull()
+        {
+            return Build("corda", 0.5f, (d, r) =>
+            {
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float env = Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / 0.4f));
+                    d[i] = Noise(r) * env * (0.6f + 0.4f * Mathf.Sin(t * 2f * Mathf.PI * (60f + t * 200f)));
+                }
+                LowPass(d, 3000f);
+            }, 305);
+        }
+
+        /// <summary>Il motore tossisce e non parte (variant: 0 corto, 1 più lungo).</summary>
+        public static AudioClip Sputter(int variant)
+        {
+            return Build($"tossisce_{variant}", 0.6f + variant * 0.6f, (d, r) =>
+            {
+                int pops = 3 + variant * 5;
+                float t0 = 0.05f;
+                for (int k = 0; k < pops; k++)
+                {
+                    int s0 = (int)(t0 * Rate);
+                    float a = 1f - k / (float)(pops + 1);
+                    for (int i = s0; i < d.Length && i < s0 + Rate / 10; i++)
+                    {
+                        float t = (i - s0) / (float)Rate;
+                        d[i] += (Mathf.Sin(2f * Mathf.PI * 55f * t) + Noise(r) * 0.6f) * Mathf.Exp(-t * 30f) * a;
+                    }
+                    t0 += 0.07f + (float)r.NextDouble() * 0.06f + k * 0.012f;
+                }
+                LowPass(d, 1200f);
+            }, 306 + variant);
+        }
+
+        /// <summary>Motore del generatore acceso. In loop.</summary>
+        public static AudioClip EngineLoop()
+        {
+            return Build("generatore", 2f, (d, r) =>
+            {
+                // 30 colpi al secondo (loop esatto su 2 s) con rumore meccanico
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float firing = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * 30f * t), 6f);
+                    d[i] = firing * (Mathf.Sin(2f * Mathf.PI * 60f * t) + Noise(r) * 0.5f) + Mathf.Sin(2f * Mathf.PI * 120f * t) * 0.15f;
+                }
+                LowPass(d, 900f);
+            }, 308);
+        }
+
+        /// <summary>Qualcosa di pesante che cade (una scatola, in cantina).</summary>
+        public static AudioClip Thud()
+        {
+            return Build("tonfo", 0.9f, (d, r) =>
+            {
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    d[i] = Mathf.Sin(2f * Mathf.PI * 70f * t) * Mathf.Exp(-t * 9f) + Noise(r) * Mathf.Exp(-t * 35f) * 0.7f;
+                    float t2 = t - 0.18f; // rimbalzo
+                    if (t2 > 0f) d[i] += (Mathf.Sin(2f * Mathf.PI * 90f * t2) * 0.4f + Noise(r) * 0.3f) * Mathf.Exp(-t2 * 25f);
+                }
+                LowPass(d, 1000f);
+            }, 309);
+        }
+
+        /// <summary>Graffi dentro il muro: unghiate irregolari.</summary>
+        public static AudioClip Scratch()
+        {
+            return Build("graffi", 2.4f, (d, r) =>
+            {
+                float t0 = 0.05f;
+                while (t0 < 2.2f)
+                {
+                    float len = 0.12f + (float)r.NextDouble() * 0.25f;
+                    int s0 = (int)(t0 * Rate), n = (int)(len * Rate);
+                    float rate = 70f + (float)r.NextDouble() * 60f;
+                    for (int i = 0; i < n && s0 + i < d.Length; i++)
+                    {
+                        float t = i / (float)Rate;
+                        float grain = Mathf.Pow(Mathf.Abs(Mathf.Sin(Mathf.PI * rate * t)), 8f);
+                        d[s0 + i] += Noise(r) * grain * Mathf.Sin(Mathf.PI * t / len);
+                    }
+                    t0 += len + 0.05f + (float)r.NextDouble() * 0.3f;
+                }
+                LowPass(d, 2500f);
+            }, 310);
+        }
+
+        /// <summary>Un sussurro: rumore soffiato con formanti di voce che cambiano, incomprensibile.</summary>
+        public static AudioClip Whisper()
+        {
+            return Build("sussurro", 2.6f, (d, r) =>
+            {
+                var n = new float[d.Length];
+                for (int i = 0; i < n.Length; i++) n[i] = Noise(r);
+                float y1 = 0f, y2 = 0f;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    // due "risonatori" che si spostano come vocali sussurrate
+                    float f1 = 500f + 300f * Mathf.Sin(t * 7.3f), f2 = 1700f + 600f * Mathf.Sin(t * 5.1f + 1f);
+                    float a1 = 1f - Mathf.Exp(-2f * Mathf.PI * f1 / Rate), a2 = 1f - Mathf.Exp(-2f * Mathf.PI * f2 / Rate);
+                    y1 += a1 * (n[i] - y1);
+                    y2 += a2 * (n[i] - y2);
+                    float syll = Mathf.Pow(Mathf.Abs(Mathf.Sin(Mathf.PI * t * 3.4f)), 2f);
+                    d[i] = (n[i] - y2 * 0.7f + y1 * 0.5f) * syll * Mathf.Sin(Mathf.PI * t / 2.6f);
+                }
+                LowPass(d, 5000f);
+            }, 311);
+        }
+
+        /// <summary>Bordone cupo per la cantina: note gravi battenti e un fruscio. In loop.</summary>
+        public static AudioClip Drone()
+        {
+            return Build("bordone", 10f, (d, r) =>
+            {
+                var air = new float[d.Length];
+                for (int i = 0; i < air.Length; i++) air[i] = Noise(r);
+                LowPass(air, 300f);
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    // 41.0 / 41.1 / 61.6 Hz: battimenti lenti (multipli di 0.1 Hz: loop esatto su 10 s)
+                    d[i] = Mathf.Sin(2f * Mathf.PI * 41f * t) + Mathf.Sin(2f * Mathf.PI * 41.1f * t) * 0.8f
+                         + Mathf.Sin(2f * Mathf.PI * 61.6f * t) * 0.4f + air[i] * 2f;
+                }
+            }, 312);
+        }
+
         public static float Midi(int note) => 440f * Mathf.Pow(2f, (note - 69) / 12f);
 
         // ------------------------------------------------------------------ voci "alla Animal Crossing"
