@@ -33,6 +33,7 @@ namespace FantaLandia.Core
 
         public static bool LeftDown => Ms != null && Ms.leftButton.wasPressedThisFrame;
         public static bool LeftUp => Ms != null && Ms.leftButton.wasReleasedThisFrame;
+        public static bool LeftHeld => Ms != null && Ms.leftButton.isPressed;
         public static bool RightDown => Ms != null && Ms.rightButton.wasPressedThisFrame;
         public static bool RightHeld => Ms != null && Ms.rightButton.isPressed;
         public static bool RightUp => Ms != null && Ms.rightButton.wasReleasedThisFrame;
@@ -40,6 +41,8 @@ namespace FantaLandia.Core
 
         public static bool Shift => Kb != null && Kb.shiftKey.isPressed;
         public static bool Alt => Kb != null && Kb.altKey.isPressed;
+        public static bool Ctrl => Kb != null && Kb.ctrlKey.isPressed;
+        public static bool Deselect => Pressed(Key.Escape);
 
         public static Vector2 PanAxis => new Vector2(
             (Held(Key.D) || Held(Key.RightArrow) ? 1f : 0f) - (Held(Key.A) || Held(Key.LeftArrow) ? 1f : 0f),
@@ -73,6 +76,7 @@ namespace FantaLandia.Core
 
         public static bool LeftDown => Input.GetMouseButtonDown(0);
         public static bool LeftUp => Input.GetMouseButtonUp(0);
+        public static bool LeftHeld => Input.GetMouseButton(0);
         public static bool RightDown => Input.GetMouseButtonDown(1);
         public static bool RightHeld => Input.GetMouseButton(1);
         public static bool RightUp => Input.GetMouseButtonUp(1);
@@ -80,6 +84,8 @@ namespace FantaLandia.Core
 
         public static bool Shift => Held(KeyCode.LeftShift) || Held(KeyCode.RightShift);
         public static bool Alt => Held(KeyCode.LeftAlt) || Held(KeyCode.RightAlt);
+        public static bool Ctrl => Held(KeyCode.LeftControl) || Held(KeyCode.RightControl);
+        public static bool Deselect => Pressed(KeyCode.Escape);
 
         public static Vector2 PanAxis => new Vector2(
             (Held(KeyCode.D) || Held(KeyCode.RightArrow) ? 1f : 0f) - (Held(KeyCode.A) || Held(KeyCode.LeftArrow) ? 1f : 0f),

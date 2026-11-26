@@ -568,8 +568,12 @@ namespace FantaLandia.Characters.Body
                     break;
                 }
 
-                case TraversalPhase.Vault:
+                case TraversalPhase.Vault when t.stepOver:
                     StepOverPose(t, u);
+                    break;
+
+                case TraversalPhase.Vault:
+                    LowVaultPose(t, u);
                     break;
 
                 case TraversalPhase.Jump when t.kind == TraversalKind.GapJump:
@@ -735,6 +739,34 @@ namespace FantaLandia.Characters.Body
             Rot(BodyPart.UpperArmL, -20f, 0f, -25f);
             Rot(BodyPart.ForearmL, -25f, 0f, 0f);
             Rot(BodyPart.UpperArmR, -30f, 0f, 10f);
+        }
+
+        /// <summary>Balzo sul muretto (di corsa): mano destra sul bordo, gambe raccolte che passano sopra.</summary>
+        void LowVaultPose(TraversalState t, float u)
+        {
+            Vector3 dir = t.dir, right = t.right;
+            Vector3 edge = t.Edge;
+            Rot(BodyPart.Abdomen, 18f, 0f, 0f);
+            Rot(BodyPart.Chest, 10f, 0f, 0f);
+            Rot(BodyPart.Head, -15f, 0f, 0f);
+            Rot(BodyPart.UpperArmL, -60f, 0f, -35f);
+            Rot(BodyPart.ForearmL, -20f, 0f, 0f);
+            Rot(BodyPart.ThighL, -85f, 0f, 0f); Rot(BodyPart.ShinL, 105f, 0f, 0f);
+            Rot(BodyPart.ThighR, -80f, 0f, 0f); Rot(BodyPart.ShinR, 100f, 0f, 0f);
+
+            Vector3 hand = edge + dir * 0.08f + right * 0.14f;
+            float handW = Ramp(u, 0f, 0.15f) * (1f - Ramp(u, 0.55f, 0.75f));
+            SetIK(3, hand + Vector3.up * 0.03f - dir * 0.04f, -dir + right, handW);
+            SetEnd(3, PalmDown(1, dir));
+
+            Vector3 hipsW = hips.position;
+            float legW = Ramp(u, 0.1f, 0.3f) * (1f - Ramp(u, 0.8f, 1f));
+            for (int i = 0; i < 2; i++)
+            {
+                Vector3 p = hipsW + Vector3.down * 0.42f + dir * 0.12f + right * (feet[i].side * 0.1f);
+                p.y = Mathf.Max(p.y, t.topY + 0.06f + ankleH);
+                SetIK(i, p, dir, legW);
+            }
         }
 
         /// <summary>Salto in lungo: stacco con una gamba avanti, braccia in alto, poi gambe avanti per l'atterraggio.</summary>

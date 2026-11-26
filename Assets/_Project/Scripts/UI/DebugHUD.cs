@@ -70,10 +70,11 @@ namespace FantaLandia.UI
                 GUILayout.Space(6);
                 GUILayout.Label(
                     "<b>Comandi</b> (F1 nasconde)\n" +
-                    "Clic sinistro / trascina: seleziona  (Shift aggiunge)\n" +
+                    "Clic sinistro su un personaggio: seleziona (Shift aggiunge)\n" +
+                    "Ctrl + trascina: selezione a riquadro   Esc: deseleziona\n" +
                     "1-9: seleziona un membro del party\n" +
-                    "Clic destro: muovi (tienilo premuto per guidare)\n" +
-                    "Alt + clic destro: consenti salti pericolosi\n" +
+                    "Clic sinistro sul terreno: muovi (tienilo premuto per guidare)\n" +
+                    "Alt + clic sinistro: consenti salti pericolosi\n" +
                     "R: andatura (cammina / corsa leggera / scatto)\n" +
                     "G: movimento di gruppo on/off\n" +
                     "WASD / frecce: sposta camera\n" +

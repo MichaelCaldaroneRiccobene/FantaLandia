@@ -112,7 +112,7 @@ namespace FantaLandia.EditorTools
             BuildBrokenBridge(root, "Ponte con varco piccolo", -8f, 1.2f);
             BuildBrokenBridge(root, "Ponte con varco grande", 8f, 3.0f);
 
-            Label(root, "Fossato: Alt + clic destro sull'altra sponda per saltare", new Vector3((MoatX0 + MoatX1) * 0.5f, 0.05f, -14f));
+            Label(root, "Fossato: Alt + clic sinistro sull'altra sponda per saltare", new Vector3((MoatX0 + MoatX1) * 0.5f, 0.05f, -14f));
             Label(root, "Varco 1.2 m (si salta)", new Vector3(MoatX0 - 3f, 0.05f, -8f));
             Label(root, "Varco 3 m (si cade)", new Vector3(MoatX0 - 3f, 0.05f, 8f));
         }
@@ -246,7 +246,7 @@ namespace FantaLandia.EditorTools
             Box("Ringhiera sud", structure[1], new Vector3(HalfX, FloorH, -2.5f), new Vector3(HalfX + 2f, FloorH + 1f, -2.4f), matDark);
             Box("Ringhiera nord", structure[1], new Vector3(HalfX, FloorH, 2.4f), new Vector3(HalfX + 2f, FloorH + 1f, 2.5f), matDark);
 
-            // Salti: tutti sopra i 3 m sono "pericolosi" (area Jump): solo con Alt + clic destro.
+            // Salti: tutti sopra i 3 m sono "pericolosi" (area Jump): solo con Alt + clic sinistro.
             int jump = CharacterMotor.DangerousJumpArea;
             Link(house, "Salto dal balcone", house.TransformPoint(new Vector3(HalfX + 1f, FloorH, 0f)),
                  house.TransformPoint(new Vector3(HalfX + 3.6f, 0f, 0f)), 3f, false, jump, 1f);
@@ -256,7 +256,7 @@ namespace FantaLandia.EditorTools
                  house.TransformPoint(new Vector3(HalfX + 1f, FloorH, 0f)), 1.5f, false, jump, 0f);
 
             Label(house, "Ingresso", house.TransformPoint(new Vector3(0f, 0.05f, -HalfZ - 1.5f)));
-            Label(house, "Alt + clic destro: salta dal balcone / tetto", house.TransformPoint(new Vector3(HalfX + 4f, 0.05f, -4f)));
+            Label(house, "Alt + clic sinistro: salta dal balcone / tetto", house.TransformPoint(new Vector3(HalfX + 4f, 0.05f, -4f)));
         }
 
         static void SlabWithHole(Transform parent, string name, float topY, Rect hole, Material mat)
@@ -308,6 +308,29 @@ namespace FantaLandia.EditorTools
                 Vector3 max = alongX ? new Vector3(b, top, crossMax) : new Vector3(crossMax, top, b);
                 Box($"Gradino {i + 1}", g, min, max, mat);
             }
+
+            // Bordi della scala più "costosi" per la navigazione: i personaggi la prendono al centro.
+            float s0 = Mathf.Min(start, start + steps * run) - 0.6f, s1 = Mathf.Max(start, start + steps * run) + 0.6f;
+            float c = (crossMin + crossMax) * 0.5f, band = 0.3f;
+            float y0 = baseY - 0.5f, y1 = baseY + steps * rise + 1f;
+            StairEdgeVolume(g, alongX, s0, s1, y0, y1, crossMin - 0.3f, c - band);
+            StairEdgeVolume(g, alongX, s0, s1, y0, y1, c + band, crossMax + 0.3f);
+        }
+
+        /// <summary>Area NavMesh "Bordo scala" (indice 3, costo 5 in Project Settings > Navigation > Areas).</summary>
+        public const int StairEdgeArea = 3;
+
+        static void StairEdgeVolume(Transform parent, bool alongX, float a0, float a1, float y0, float y1, float c0, float c1)
+        {
+            if (c1 - c0 < 0.05f) return;
+            var go = new GameObject("Bordo scala (navigazione)");
+            go.transform.SetParent(parent, false);
+            var vol = go.AddComponent<NavMeshModifierVolume>();
+            Vector3 min = alongX ? new Vector3(a0, y0, c0) : new Vector3(c0, y0, a0);
+            Vector3 max = alongX ? new Vector3(a1, y1, c1) : new Vector3(c1, y1, a1);
+            vol.center = (min + max) * 0.5f;
+            vol.size = max - min;
+            vol.area = StairEdgeArea;
         }
 
         // ------------------------------------------------------------------ navigazione

@@ -24,6 +24,8 @@ namespace FantaLandia.Characters
         public Vector3 nearFace, farFace;
         /// <summary>Altezza del bordo superiore dell'ostacolo.</summary>
         public float topY;
+        /// <summary>true = scavalco a passo (piede sopra il muretto), false = balzo.</summary>
+        public bool stepOver;
         public Vector3 Edge => new Vector3(nearFace.x, topY, nearFace.z);
     }
 
@@ -298,7 +300,9 @@ namespace FantaLandia.Characters
             switch (kind)
             {
                 case TraversalKind.Vault:
-                    yield return StartCoroutine(StepOver());
+                    // camminando ci mette un piede sopra, correndo lo salta con una mano
+                    if (CurrentGait == Gait.Walk) yield return StartCoroutine(StepOver());
+                    else yield return StartCoroutine(VaultOver(false));
                     break;
                 case TraversalKind.Climb:
                     yield return StartCoroutine(VaultOver(true));
@@ -442,6 +446,7 @@ namespace FantaLandia.Characters
         IEnumerator StepOver()
         {
             var t = Traversal;
+            t.stepOver = true;
             Vector3 takeoff = transform.position;
             if (FlatDistance(takeoff, t.nearFace) > 0.4f)
             {
@@ -540,6 +545,7 @@ namespace FantaLandia.Characters
         IEnumerator VaultOver(bool parkour)
         {
             var t = Traversal;
+            t.stepOver = false;
             float takeoffDist = parkour ? 0.7f : 0.45f;
             Vector3 takeoff = transform.position;
             if (FlatDistance(takeoff, t.nearFace) > takeoffDist + 0.05f)

@@ -7,9 +7,9 @@ using UnityEngine.AI;
 namespace FantaLandia.Player
 {
     /// <summary>
-    /// Comandi stile strategico: clic sinistro / riquadro per selezionare, clic destro per muovere.
-    /// Tenendo premuto il destro i personaggi inseguono il cursore; al rilascio l'ultimo punto diventa la destinazione.
-    /// Alt + clic destro consente i salti pericolosi (tetto, balcone).
+    /// Comandi stile strategico: tutto con il tasto sinistro (selezione, movimento, Ctrl+riquadro).
+    /// Tenendo premuto il sinistro sul terreno i personaggi inseguono il cursore; al rilascio l'ultimo punto diventa la destinazione.
+    /// Alt + clic sinistro consente i salti pericolosi (tetto, balcone).
     /// R cambia andatura, G attiva il movimento di gruppo (tutti alla velocità del più lento).
     /// </summary>
     public class SelectionController : MonoBehaviour
@@ -83,15 +83,32 @@ namespace FantaLandia.Player
 
         // ------------------------------------------------------------------ selezione
 
+        /// <summary>
+        /// Tasto sinistro:
+        ///  - clic su un personaggio: selezione (Shift aggiunge / toglie)
+        ///  - clic o tenuto premuto sul terreno: movimento (tenendo premuto i personaggi seguono il cursore)
+        ///  - Ctrl + trascina: selezione a riquadro
+        /// Il tasto destro resta libero per il menu delle opzioni.
+        /// </summary>
         void HandleMouseSelection()
         {
             Vector2 mouse = GameInput.MousePosition;
             if (GameInput.LeftDown)
             {
-                pressing = true;
-                dragging = false;
-                dragStart = mouse;
+                if (GameInput.Ctrl)
+                {
+                    pressing = true;   // riquadro di selezione
+                    dragging = false;
+                    dragStart = mouse;
+                }
+                else
+                {
+                    SelectableCharacter hit = RaycastCharacter(mouse);
+                    if (hit != null) ClickSelect(mouse, GameInput.Shift);
+                    else BeginMove();
+                }
             }
+
             if (pressing && !dragging && (mouse - dragStart).sqrMagnitude > dragThreshold * dragThreshold)
                 dragging = true;
 
@@ -102,6 +119,8 @@ namespace FantaLandia.Player
                 else ClickSelect(mouse, GameInput.Shift);
                 dragging = false;
             }
+
+            if (GameInput.Deselect) ClearSelection();
         }
 
         void ClickSelect(Vector2 screen, bool additive)
@@ -173,16 +192,23 @@ namespace FantaLandia.Player
 
         // ------------------------------------------------------------------ ordini di movimento
 
+        bool orderDangerous;
+
+        void BeginMove()
+        {
+            holdingMove = true;
+            holdTimer = 0f;
+            // Alt viene "ricordato" dal momento del clic: non serve tenerlo fino al rilascio.
+            orderDangerous = GameInput.Alt;
+            if (TryGetGroundPoint(out Vector3 p)) IssueMoveOrder(p);
+        }
+
         void HandleMoveInput()
         {
-            if (GameInput.RightDown)
-            {
-                holdingMove = true;
-                holdTimer = 0f;
-                if (TryGetGroundPoint(out Vector3 p)) IssueMoveOrder(p);
-            }
+            if (!holdingMove) return;
+            if (GameInput.Alt) orderDangerous = true;
 
-            if (holdingMove && GameInput.RightHeld)
+            if (GameInput.LeftHeld)
             {
                 // Tenendo premuto: i personaggi seguono il cursore.
                 holdTimer += Time.deltaTime;
@@ -194,11 +220,11 @@ namespace FantaLandia.Player
                 }
             }
 
-            if (holdingMove && GameInput.RightUp)
+            if (GameInput.LeftUp)
             {
                 // Al rilascio: l'ultimo punto sotto il cursore diventa la destinazione definitiva.
                 holdingMove = false;
-                if (TryGetGroundPoint(out Vector3 p)) IssueMoveOrder(p);
+                if (TryGetGroundPoint(out Vector3 p) && (p - lastOrderPoint).sqrMagnitude > 0.01f) IssueMoveOrder(p);
             }
         }
 
@@ -218,7 +244,7 @@ namespace FantaLandia.Player
             if (selected.Count == 0) return;
             lastOrderPoint = center;
 
-            bool dangerous = GameInput.Alt;
+            bool dangerous = orderDangerous;
             int n = selected.Count;
 
             ApplyPace();
