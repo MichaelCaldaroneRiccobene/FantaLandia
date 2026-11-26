@@ -54,9 +54,20 @@ namespace FantaLandia.Horror.EditorTools
             go.AddComponent<MeshRenderer>().sharedMaterials = mats;
             if (collider)
             {
-                var bc = go.AddComponent<BoxCollider>();
-                bc.center = mesh.bounds.center;
-                bc.size = mesh.bounds.size;
+                Vector3 size = mesh.bounds.size;
+                if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > 0.6f)
+                {
+                    // mobili grandi: la collisione segue la forma vera a cubetti, così gli oggetti appoggiati sopra
+                    // (torcia, telefono...) restano raggiungibili e non finiscono "dentro" una scatola più grande
+                    go.AddComponent<MeshCollider>().sharedMesh = mesh;
+                }
+                else
+                {
+                    // oggetti piccoli (si possono prendere, lanciare, far cadere): una scatola semplice
+                    var bc = go.AddComponent<BoxCollider>();
+                    bc.center = mesh.bounds.center;
+                    bc.size = mesh.bounds.size;
+                }
             }
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{Folder}/{name}.prefab");
             Object.DestroyImmediate(go);
