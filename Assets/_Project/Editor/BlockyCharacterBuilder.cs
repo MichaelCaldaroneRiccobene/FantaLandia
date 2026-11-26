@@ -36,6 +36,13 @@ namespace FantaLandia.EditorTools
 
             public Color skin, hair, lips, pupil, underwear, trim;
 
+            // aspetto (personaggi della storia)
+            public HairStyle hairStyle = HairStyle.Default;
+            public BeardStyle beard = BeardStyle.Default;
+            [Tooltip("Pancia: 0 piatta, 1 bella tonda")]
+            public float belly;
+            public Outfit outfit;
+
             public float Height => ankleH + shinLen + thighLen + hipJointDrop + pelvisH * 0.5f + absH + chestH + neckH + headH;
         }
 
@@ -72,6 +79,371 @@ namespace FantaLandia.EditorTools
             lips = new Color(0.78f, 0.36f, 0.40f), pupil = new Color(0.22f, 0.52f, 0.36f),
             underwear = new Color(0.55f, 0.12f, 0.18f), trim = new Color(0.25f, 0.05f, 0.08f),
         };
+
+        // ------------------------------------------------------------------ aspetto: capelli, barba, vestiti
+
+        public enum HairStyle { Default, Short, Buzz, Long, Mullet, Curly, Bob, Ponytail, Bald, Spiky }
+        public enum BeardStyle { Default, None, Stubble, Full, Mustache }
+        public enum Top { None, TShirt, LongSleeve, Hoodie, Flannel, Tank, Jersey, Cardigan, Robe }
+        public enum Bottom { None, Jeans, Shorts, Slacks, Sweatpants }
+        public enum Shoes { None, Sneakers, HighTops, Slippers, Loafers }
+        public enum Hat { None, CapBackwards, Cap }
+
+        /// <summary>Vestiti del personaggio (strato "Abbigliamento" sopra pelle e intimo).</summary>
+        public class Outfit
+        {
+            public Top top = Top.None;
+            public Color topColor = Color.white, topColor2 = Color.white;
+            public Bottom bottom = Bottom.None;
+            public Color bottomColor = new Color(0.2f, 0.3f, 0.5f);
+            public Shoes shoes = Shoes.None;
+            public Color shoeColor = Color.white, shoeColor2 = Color.white;
+            public Hat hat = Hat.None;
+            public Color hatColor = Color.red;
+            public bool glasses;
+            public Color glassesColor = new Color(0.1f, 0.1f, 0.1f);
+
+            public bool LongSleeves => top == Top.LongSleeve || top == Top.Hoodie || top == Top.Flannel || top == Top.Cardigan || top == Top.Robe;
+            public bool ShortSleeves => top == Top.TShirt || top == Top.Jersey;
+            public bool LongPants => bottom == Bottom.Jeans || bottom == Bottom.Slacks || bottom == Bottom.Sweatpants;
+        }
+
+        static Material Cloth(Color c) => EditorAssetUtil.Mat("Stoffa " + ColorUtility.ToHtmlStringRGB(c), c, 0.12f);
+        static Material Cloth(Color c, float darken) => Cloth(new Color(c.r * darken, c.g * darken, c.b * darken));
+
+        /// <summary>Capelli secondo lo stile (Default: lunghi per lei, corti con ciuffo per lui).</summary>
+        static void Hair(Shape s, Mats m, BoxMesh b)
+        {
+            float W = s.headW, H = s.headH, D = s.headD, face = D * 0.5f;
+            HairStyle style = s.hairStyle != HairStyle.Default ? s.hairStyle : (s.female ? HairStyle.Long : HairStyle.Short);
+            Material h = m.hair;
+            switch (style)
+            {
+                case HairStyle.Short:
+                case HairStyle.Mullet:
+                case HairStyle.Spiky:
+                    b.AddRounded(new Vector3(0f, H + 0.008f, -0.004f), new Vector3(W + 0.024f, 0.055f, D + 0.024f), h, 0.018f);
+                    if (style != HairStyle.Spiky) b.AddRounded(new Vector3(W * 0.08f, H + 0.03f, D * 0.3f), new Vector3(W * 0.7f, 0.04f, 0.06f), h, 0.012f);
+                    b.AddRounded(new Vector3(0f, H * 0.72f, -face - 0.009f), new Vector3(W + 0.024f, H * 0.55f, 0.03f), h, 0.01f);
+                    for (int c = -1; c <= 1; c += 2)
+                    {
+                        b.Add(new Vector3(c * (W * 0.5f + 0.007f), H * 0.83f, -0.025f), new Vector3(0.014f, H * 0.32f, D * 0.6f), h);
+                        b.Add(new Vector3(c * (W * 0.5f + 0.004f), H * 0.55f, 0.02f), new Vector3(0.012f, H * 0.18f, 0.02f), h); // basette
+                    }
+                    if (style == HairStyle.Mullet) // corto davanti, lungo dietro: anni '90 puri
+                        b.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.014f), new Vector3(W * 0.9f, H * 1.0f, 0.04f), h, 0.012f);
+                    if (style == HairStyle.Spiky)
+                        for (int x = -2; x <= 2; x++)
+                            for (int z = -1; z <= 1; z++)
+                                b.Add(new Vector3(x * W * 0.18f, H + 0.05f + ((x + z) & 1) * 0.015f, z * D * 0.28f), new Vector3(0.028f, 0.05f, 0.028f), h);
+                    break;
+
+                case HairStyle.Buzz:
+                    b.AddRounded(new Vector3(0f, H * 0.82f + 0.004f, -0.004f), new Vector3(W + 0.012f, H * 0.38f, D + 0.012f), h, 0.016f);
+                    break;
+
+                case HairStyle.Bald: // corona di capelli ai lati e dietro
+                    b.AddRounded(new Vector3(0f, H * 0.6f, -face - 0.006f), new Vector3(W + 0.014f, H * 0.3f, 0.02f), h, 0.006f);
+                    for (int c = -1; c <= 1; c += 2)
+                        b.Add(new Vector3(c * (W * 0.5f + 0.006f), H * 0.6f, -0.03f), new Vector3(0.014f, H * 0.28f, D * 0.6f), h);
+                    break;
+
+                case HairStyle.Long:
+                    b.AddRounded(new Vector3(0f, H + 0.01f, -0.005f), new Vector3(W + 0.03f, 0.06f, D + 0.03f), h, 0.022f);
+                    b.AddRounded(new Vector3(0f, H * 0.9f, -0.02f), new Vector3(W + 0.036f, H * 0.32f, D), h, 0.02f);
+                    b.AddRounded(new Vector3(-W * 0.12f, H * 0.86f, face + 0.004f), new Vector3(W * 0.62f, 0.035f, 0.02f), h, 0.008f);
+                    b.AddRounded(new Vector3(W * 0.24f, H * 0.9f, face + 0.002f), new Vector3(W * 0.4f, 0.028f, 0.018f), h, 0.008f);
+                    b.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.012f), new Vector3(W + 0.05f, H * 1.6f, 0.055f), h, 0.02f);
+                    for (int c = -1; c <= 1; c += 2)
+                    {
+                        b.AddRounded(new Vector3(c * (W * 0.5f + 0.014f), H * 0.42f, 0f), new Vector3(0.026f, H * 1.05f, D * 0.75f), h, 0.01f);
+                        b.AddRounded(new Vector3(c * (W * 0.5f + 0.01f), H * 0.0f, D * 0.2f), new Vector3(0.03f, H * 0.7f, 0.04f), h, 0.01f);
+                    }
+                    break;
+
+                case HairStyle.Curly: // permanente vaporosa
+                    b.AddRounded(new Vector3(0f, H + 0.025f, -0.01f), new Vector3(W + 0.08f, 0.12f, D + 0.07f), h, 0.03f);
+                    b.AddRounded(new Vector3(0f, H * 0.55f, -face - 0.025f), new Vector3(W + 0.09f, H * 1.0f, 0.07f), h, 0.025f);
+                    for (int c = -1; c <= 1; c += 2)
+                        b.AddRounded(new Vector3(c * (W * 0.5f + 0.03f), H * 0.6f, -0.01f), new Vector3(0.055f, H * 0.85f, D * 0.85f), h, 0.02f);
+                    b.AddRounded(new Vector3(0f, H * 0.9f, face + 0.006f), new Vector3(W * 0.85f, 0.04f, 0.025f), h, 0.01f);
+                    break;
+
+                case HairStyle.Bob:
+                    b.AddRounded(new Vector3(0f, H + 0.012f, -0.005f), new Vector3(W + 0.034f, 0.065f, D + 0.034f), h, 0.022f);
+                    b.AddRounded(new Vector3(0f, H * 0.55f, -face - 0.012f), new Vector3(W + 0.04f, H * 0.8f, 0.045f), h, 0.015f);
+                    for (int c = -1; c <= 1; c += 2)
+                        b.AddRounded(new Vector3(c * (W * 0.5f + 0.016f), H * 0.55f, 0.005f), new Vector3(0.03f, H * 0.8f, D * 0.85f), h, 0.01f);
+                    b.AddRounded(new Vector3(0f, H * 0.88f, face + 0.005f), new Vector3(W * 0.95f, 0.04f, 0.02f), h, 0.008f);
+                    break;
+
+                case HairStyle.Ponytail:
+                    b.AddRounded(new Vector3(0f, H + 0.006f, -0.004f), new Vector3(W + 0.02f, 0.05f, D + 0.02f), h, 0.018f);
+                    b.AddRounded(new Vector3(0f, H * 0.75f, -face - 0.008f), new Vector3(W + 0.02f, H * 0.5f, 0.025f), h, 0.01f);
+                    b.AddRounded(new Vector3(0f, H * 0.45f, -face - 0.05f), new Vector3(0.05f, 0.24f, 0.05f), h, 0.012f);
+                    b.Add(new Vector3(0f, H * 0.68f, -face - 0.035f), new Vector3(0.04f, 0.02f, 0.03f), m.lips);
+                    break;
+            }
+        }
+
+        // --- vestiti per parte del corpo (null = niente su quella parte)
+
+        static BoxMesh ClothChest(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null || o.top == Top.None) return null;
+            var b = new BoxMesh();
+            Material c1 = Cloth(o.topColor), c2 = Cloth(o.topColor2);
+            float W = s.chestW, D = s.chestD, H = s.chestH, t = 0.022f;
+            b.Add(new Vector3(0f, H * 0.2f, 0f), new Vector3(W * 0.85f + 2f * t, H * 0.4f + 0.002f, D * 0.95f + 2f * t), c1);
+            b.AddRounded(new Vector3(0f, H * 0.7f, 0f), new Vector3(W + 2f * t, H * 0.6f, D + 2f * t), c1, 0.025f);
+            b.Add(new Vector3(0f, H + 0.01f, -0.01f), new Vector3(W * 0.55f + 2f * t, 0.04f + t, D * 0.6f + 2f * t), c1);
+            if (s.female)
+                for (int c = -1; c <= 1; c += 2)
+                    b.AddRounded(new Vector3(c * 0.068f, H * 0.5f, D * 0.5f + 0.03f), new Vector3(0.14f, 0.125f, 0.085f), c1, 0.018f);
+            float front = D * 0.5f + t + 0.002f;
+
+            switch (o.top)
+            {
+                case Top.TShirt:
+                    b.Add(new Vector3(0f, H * 0.62f, front + (s.female ? 0.04f : 0f)), new Vector3(0.12f, 0.08f, 0.004f), c2); // stampa
+                    break;
+                case Top.Jersey: // numero davanti e dietro
+                    foreach (float z in new[] { front, -front })
+                        for (int d = 0; d < 2; d++)
+                        {
+                            float x = (d - 0.5f) * 0.07f;
+                            b.Add(new Vector3(x, H * 0.55f, z), new Vector3(0.012f, 0.09f, 0.004f), c2);
+                            b.Add(new Vector3(x + 0.02f, H * 0.55f + 0.045f, z), new Vector3(0.04f, 0.012f, 0.004f), c2);
+                        }
+                    break;
+                case Top.Flannel: // quadri: strisce verticali e orizzontali, bottoni
+                    for (float x = -W * 0.5f; x <= W * 0.5f; x += 0.07f)
+                    {
+                        b.Add(new Vector3(x, H * 0.5f, front), new Vector3(0.018f, H, 0.003f), c2);
+                        b.Add(new Vector3(x, H * 0.5f, -front), new Vector3(0.018f, H, 0.003f), c2);
+                    }
+                    for (float y = 0.05f; y < H; y += 0.08f)
+                    {
+                        b.Add(new Vector3(0f, y, front + 0.001f), new Vector3(W + 2f * t, 0.016f, 0.003f), c2);
+                        b.Add(new Vector3(0f, y, -front - 0.001f), new Vector3(W + 2f * t, 0.016f, 0.003f), c2);
+                    }
+                    for (float y = 0.04f; y < H - 0.02f; y += 0.06f) b.Add(new Vector3(0f, y, front + 0.004f), new Vector3(0.012f, 0.012f, 0.004f), Cloth(o.topColor2, 0.6f));
+                    b.Add(new Vector3(-0.03f, H - 0.01f, D * 0.35f), new Vector3(0.04f, 0.03f, 0.05f), c1); // colletto
+                    b.Add(new Vector3(0.03f, H - 0.01f, D * 0.35f), new Vector3(0.04f, 0.03f, 0.05f), c1);
+                    break;
+                case Top.Hoodie: // cappuccio dietro al collo e lacci
+                    b.AddRounded(new Vector3(0f, H + 0.02f, -D * 0.35f), new Vector3(W * 0.6f, 0.09f, 0.1f), c1, 0.02f);
+                    for (int c = -1; c <= 1; c += 2) b.Add(new Vector3(c * 0.03f, H * 0.8f, front + 0.002f), new Vector3(0.008f, 0.11f, 0.004f), c2);
+                    break;
+                case Top.Cardigan: // aperto davanti: maglia chiara sotto, bottoni
+                    b.Add(new Vector3(0f, H * 0.5f, front), new Vector3(0.07f, H, 0.004f), c2);
+                    for (float y = 0.04f; y < H; y += 0.07f) b.Add(new Vector3(0.05f, y, front + 0.002f), new Vector3(0.012f, 0.012f, 0.004f), Cloth(o.topColor, 0.6f));
+                    break;
+                case Top.Robe: // vestaglia: risvolti a V
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float y = H - i * 0.05f, x = 0.015f + i * 0.012f;
+                        b.Add(new Vector3(-x, y - 0.02f, front), new Vector3(0.025f, 0.05f, 0.004f), c2);
+                        b.Add(new Vector3(x, y - 0.02f, front), new Vector3(0.025f, 0.05f, 0.004f), c2);
+                    }
+                    break;
+            }
+            return b;
+        }
+
+        static BoxMesh ClothAbdomen(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null || o.top == Top.None) return null;
+            var b = new BoxMesh();
+            Material c1 = Cloth(o.topColor), c2 = Cloth(o.topColor2);
+            float W = s.absW, D = s.absD, H = s.absH, t = 0.02f;
+            b.Add(new Vector3(0f, H * 0.5f, 0f), new Vector3(W + 0.024f + 2f * t, H + 0.004f, D + 2f * t), c1);
+            if (s.belly > 0f) b.AddRounded(new Vector3(0f, H * 0.42f, D * 0.5f + s.belly * 0.035f), new Vector3(W * 0.8f + 2f * t, H * 0.75f + t, s.belly * 0.07f + 2f * t), c1, 0.02f);
+            float front = D * 0.5f + t + 0.002f + (s.belly > 0f ? s.belly * 0.07f : 0f);
+            switch (o.top)
+            {
+                case Top.Hoodie: b.Add(new Vector3(0f, H * 0.3f, front), new Vector3(W * 0.6f, H * 0.35f, 0.01f), Cloth(o.topColor, 0.8f)); break; // tasca
+                case Top.Flannel:
+                    for (float x = -W * 0.5f; x <= W * 0.5f; x += 0.07f) b.Add(new Vector3(x, H * 0.5f, front), new Vector3(0.018f, H, 0.003f), c2);
+                    for (float y = 0.03f; y < H; y += 0.06f) b.Add(new Vector3(0f, y, front + 0.003f), new Vector3(0.012f, 0.012f, 0.004f), Cloth(o.topColor2, 0.6f));
+                    break;
+                case Top.Cardigan: b.Add(new Vector3(0f, H * 0.5f, front), new Vector3(0.07f, H, 0.004f), c2); break;
+                case Top.Robe: b.Add(new Vector3(0f, H * 0.4f, 0f), new Vector3(W + 2f * t + 0.02f, 0.04f, D + 2f * t + 0.02f + (s.belly * 0.14f)), c2); break; // cintura
+            }
+            return b;
+        }
+
+        static BoxMesh ClothPelvis(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null) return null;
+            var b = new BoxMesh();
+            float W = s.pelvisW, D = s.pelvisD, H = s.pelvisH;
+            if (o.bottom != Bottom.None)
+            {
+                Material p = Cloth(o.bottomColor);
+                b.AddRounded(Vector3.zero, new Vector3(W + 0.03f, H, D + 0.03f), p, 0.02f);
+                b.Add(new Vector3(0f, -0.03f, -D * 0.5f - 0.012f), new Vector3(W * 0.9f + 0.03f, H * 0.6f + 0.03f, 0.065f), p); // glutei
+                if (!s.female) b.Add(new Vector3(0f, -0.065f, D * 0.5f + 0.012f), new Vector3(0.1f, 0.08f, 0.045f), p);
+                if (o.bottom == Bottom.Jeans || o.bottom == Bottom.Slacks)
+                {
+                    b.Add(new Vector3(0f, H * 0.5f - 0.015f, 0f), new Vector3(W + 0.036f, 0.03f, D + 0.036f), Cloth(new Color(0.23f, 0.15f, 0.09f))); // cintura
+                    b.Add(new Vector3(0f, H * 0.5f - 0.015f, D * 0.5f + 0.02f), new Vector3(0.035f, 0.026f, 0.008f), Cloth(new Color(0.75f, 0.75f, 0.72f)));
+                }
+                if (o.bottom == Bottom.Jeans)
+                    for (int c = -1; c <= 1; c += 2) // tasche dietro
+                        b.Add(new Vector3(c * W * 0.22f, -0.01f, -D * 0.5f - 0.046f), new Vector3(W * 0.3f, H * 0.35f, 0.004f), Cloth(o.bottomColor, 0.85f));
+            }
+            // maglia fuori dai pantaloni (o vestaglia lunga)
+            if (o.top != Top.None && o.top != Top.Tank)
+            {
+                Material c1 = Cloth(o.topColor);
+                bool robe = o.top == Top.Robe;
+                float hem = robe ? H : 0.07f;
+                b.Add(new Vector3(0f, H * 0.5f - hem * 0.5f + 0.01f, 0f), new Vector3(W + 0.05f, hem, D + 0.05f + (s.female ? 0f : 0.02f)), c1);
+            }
+            return b.IsEmpty ? null : b;
+        }
+
+        static BoxMesh ClothUpperArm(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null || !(o.LongSleeves || o.ShortSleeves)) return null;
+            var b = new BoxMesh();
+            Material c1 = Cloth(o.topColor);
+            float L = s.upperArmLen, w = s.upperArmW;
+            float len = o.LongSleeves ? L : L * 0.55f;
+            b.Add(new Vector3(0f, -len * 0.5f, 0f), new Vector3(w + 0.05f, len, w + 0.05f), c1);
+            b.Add(new Vector3(0f, -0.035f, 0f), new Vector3(w + 0.06f, 0.1f, w + 0.05f), c1);
+            if (o.top == Top.Jersey) b.Add(new Vector3(0f, -len + 0.01f, 0f), new Vector3(w + 0.056f, 0.02f, w + 0.056f), Cloth(o.topColor2));
+            if (o.top == Top.Flannel)
+                for (float y = -0.05f; y > -len; y -= 0.08f) b.Add(new Vector3(0f, y, 0f), new Vector3(w + 0.054f, 0.016f, w + 0.054f), Cloth(o.topColor2));
+            return b;
+        }
+
+        static BoxMesh ClothForearm(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null || !o.LongSleeves) return null;
+            var b = new BoxMesh();
+            Material c1 = Cloth(o.topColor);
+            float L = s.forearmLen, w = s.forearmW;
+            b.Add(new Vector3(0f, -L * 0.275f, 0f), new Vector3(w + 0.045f, L * 0.55f + 0.01f, w + 0.045f), c1);
+            b.Add(new Vector3(0f, -L * 0.75f, 0f), new Vector3(w * 0.8f + 0.045f, L * 0.5f, w * 0.8f + 0.045f), c1);
+            b.Add(new Vector3(0f, -0.02f, -w * 0.5f - 0.01f), new Vector3(w * 0.5f + 0.02f, 0.05f, 0.03f), c1);
+            Material cuff = o.top == Top.Hoodie || o.top == Top.Cardigan ? Cloth(o.topColor, 0.8f) : c1;
+            b.Add(new Vector3(0f, -L + 0.015f, 0f), new Vector3(w * 0.8f + 0.05f, 0.03f, w * 0.8f + 0.05f), cuff);
+            if (o.top == Top.Flannel)
+                for (float y = -0.04f; y > -L; y -= 0.08f) b.Add(new Vector3(0f, y, 0f), new Vector3(w + 0.049f, 0.016f, w + 0.049f), Cloth(o.topColor2));
+            return b;
+        }
+
+        static BoxMesh ClothThigh(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null) return null;
+            var b = new BoxMesh();
+            float L = s.thighLen, w = s.thighW;
+            if (o.bottom != Bottom.None)
+            {
+                Material p = Cloth(o.bottomColor);
+                if (o.bottom == Bottom.Shorts)
+                    b.Add(new Vector3(0f, -L * 0.35f + 0.015f, 0f), new Vector3(w + 0.045f, L * 0.7f + 0.03f, w + 0.045f), p);
+                else
+                {
+                    b.Add(new Vector3(0f, -L * 0.3f + 0.015f, 0f), new Vector3(w + 0.04f, L * 0.6f + 0.03f, w + 0.04f), p);
+                    b.Add(new Vector3(0f, -L * 0.75f, 0f), new Vector3(w * 0.85f + 0.04f, L * 0.5f, w * 0.85f + 0.04f), p);
+                    b.Add(new Vector3(0f, -L + 0.02f, w * 0.425f + 0.012f), new Vector3(w * 0.55f + 0.02f, 0.08f, 0.035f), p); // ginocchio
+                }
+            }
+            if (o.top == Top.Robe) // la vestaglia scende davanti e dietro le cosce
+            {
+                Material r = Cloth(o.topColor);
+                b.Add(new Vector3(0f, -L * 0.3f, w * 0.5f + 0.03f), new Vector3(w + 0.06f, L * 0.62f, 0.02f), r);
+                b.Add(new Vector3(0f, -L * 0.3f, -w * 0.5f - 0.03f), new Vector3(w + 0.06f, L * 0.62f, 0.02f), r);
+            }
+            return b.IsEmpty ? null : b;
+        }
+
+        static BoxMesh ClothShin(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null || !o.LongPants) return null;
+            var b = new BoxMesh();
+            Material p = Cloth(o.bottomColor);
+            float L = s.shinLen, w = s.shinW;
+            b.Add(new Vector3(0f, -L * 0.25f, 0f), new Vector3(w + 0.045f, L * 0.5f, w + 0.045f), p);
+            b.Add(new Vector3(0f, -L * 0.72f, 0f), new Vector3(w * 0.75f + 0.055f, L * 0.56f, w * 0.75f + 0.055f), p);
+            b.Add(new Vector3(0f, -L * 0.3f, -w * 0.5f - 0.012f), new Vector3(w * 0.7f + 0.02f, L * 0.3f, 0.032f), p); // polpaccio
+            if (o.bottom == Bottom.Sweatpants) b.Add(new Vector3(0f, -L + 0.03f, 0f), new Vector3(w * 0.75f + 0.06f, 0.04f, w * 0.75f + 0.06f), Cloth(o.bottomColor, 0.8f));
+            return b;
+        }
+
+        static BoxMesh ClothFoot(Shape s, int side)
+        {
+            Outfit o = s.outfit;
+            if (o == null || o.shoes == Shoes.None) return null;
+            var b = new BoxMesh();
+            Material c1 = Cloth(o.shoeColor), c2 = Cloth(o.shoeColor2);
+            float A = s.ankleH, fw = s.footW, fl = s.footLen;
+            float zMin = -0.06f, zEnd = zMin + fl;
+            float zc = (zMin + zEnd) * 0.5f, len = zEnd - zMin;
+            switch (o.shoes)
+            {
+                case Shoes.Sneakers:
+                case Shoes.HighTops:
+                    b.AddRounded(new Vector3(0f, -A * 0.5f, zc), new Vector3(fw + 0.03f, A * 0.9f + 0.01f, len + 0.03f), c1, 0.01f);
+                    b.Add(new Vector3(0f, -A + 0.01f, zc), new Vector3(fw + 0.036f, 0.022f, len + 0.036f), c2);        // suola
+                    b.Add(new Vector3(0f, -A * 0.08f, zc + len * 0.15f), new Vector3(fw * 0.5f, 0.012f, len * 0.35f), c2); // lacci
+                    b.Add(new Vector3(side * (fw * 0.5f + 0.016f), -A * 0.45f, zc), new Vector3(0.004f, A * 0.3f, len * 0.5f), c2); // baffo laterale
+                    if (o.shoes == Shoes.HighTops)
+                        b.Add(new Vector3(0f, A * 0.15f, 0f), new Vector3(s.shinW * 0.75f + 0.05f, A * 1.1f, s.shinW * 0.75f + 0.05f), c1);
+                    break;
+                case Shoes.Slippers:
+                    b.AddRounded(new Vector3(0f, -A * 0.55f, zc), new Vector3(fw + 0.05f, A * 0.8f, len + 0.04f), c1, 0.02f);
+                    break;
+                case Shoes.Loafers:
+                    b.AddRounded(new Vector3(0f, -A * 0.55f, zc), new Vector3(fw + 0.026f, A * 0.8f, len + 0.03f), c1, 0.012f);
+                    b.Add(new Vector3(0f, -A + 0.008f, zc), new Vector3(fw + 0.03f, 0.016f, len + 0.034f), c2);
+                    break;
+            }
+            return b;
+        }
+
+        /// <summary>Cappello e occhiali (vanno sotto la testa e vengono ingranditi come lei).</summary>
+        static BoxMesh ClothHead(Shape s)
+        {
+            Outfit o = s.outfit;
+            if (o == null || (o.hat == Hat.None && !o.glasses)) return null;
+            var b = new BoxMesh();
+            float W = s.headW, H = s.headH, D = s.headD, face = D * 0.5f;
+            if (o.hat != Hat.None)
+            {
+                Material c = Cloth(o.hatColor);
+                b.AddRounded(new Vector3(0f, H + 0.028f, 0f), new Vector3(W + 0.045f, 0.075f, D + 0.045f), c, 0.025f);
+                float bz = o.hat == Hat.CapBackwards ? -face - 0.055f : face + 0.055f;
+                b.Add(new Vector3(0f, H - 0.004f, bz), new Vector3(W * 0.62f, 0.014f, 0.1f), c);
+                b.Add(new Vector3(0f, H + 0.07f, 0f), new Vector3(0.02f, 0.012f, 0.02f), Cloth(o.hatColor, 0.7f));
+            }
+            if (o.glasses)
+            {
+                Material g = Cloth(o.glassesColor);
+                float ex = W * (s.female ? 0.23f : 0.24f), ey = H * 0.55f, z = face + 0.014f;
+                for (int c = -1; c <= 1; c += 2)
+                {
+                    float x = c * ex;
+                    b.Add(new Vector3(x, ey + 0.019f, z), new Vector3(0.054f, 0.007f, 0.006f), g);
+                    b.Add(new Vector3(x, ey - 0.018f, z), new Vector3(0.054f, 0.007f, 0.006f), g);
+                    b.Add(new Vector3(x - 0.026f, ey, z), new Vector3(0.006f, 0.04f, 0.006f), g);
+                    b.Add(new Vector3(x + 0.026f, ey, z), new Vector3(0.006f, 0.04f, 0.006f), g);
+                    b.Add(new Vector3(c * (W * 0.5f + 0.006f), ey + 0.01f, z * 0.45f), new Vector3(0.006f, 0.006f, D * 0.55f), g); // stanghette
+                }
+                b.Add(new Vector3(0f, ey + 0.012f, z), new Vector3(0.02f, 0.006f, 0.006f), g); // ponte
+            }
+            return b;
+        }
 
         class Mats
         {
@@ -115,7 +487,6 @@ namespace FantaLandia.EditorTools
 
             string meshPath = $"{Folder}/{s.id}_Mesh.asset";
             string prefabPath = $"{Folder}/{s.id}.prefab";
-            AssetDatabase.DeleteAsset(meshPath);
             var meshes = new List<Mesh>();
 
             var root = new GameObject(s.displayName);
@@ -150,22 +521,24 @@ namespace FantaLandia.EditorTools
                 Transform knee = Joint(rig, shin, hip, new Vector3(0f, -s.thighLen, 0f));
                 Transform ankle = Joint(rig, foot, knee, new Vector3(0f, -s.shinLen, 0f));
 
-                Layers(shoulder, UpperArm(s, m), null, meshes, $"{s.id} {upper}");
-                Layers(elbow, Forearm(s, m), null, meshes, $"{s.id} {fore}");
+                Layers(shoulder, UpperArm(s, m), null, meshes, $"{s.id} {upper}", ClothUpperArm(s));
+                Layers(elbow, Forearm(s, m), null, meshes, $"{s.id} {fore}", ClothForearm(s));
                 Layers(wrist, Hand(s, m), null, meshes, $"{s.id} {hand}");
-                Layers(hip, Thigh(s, m), null, meshes, $"{s.id} {thigh}");
-                Layers(knee, Shin(s, m), null, meshes, $"{s.id} {shin}");
-                Layers(ankle, Foot(s, m, side), null, meshes, $"{s.id} {foot}");
+                Layers(hip, Thigh(s, m), null, meshes, $"{s.id} {thigh}", ClothThigh(s));
+                Layers(knee, Shin(s, m), null, meshes, $"{s.id} {shin}", ClothShin(s));
+                Layers(ankle, Foot(s, m, side), null, meshes, $"{s.id} {foot}", ClothFoot(s, side));
             }
 
             // --- busto e testa
             PelvisLayers(s, m, out BoxMesh pelvisSkin, out BoxMesh pelvisUnder);
-            Layers(hips, pelvisSkin, pelvisUnder, meshes, $"{s.id} Pelvis");
-            Layers(spine, Abdomen(s, m), null, meshes, $"{s.id} Abdomen");
+            Layers(hips, pelvisSkin, pelvisUnder, meshes, $"{s.id} Pelvis", ClothPelvis(s));
+            Layers(spine, Abdomen(s, m), null, meshes, $"{s.id} Abdomen", ClothAbdomen(s));
             ChestLayers(s, m, out BoxMesh chestSkin, out BoxMesh chestUnder);
-            Layers(chest, chestSkin, chestUnder, meshes, $"{s.id} Chest");
+            Layers(chest, chestSkin, chestUnder, meshes, $"{s.id} Chest", ClothChest(s));
             Layers(neck, Neck(s, m), null, meshes, $"{s.id} Neck");
-            Layers(head, Head(s, m, out FaceParts faceParts), null, meshes, $"{s.id} Head");
+            Layers(head, Head(s, m, out FaceParts faceParts), null, meshes, $"{s.id} Head", ClothHead(s));
+            Transform headClothes = head.Find("Abbigliamento");
+            if (headClothes != null) headClothes.localScale = Vector3.one * HeadScale;
             // Testa più grande (stile): ingrandisce viso e capelli insieme, partendo dal collo.
             Transform headSkin = head.Find("Pelle");
             if (headSkin != null)
@@ -174,9 +547,31 @@ namespace FantaLandia.EditorTools
                 BuildFace(root, headSkin, faceParts, meshes, s.id);
             }
 
-            // --- salvataggio: tutte le mesh in un unico asset, poi il prefab
-            AssetDatabase.CreateAsset(meshes[0], meshPath);
-            for (int i = 1; i < meshes.Count; i++) AssetDatabase.AddObjectToAsset(meshes[i], meshPath);
+            // --- salvataggio: tutte le mesh in un unico asset. Le mesh già esistenti vengono aggiornate al loro
+            // posto (stesso nome), così i personaggi già piazzati nelle scene non le perdono.
+            var existing = new Dictionary<string, Mesh>();
+            foreach (Object o in AssetDatabase.LoadAllAssetsAtPath(meshPath))
+                if (o is Mesh em && !existing.ContainsKey(em.name)) existing[em.name] = em;
+            bool fileExists = AssetDatabase.LoadMainAssetAtPath(meshPath) != null;
+            foreach (MeshFilter mf in root.GetComponentsInChildren<MeshFilter>(true))
+            {
+                Mesh nm = mf.sharedMesh;
+                if (nm == null) continue;
+                if (existing.TryGetValue(nm.name, out Mesh em))
+                {
+                    if (em == nm) continue;
+                    EditorUtility.CopySerialized(nm, em);
+                    em.name = nm.name;
+                    EditorUtility.SetDirty(em);
+                    mf.sharedMesh = em;
+                }
+                else
+                {
+                    if (!fileExists) { AssetDatabase.CreateAsset(nm, meshPath); fileExists = true; }
+                    else AssetDatabase.AddObjectToAsset(nm, meshPath);
+                    existing[nm.name] = nm;
+                }
+            }
             AssetDatabase.SaveAssets();
 
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
@@ -193,10 +588,11 @@ namespace FantaLandia.EditorTools
             return t;
         }
 
-        static void Layers(Transform joint, BoxMesh skin, BoxMesh under, List<Mesh> meshes, string meshName)
+        static void Layers(Transform joint, BoxMesh skin, BoxMesh under, List<Mesh> meshes, string meshName, BoxMesh clothes = null)
         {
             Visual(joint, "Pelle", skin, meshes, meshName + " Pelle");
             Visual(joint, "Intimo", under, meshes, meshName + " Intimo");
+            Visual(joint, "Abbigliamento", clothes, meshes, meshName + " Abbigliamento");
         }
 
         static void Visual(Transform joint, string layer, BoxMesh b, List<Mesh> meshes, string meshName)
@@ -240,7 +636,8 @@ namespace FantaLandia.EditorTools
             var b = new BoxMesh();
             float W = s.absW, D = s.absD, H = s.absH;
             b.Add(new Vector3(0f, H * 0.5f, 0f), new Vector3(W, H, D), m.skin);
-            b.Add(new Vector3(0f, 0.035f, D * 0.5f + 0.002f), new Vector3(0.012f, 0.014f, 0.006f), m.shade); // ombelico
+            if (s.belly > 0f) b.AddRounded(new Vector3(0f, H * 0.42f, D * 0.5f + s.belly * 0.035f), new Vector3(W * 0.8f, H * 0.75f, s.belly * 0.07f), m.skin, 0.02f);
+            b.Add(new Vector3(0f, 0.035f, D * 0.5f + 0.002f + s.belly * 0.07f), new Vector3(0.012f, 0.014f, 0.006f), m.shade); // ombelico
             if (!s.female)
             {
                 for (int r = 0; r < 3; r++)
@@ -371,17 +768,7 @@ namespace FantaLandia.EditorTools
             f.lowerLip = new BoxMesh(f.lowerLipPos);
             f.lowerLip.AddRounded(f.lowerLipPos, new Vector3(0.042f, 0.014f, 0.014f), m.lipsLower, 0.004f);
 
-            // capelli lunghi, con volume e frangia laterale
-            b.AddRounded(new Vector3(0f, H + 0.01f, -0.005f), new Vector3(W + 0.03f, 0.06f, D + 0.03f), m.hair, 0.022f);
-            b.AddRounded(new Vector3(0f, H * 0.9f, -0.02f), new Vector3(W + 0.036f, H * 0.32f, D), m.hair, 0.02f);
-            b.AddRounded(new Vector3(-W * 0.12f, H * 0.86f, face + 0.004f), new Vector3(W * 0.62f, 0.035f, 0.02f), m.hair, 0.008f);
-            b.AddRounded(new Vector3(W * 0.24f, H * 0.9f, face + 0.002f), new Vector3(W * 0.4f, 0.028f, 0.018f), m.hair, 0.008f);
-            b.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.012f), new Vector3(W + 0.05f, H * 1.6f, 0.055f), m.hair, 0.02f);
-            for (int c = -1; c <= 1; c += 2)
-            {
-                b.AddRounded(new Vector3(c * (W * 0.5f + 0.014f), H * 0.42f, 0f), new Vector3(0.026f, H * 1.05f, D * 0.75f), m.hair, 0.01f);
-                b.AddRounded(new Vector3(c * (W * 0.5f + 0.01f), H * 0.0f, D * 0.2f), new Vector3(0.03f, H * 0.7f, 0.04f), m.hair, 0.01f);
-            }
+            Hair(s, m, b);
             return b;
         }
 
@@ -410,7 +797,6 @@ namespace FantaLandia.EditorTools
                 b.Add(new Vector3(ex, ey, face + 0.001f), new Vector3(0.04f, 0.02f, 0.006f), m.eyeWhite);
                 b.Add(new Vector3(c * W * 0.36f, H * 0.42f, face - 0.008f), new Vector3(0.035f, 0.03f, 0.02f), m.skin);      // zigomi
                 b.Add(new Vector3(c * (W * 0.5f + 0.008f), H * 0.5f, -0.01f), new Vector3(0.02f, 0.055f, 0.04f), m.skin);     // orecchie
-                b.Add(new Vector3(c * (W * 0.5f + 0.004f), H * 0.55f, 0.02f), new Vector3(0.012f, H * 0.18f, 0.02f), m.hair); // basette
 
                 Vector3 irisPos = new Vector3(ex - c * 0.002f, ey, face + 0.004f);
                 var iris = new BoxMesh(irisPos);
@@ -430,9 +816,15 @@ namespace FantaLandia.EditorTools
                 else { f.irisR = iris; f.irisRPos = irisPos; f.lidR = lid; f.lidRPos = lidPos; f.browR = brow; f.browRPos = browPos; }
             }
 
-            // barba corta, baffi e bocca
-            b.AddRounded(new Vector3(0f, H * 0.14f, 0.012f), new Vector3(W * 0.91f, H * 0.24f, D * 0.89f), m.stubble, 0.01f);
-            b.Add(new Vector3(0f, H * 0.255f, beardFront + 0.003f), new Vector3(W * 0.32f, 0.012f, 0.01f), m.stubble);
+            // barba (o mento rasato), baffi e bocca
+            BeardStyle beard = s.beard == BeardStyle.Default ? BeardStyle.Stubble : s.beard;
+            Material jawMat = beard == BeardStyle.Stubble ? m.stubble : beard == BeardStyle.Full ? m.hair : m.skin;
+            b.AddRounded(new Vector3(0f, H * 0.14f, 0.012f), new Vector3(W * 0.91f, H * 0.24f, D * 0.89f), jawMat, 0.01f);
+            if (beard == BeardStyle.Full)
+                b.AddRounded(new Vector3(0f, H * 0.1f, 0.02f), new Vector3(W * 0.96f, H * 0.3f, D * 0.9f), m.hair, 0.015f);
+            if (beard != BeardStyle.None)
+                b.Add(new Vector3(0f, H * 0.255f, beardFront + 0.003f), new Vector3(W * (beard == BeardStyle.Mustache ? 0.38f : 0.32f), beard == BeardStyle.Mustache ? 0.018f : 0.012f, 0.012f),
+                      beard == BeardStyle.Stubble ? m.stubble : m.hair);
             b.Add(new Vector3(0f, H * 0.215f, beardFront + 0.004f), new Vector3(W * 0.3f, 0.011f, 0.01f), m.lips);
             f.mouthInsidePos = new Vector3(0f, H * 0.208f, beardFront + 0.002f);
             f.mouthInside = new BoxMesh(f.mouthInsidePos);
@@ -441,12 +833,7 @@ namespace FantaLandia.EditorTools
             f.lowerLip = new BoxMesh(f.lowerLipPos);
             f.lowerLip.Add(f.lowerLipPos, new Vector3(W * 0.26f, 0.008f, 0.012f), m.lipsLower);
 
-            // capelli corti con ciuffo
-            b.AddRounded(new Vector3(0f, H + 0.008f, -0.004f), new Vector3(W + 0.024f, 0.055f, D + 0.024f), m.hair, 0.018f);
-            b.AddRounded(new Vector3(W * 0.08f, H + 0.03f, D * 0.3f), new Vector3(W * 0.7f, 0.04f, 0.06f), m.hair, 0.012f);
-            b.AddRounded(new Vector3(0f, H * 0.72f, -face - 0.009f), new Vector3(W + 0.024f, H * 0.55f, 0.03f), m.hair, 0.01f);
-            for (int c = -1; c <= 1; c += 2)
-                b.Add(new Vector3(c * (W * 0.5f + 0.007f), H * 0.83f, -0.025f), new Vector3(0.014f, H * 0.32f, D * 0.6f), m.hair);
+            Hair(s, m, b);
             return b;
         }
 

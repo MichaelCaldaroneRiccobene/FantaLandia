@@ -32,8 +32,13 @@ namespace FantaLandia.Horror.Dialogue
         public static readonly Speaker NeighborMan = new Speaker("vicino", "Vicino", new Color(0.8f, 0.8f, 0.8f), 0.75f);
         public static readonly Speaker NeighborWoman = new Speaker("vicina", "Vicina", new Color(0.95f, 0.8f, 0.95f), 1.45f);
         public static readonly Speaker Tv = new Speaker("tv", "TV", new Color(0.7f, 0.8f, 1f), 0.9f);
+        // vicini: a sinistra i Miller (anziani), a destra i Kowalski
+        public static readonly Speaker Frank = new Speaker("frank", "Frank", new Color(0.8f, 0.75f, 0.6f), 0.72f);
+        public static readonly Speaker Martha = new Speaker("martha", "Martha", new Color(0.95f, 0.75f, 0.85f), 1.35f);
+        public static readonly Speaker Gary = new Speaker("gary", "Gary", new Color(0.75f, 0.85f, 0.7f), 0.66f);
+        public static readonly Speaker Linda = new Speaker("linda", "Linda", new Color(0.6f, 0.9f, 0.9f), 1.5f);
 
-        static readonly Speaker[] All = { Muark, Tom, Jef, Roy, NeighborMan, NeighborWoman, Tv };
+        static readonly Speaker[] All = { Muark, Tom, Jef, Roy, NeighborMan, NeighborWoman, Tv, Frank, Martha, Gary, Linda };
 
         public static Speaker Find(string id)
         {

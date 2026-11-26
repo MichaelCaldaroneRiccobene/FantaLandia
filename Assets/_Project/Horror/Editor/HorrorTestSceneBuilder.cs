@@ -243,7 +243,26 @@ namespace FantaLandia.Horror.EditorTools
 
         public static CharacterMotor BuildTom(Transform world, GameObject malePrefab, Vector3 position, float yaw)
         {
-            var tom = new GameObject("Tom");
+            CharacterMotor motor = BuildNpc(world, malePrefab, "Tom", "tom", position, yaw);
+            var talk = motor.gameObject.AddComponent<Talkable>();
+            talk.displayName = "Tom";
+            talk.lines = new[]
+            {
+                new Talkable.Line { speaker = "tom", text = "Allora, la birra l'hai messa sul bancone?" },
+            };
+            talk.choices = new[] { "Sì, è in cucina.", "Dov'è Jef?" };
+            talk.replies = new[]
+            {
+                new Talkable.Line { speaker = "tom", text = "Grande. Adesso manca solo la pizza." },
+                new Talkable.Line { speaker = "tom", text = "Sempre in bagno. Ha mangiato messicano, credo." },
+            };
+            return motor;
+        }
+
+        /// <summary>Un personaggio non giocante: NavMesh, movimento, corpo animato, voce e faccia, erba che si piega.</summary>
+        public static CharacterMotor BuildNpc(Transform world, GameObject prefab, string name, string speakerId, Vector3 position, float yaw)
+        {
+            var tom = new GameObject(name);
             tom.transform.SetParent(world, false);
             tom.transform.localPosition = position;
             tom.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
@@ -266,27 +285,16 @@ namespace FantaLandia.Horror.EditorTools
             col.radius = 0.3f;
             col.height = 1.8f;
             col.center = new Vector3(0f, 0.9f, 0f);
-            var model = (GameObject)PrefabUtility.InstantiatePrefab(malePrefab);
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             model.name = "Modello";
             model.transform.SetParent(tom.transform, false);
             var anim = model.GetComponent<ProceduralBodyAnimator>();
             if (anim != null) anim.footIgnoreLayers = (1 << 2) | (1 << CharacterLayer);
             SetLayer(tom, CharacterLayer);
 
-            tom.AddComponent<NpcSpeaker>().speakerId = "tom";
+            tom.AddComponent<NpcSpeaker>().speakerId = speakerId;
             tom.AddComponent<GrassPusher>();
-            var talk = tom.AddComponent<Talkable>();
-            talk.displayName = "Tom";
-            talk.lines = new[]
-            {
-                new Talkable.Line { speaker = "tom", text = "Allora, la birra l'hai messa sul bancone?" },
-            };
-            talk.choices = new[] { "Sì, è in cucina.", "Dov'è Jef?" };
-            talk.replies = new[]
-            {
-                new Talkable.Line { speaker = "tom", text = "Grande. Adesso manca solo la pizza." },
-                new Talkable.Line { speaker = "tom", text = "Sempre in bagno. Ha mangiato messicano, credo." },
-            };
+            tom.AddComponent<NpcActor>();
             return motor;
         }
 

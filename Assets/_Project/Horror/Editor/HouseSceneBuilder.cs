@@ -44,7 +44,7 @@ namespace FantaLandia.Horror.EditorTools
             EditorAssetUtil.EnsureFolder("Assets/_Project/Horror/Scenes");
             VoxelAssetLibrary.BuildAll();
             VoxelFurniture.BuildAll();
-            GameObject malePrefab = BlockyCharacterBuilder.BuildMale();
+            Dictionary<string, GameObject> cast = HorrorCast.BuildAll();
             Materials();
             houseLights.Clear();
 
@@ -71,8 +71,9 @@ namespace FantaLandia.Horror.EditorTools
             if (armchair == null) armchair = HorrorTestSceneBuilder.Marker("Poltrona (mancante)", world, new Vector3(-4.7f, F0, 5.1f));
 
             // personaggi e sistemi
-            CharacterMotor tom = HorrorTestSceneBuilder.BuildTom(world, malePrefab, new Vector3(-3.4f, F0, 1.7f), 150f);
-            HorrorTestSceneBuilder.BuildPlayer(malePrefab, new Vector3(0f, 0.08f, -9.8f), 0f);
+            CharacterMotor tom = HorrorTestSceneBuilder.BuildTom(world, cast["tom"], new Vector3(-3.4f, F0, 1.7f), 150f);
+            HorrorTestSceneBuilder.BuildPlayer(cast["muark"], new Vector3(0f, 0.08f, -9.8f), 0f);
+            Step("personaggi", () => BuildCast(world, cast));
             HorrorTestSceneBuilder.BuildNavMesh();
 
             var power = new GameObject("Contatore della casa").AddComponent<HousePower>();
@@ -131,6 +132,36 @@ namespace FantaLandia.Horror.EditorTools
         {
             try { action(); }
             catch (System.Exception e) { Debug.LogError($"[FantaLandia Horror] Errore costruendo {what}: {e}"); }
+        }
+
+        // ------------------------------------------------------------------ personaggi
+
+        /// <summary>
+        /// Jef chiuso nel bagnetto, Roy nascosto di lato alla casa (per lo scherzo alla porta),
+        /// i vicini sulle loro pedane appoggiati alla ringhiera che chiacchierano.
+        /// </summary>
+        static void BuildCast(Transform world, Dictionary<string, GameObject> cast)
+        {
+            Transform people = Group("Personaggi", world);
+            HorrorTestSceneBuilder.BuildNpc(people, cast["jef"], "Jef", "jef", new Vector3(5.6f, F0, 1.9f), 200f);
+            HorrorTestSceneBuilder.BuildNpc(people, cast["roy"], "Roy", "roy", new Vector3(-8.3f, 0f, 1.2f), 90f);
+
+            // vicini: pedana alta 0.6 m, corrimano a 1.58 m sul lato verso il fondo del giardino (z = 13)
+            Neighbor(people, cast["frank"], "Frank", "frank", new Vector3(-27.1f, 0.6f, 12.3f), new Vector3(-27.1f, 1.58f, 12.95f),
+                     new[] { "frank|Martha, hai chiuso il gas?", "martha|Sì Frank, come ogni sera.", "frank|Questi ragazzi di Tom fanno sempre tardi." });
+            Neighbor(people, cast["martha"], "Martha", "martha", new Vector3(-25.1f, 0.6f, 12.3f), new Vector3(-25.1f, 1.58f, 12.95f), null);
+            Neighbor(people, cast["gary"], "Gary", "gary", new Vector3(24.9f, 0.6f, 12.3f), new Vector3(24.9f, 1.58f, 12.95f),
+                     new[] { "gary|Linda, la partita è finita?", "linda|Ma ti pare l'ora, Gary?", "gary|Bella serata, comunque." });
+            Neighbor(people, cast["linda"], "Linda", "linda", new Vector3(27.1f, 0.6f, 12.3f), new Vector3(27.1f, 1.58f, 12.95f), null);
+        }
+
+        static void Neighbor(Transform parent, GameObject prefab, string name, string id, Vector3 pos, Vector3 rail, string[] chatter)
+        {
+            CharacterMotor m = HorrorTestSceneBuilder.BuildNpc(parent, prefab, name, id, pos, 0f);
+            var actor = m.GetComponent<NpcActor>();
+            actor.leanOnStart = true;
+            actor.leanPoint = rail;
+            actor.ambientLines = chatter;
         }
 
         // ------------------------------------------------------------------ materiali

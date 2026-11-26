@@ -45,6 +45,9 @@ namespace FantaLandia.Characters.Body
         /// <summary>Un piede ha appena toccato terra (lato -1/+1, punto d'appoggio): per i suoni dei passi.</summary>
         public event System.Action<int, Vector3> FootPlanted;
 
+        [Tooltip("Inclinazione in avanti del busto imposta dall'esterno (gradi), es. appoggiati a una ringhiera")]
+        public float externalLean;
+
         [Tooltip("Porta qualcosa nella mano sinistra (braccio teso lungo il fianco, niente oscillazione)")]
         public bool carryLeft;
 
@@ -222,6 +225,12 @@ namespace FantaLandia.Characters.Body
             else BuildGround(dt, breath);
             ApplyDisabledArms();
             ApplyCarryAndExternal();
+            if (Mathf.Abs(externalLean) > 0.01f && !traversing)
+            {
+                Add(BodyPart.Abdomen, externalLean * 0.55f, 0f, 0f);
+                Add(BodyPart.Chest, externalLean * 0.45f, 0f, 0f);
+                Add(BodyPart.Head, -externalLean * 0.6f, 0f, 0f);
+            }
 
             // FK con transizioni morbide
             float k = 1f - Mathf.Exp(-poseSharpness * dt);
