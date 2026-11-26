@@ -50,10 +50,11 @@ namespace FantaLandia.EditorTools
 
             CreateLight();
             Transform env = Group("Ambiente", null);
-            Box("Terreno", env, new Vector3(-60f, -0.5f, -60f), new Vector3(60f, 0f, 60f), matGround);
+            BuildGroundWithMoat(env);
             BuildObstacleCourse(env);
             BuildPlatform(env);
             BuildHouse(env, new Vector3(0f, 0f, 14f));
+            BuildMoat(env);
             BuildNavMesh();
 
             // Modelli a blocchi generati da BlockyCharacterBuilder (rigenerati ogni volta).
@@ -79,6 +80,68 @@ namespace FantaLandia.EditorTools
             light.intensity = 1.2f;
             light.shadows = LightShadows.Soft;
             go.transform.rotation = Quaternion.Euler(50f, -35f, 0f);
+        }
+
+        // ------------------------------------------------------------------ fossato con due ponti rotti
+
+        // Fossato lungo l'asse Z: x da MoatX0 a MoatX1, z da -MoatHalfLen a +MoatHalfLen, profondo MoatDepth.
+        const float MoatX0 = 20f, MoatX1 = 24f, MoatHalfLen = 20f, MoatDepth = 2.5f;
+
+        /// <summary>Terreno spesso con uno scavo per il fossato (il resto della scena è a quota 0).</summary>
+        static void BuildGroundWithMoat(Transform env)
+        {
+            Transform g = Group("Terreno", env);
+            const float E = 60f, bottom = -MoatDepth - 0.5f;
+            Box("Terreno ovest", g, new Vector3(-E, bottom, -E), new Vector3(MoatX0, 0f, E), matGround);
+            Box("Terreno est", g, new Vector3(MoatX1, bottom, -E), new Vector3(E, 0f, E), matGround);
+            Box("Terreno sud", g, new Vector3(MoatX0, bottom, -E), new Vector3(MoatX1, 0f, -MoatHalfLen), matGround);
+            Box("Terreno nord", g, new Vector3(MoatX0, bottom, MoatHalfLen), new Vector3(MoatX1, 0f, E), matGround);
+            Box("Fondo del fossato", g, new Vector3(MoatX0, bottom, -MoatHalfLen), new Vector3(MoatX1, -MoatDepth, MoatHalfLen), matStone);
+        }
+
+        static void BuildMoat(Transform env)
+        {
+            Transform root = Group("Fossato", env);
+
+            // Scale per uscire dal fossato alle due estremità (gradini da 0.25 m)
+            const int steps = 10;
+            const float rise = MoatDepth / steps, run = 0.35f;
+            Stairs(root, "Scala fossato nord", false, MoatHalfLen - steps * run, -MoatDepth, steps, rise, run, MoatX0, MoatX1, matStone);
+            Stairs(root, "Scala fossato sud", false, -MoatHalfLen + steps * run, -MoatDepth, steps, rise, -run, MoatX0, MoatX1, matStone);
+
+            BuildBrokenBridge(root, "Ponte con varco piccolo", -8f, 1.2f);
+            BuildBrokenBridge(root, "Ponte con varco grande", 8f, 3.0f);
+
+            Label(root, "Fossato: Alt + clic destro sull'altra sponda per saltare", new Vector3((MoatX0 + MoatX1) * 0.5f, 0.05f, -14f));
+            Label(root, "Varco 1.2 m (si salta)", new Vector3(MoatX0 - 3f, 0.05f, -8f));
+            Label(root, "Varco 3 m (si cade)", new Vector3(MoatX0 - 3f, 0.05f, 8f));
+        }
+
+        /// <summary>Ponte di legno sul fossato con un buco in mezzo largo 'gap' metri.</summary>
+        static void BuildBrokenBridge(Transform parent, string name, float z, float gap)
+        {
+            Transform b = Group(name, parent);
+            const float halfW = 1.2f, deckT = 0.3f, overhang = 1.5f;
+            float x0 = MoatX0 - overhang, x1 = MoatX1 + overhang;
+            float mid = (MoatX0 + MoatX1) * 0.5f;
+            float g0 = mid - gap * 0.5f, g1 = mid + gap * 0.5f;
+
+            const float top = 0.05f; // appena sopra il terreno, per non sovrapporsi alla sua superficie
+            Box("Assi ovest", b, new Vector3(x0, -deckT, z - halfW), new Vector3(g0, top, z + halfW), matWood);
+            Box("Assi est", b, new Vector3(g1, -deckT, z - halfW), new Vector3(x1, top, z + halfW), matWood);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float zr = z + side * (halfW - 0.05f);
+                Box("Parapetto ovest", b, new Vector3(x0, top, zr - 0.05f), new Vector3(g0 - 0.1f, top + 1f, zr + 0.05f), matWood);
+                Box("Parapetto est", b, new Vector3(g1 + 0.1f, top, zr - 0.05f), new Vector3(x1, top + 1f, zr + 0.05f), matWood);
+            }
+            // pilastri contro le pareti del fossato
+            Box("Pilastro ovest", b, new Vector3(MoatX0, -MoatDepth, z - 0.25f), new Vector3(MoatX0 + 0.4f, -deckT, z + 0.25f), matStone);
+            Box("Pilastro est", b, new Vector3(MoatX1 - 0.4f, -MoatDepth, z - 0.25f), new Vector3(MoatX1, -deckT, z + 0.25f), matStone);
+
+            // Salto del varco (solo con Alt): nei due sensi
+            Vector3 west = new Vector3(g0 - 0.6f, top, z), east = new Vector3(g1 + 0.6f, top, z);
+            Link(b, "Salto del varco", west, east, 1.2f, true, CharacterMotor.DangerousJumpArea, 0f, true);
         }
 
         static void BuildObstacleCourse(Transform env)
@@ -231,14 +294,15 @@ namespace FantaLandia.EditorTools
             Seg(cursor, to, 0f, height);
         }
 
-        /// <summary>Scala piena: ogni gradino è un blocco dal pavimento alla sua altezza. Sale nella direzione + dell'asse.</summary>
+        /// <summary>Scala piena: ogni gradino è un blocco dal pavimento alla sua altezza. Sale nel verso di 'run' (anche negativo).</summary>
         static void Stairs(Transform parent, string name, bool alongX, float start, float baseY, int steps,
                            float rise, float run, float crossMin, float crossMax, Material mat)
         {
             Transform g = Group(name, parent);
             for (int i = 0; i < steps; i++)
             {
-                float a = start + i * run, b = start + (i + 1) * run;
+                float a0 = start + i * run, b0 = start + (i + 1) * run;
+                float a = Mathf.Min(a0, b0), b = Mathf.Max(a0, b0);
                 float top = baseY + (i + 1) * rise;
                 Vector3 min = alongX ? new Vector3(a, baseY, crossMin) : new Vector3(crossMin, baseY, a);
                 Vector3 max = alongX ? new Vector3(b, top, crossMax) : new Vector3(crossMax, top, b);
@@ -265,7 +329,7 @@ namespace FantaLandia.EditorTools
         const float LaneWidth = 1.2f;
 
         static void Link(Transform parent, string name, Vector3 worldStart, Vector3 worldEnd, float width,
-                         bool bidirectional, int area, float obstacleHeight)
+                         bool bidirectional, int area, float obstacleHeight, bool gap = false)
         {
             int lanes = Mathf.Max(1, Mathf.FloorToInt(width / LaneWidth));
             float laneWidth = width / lanes;
@@ -279,12 +343,12 @@ namespace FantaLandia.EditorTools
             {
                 Vector3 offset = side * ((i - (lanes - 1) * 0.5f) * laneWidth);
                 string laneName = $"Corsia {i + 1}";
-                LinkLane(group, laneName, worldStart + offset, worldEnd + offset, laneWidth * 0.9f, bidirectional, area, obstacleHeight);
+                LinkLane(group, laneName, worldStart + offset, worldEnd + offset, laneWidth * 0.9f, bidirectional, area, obstacleHeight, gap);
             }
         }
 
         static void LinkLane(Transform parent, string name, Vector3 worldStart, Vector3 worldEnd, float width,
-                             bool bidirectional, int area, float obstacleHeight)
+                             bool bidirectional, int area, float obstacleHeight, bool gap)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -298,7 +362,9 @@ namespace FantaLandia.EditorTools
             link.area = area;
             link.UpdateLink();
 
-            go.AddComponent<TraversalLink>().obstacleHeight = obstacleHeight;
+            var info = go.AddComponent<TraversalLink>();
+            info.obstacleHeight = obstacleHeight;
+            info.isGap = gap;
         }
 
         // ------------------------------------------------------------------ personaggi e sistemi

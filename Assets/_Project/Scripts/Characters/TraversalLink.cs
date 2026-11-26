@@ -16,6 +16,9 @@ namespace FantaLandia.Characters
         [Tooltip("Altezza dell'ostacolo rispetto al punto di partenza (muretto, ringhiera...). 0 = rilevamento automatico.")]
         public float obstacleHeight;
 
+        [Tooltip("Varco da saltare (fosso, ponte rotto): se è troppo largo il salto fallisce e si cade")]
+        public bool isGap;
+
         /// <summary>Il personaggio che sta attraversando questa corsia (null = libera).</summary>
         public CharacterMotor Occupant { get; set; }
         public bool IsFree => Occupant == null;

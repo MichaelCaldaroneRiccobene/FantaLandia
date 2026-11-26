@@ -93,11 +93,12 @@ namespace FantaLandia.UI
             if (m.IsStunned) return "Stordito dall'atterraggio";
             switch (m.CurrentTraversal)
             {
-                case TraversalKind.Vault: return "Scavalca";
+                case TraversalKind.Vault: return "Scavalca il muretto";
                 case TraversalKind.Climb: return "Si arrampica oltre";
                 case TraversalKind.ClimbHigh: return "Arrampicata alta";
                 case TraversalKind.ClimbUp: return "Si arrampica su";
                 case TraversalKind.Drop: return "Salta giù";
+                case TraversalKind.GapJump: return "Salta il varco";
             }
             return m.CurrentSpeed > 0.1f ? "In movimento" : "Fermo";
         }

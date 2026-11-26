@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 namespace FantaLandia.Characters
 {
-    public enum TraversalKind { None, Vault, Climb, ClimbHigh, ClimbUp, Drop }
+    public enum TraversalKind { None, Vault, Climb, ClimbHigh, ClimbUp, Drop, GapJump }
 
     /// <summary>Fasi di un attraversamento (lette dall'animatore procedurale).</summary>
     public enum TraversalPhase { None, Approach, Vault, Jump, Scramble, PullUp, Mantle, Fall }
@@ -250,6 +250,14 @@ namespace FantaLandia.Characters
         /// <summary>Stato dell'attraversamento in corso: lo legge l'animatore per mettere mani e piedi al posto giusto.</summary>
         public TraversalState Traversal { get; } = new TraversalState();
 
+        [Header("Salto di un fosso")]
+        [Tooltip("Larghezza massima di un varco che il personaggio riesce a saltare (m)")]
+        public float maxGapJump = 2.2f;
+        public float gapJumpSpeed = 5.5f;
+
+        bool jumpFailed;
+        Vector3 failLanding;
+
         [Header("Tempi dell'arrampicata alta (s)")]
         public float climbJumpTime = 0.22f;
         public float climbScrambleTime = 0.55f;
@@ -261,21 +269,24 @@ namespace FantaLandia.Characters
             IsTraversing = true;
 
             OffMeshLinkData data = agent.currentOffMeshLinkData;
+            Vector3 destination = agent.destination;
             Vector3 start = transform.position;
             Vector3 end = data.endPos + Vector3.up * agent.baseOffset;
             float dy = end.y - start.y;
 
             float obstacle = 0f;
+            bool gap = false;
             TraversalLink lane = null;
             if (data.owner is Component owner && owner.TryGetComponent(out lane))
             {
                 obstacle = lane.obstacleHeight;
+                gap = lane.isGap;
                 lane.Occupant = this;
             }
-            if (obstacle <= 0f && Mathf.Abs(dy) < 0.5f)
+            if (!gap && obstacle <= 0f && Mathf.Abs(dy) < 0.5f)
                 obstacle = ProbeObstacleHeight(start, end);
 
-            TraversalKind kind = Classify(dy, obstacle);
+            TraversalKind kind = gap ? TraversalKind.GapJump : Classify(dy, obstacle);
             CurrentTraversal = kind;
             Measure(kind, start, end, obstacle, dy);
             TraversalStarted?.Invoke(kind);
@@ -287,7 +298,7 @@ namespace FantaLandia.Characters
             switch (kind)
             {
                 case TraversalKind.Vault:
-                    yield return StartCoroutine(VaultOver(false));
+                    yield return StartCoroutine(StepOver());
                     break;
                 case TraversalKind.Climb:
                     yield return StartCoroutine(VaultOver(true));
@@ -297,24 +308,31 @@ namespace FantaLandia.Characters
                     break;
                 case TraversalKind.ClimbUp:
                     if (dy > 1.3f) yield return StartCoroutine(ClimbWall(true));
-                    else yield return StartCoroutine(VaultOver(false));
+                    else yield return StartCoroutine(StepOver());
+                    break;
+                case TraversalKind.GapJump:
+                    yield return StartCoroutine(GapJump());
                     break;
                 case TraversalKind.Drop:
                     yield return StartCoroutine(DropDown(obstacle));
                     break;
             }
 
-            transform.position = end;
+            bool failed = jumpFailed;
+            jumpFailed = false;
+            Vector3 final = failed ? failLanding : end;
+            transform.position = final;
             FaceTraversal();
             agent.CompleteOffMeshLink();
+            if (failed) agent.Warp(final); // caduto nel fosso: l'agente riparte da dove è atterrato
             agent.updateRotation = true;
             if (lane != null && lane.Occupant == this) lane.Occupant = null;
             CurrentTraversal = TraversalKind.None;
             Traversal.phase = TraversalPhase.None;
 
-            if (kind == TraversalKind.Drop)
+            if (kind == TraversalKind.Drop || failed)
             {
-                LastFallHeight = start.y - end.y;
+                LastFallHeight = start.y - final.y;
                 LastLandingTime = Time.time;
                 Landed?.Invoke(LastFallHeight);
 
@@ -329,6 +347,13 @@ namespace FantaLandia.Characters
             }
 
             IsTraversing = false;
+            if (failed && !hasPending)
+            {
+                // riprova ad arrivare alla meta, ma stavolta a piedi
+                hasPending = true;
+                pendingDestination = destination;
+                pendingDangerous = false;
+            }
             if (hasPending)
             {
                 hasPending = false;
@@ -364,6 +389,13 @@ namespace FantaLandia.Characters
             t.topY = dy > 0.5f ? end.y : (dy < -0.5f ? start.y + obstacle : start.y + obstacle);
 
             Vector3 mid = Vector3.Lerp(start, end, 0.5f);
+            if (kind == TraversalKind.GapJump)
+            {
+                t.topY = start.y;
+                t.nearFace = FindEdge(start, t.dir, dist, mid);
+                t.farFace = FindEdge(end, -t.dir, dist, mid);
+                return;
+            }
             if (kind == TraversalKind.Drop)
             {
                 // Il bordo: primo punto lungo il percorso dove il pavimento sparisce sotto i piedi.
@@ -394,7 +426,117 @@ namespace FantaLandia.Characters
                 : t.nearFace;
         }
 
-        /// <summary>Muretto basso (balzo con una mano) o muro medio (volteggio laterale stile parkour).</summary>
+        /// <summary>Primo punto, partendo da 'from' lungo 'dir', dove il pavimento sparisce sotto i piedi.</summary>
+        static Vector3 FindEdge(Vector3 from, Vector3 dir, float maxDist, Vector3 fallback)
+        {
+            for (float s = 0.05f; s < maxDist; s += 0.05f)
+            {
+                Vector3 p = from + dir * s + Vector3.up * 0.4f;
+                if (!Physics.Raycast(p, Vector3.down, 0.8f, ~0, QueryTriggerInteraction.Ignore))
+                    return new Vector3(from.x + dir.x * s, from.y, from.z + dir.z * s);
+            }
+            return new Vector3(fallback.x, from.y, fallback.z);
+        }
+
+        /// <summary>Muretto basso: un piede sopra il muretto, il corpo passa, l'altra gamba scavalca, si scende.</summary>
+        IEnumerator StepOver()
+        {
+            var t = Traversal;
+            Vector3 takeoff = transform.position;
+            if (FlatDistance(takeoff, t.nearFace) > 0.4f)
+            {
+                takeoff = t.nearFace - t.dir * 0.35f;
+                takeoff.y = t.start.y;
+            }
+            yield return StartCoroutine(MovePhase(transform.position, takeoff,
+                FlatDistance(transform.position, takeoff) / Mathf.Max(2.5f, agent.speed), TraversalPhase.Approach, Ease.None));
+
+            float duration = Mathf.Lerp(1.0f, 0.6f, Mathf.InverseLerp(2f, 6f, agent.speed));
+            float lift = Mathf.Max(0f, t.topY - Mathf.Max(t.start.y, t.end.y)) * 0.55f + Mathf.Max(0f, t.end.y - t.start.y) * 0.45f;
+            Vector3 a = takeoff, b = t.end;
+            t.phase = TraversalPhase.Vault;
+            float time = 0f;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float u = Mathf.Clamp01(time / duration);
+                t.phaseT = u;
+                FaceTraversal();
+                float hu = u * u * (3f - 2f * u);
+                float bump = Smooth01(u / 0.4f) * (1f - Smooth01((u - 0.55f) / 0.35f));
+                Vector3 p = Vector3.Lerp(a, b, hu);
+                p.y = Mathf.Lerp(a.y, b.y, hu) + lift * bump;
+                transform.position = p;
+                yield return null;
+            }
+        }
+
+        static float Smooth01(float u) { u = Mathf.Clamp01(u); return u * u * (3f - 2f * u); }
+
+        /// <summary>
+        /// Salto di un varco: rincorsa fino al bordo e salto. Se il varco è più largo di quanto il personaggio
+        /// riesce a saltare, il salto è corto e cade giù.
+        /// </summary>
+        IEnumerator GapJump()
+        {
+            var t = Traversal;
+            Vector3 takeoff = t.nearFace - t.dir * 0.15f;
+            takeoff.y = t.start.y;
+            if (Vector3.Dot(takeoff - transform.position, t.dir) > 0.05f)
+                yield return StartCoroutine(MovePhase(transform.position, takeoff,
+                    FlatDistance(transform.position, takeoff) / Mathf.Max(4f, agent.speed), TraversalPhase.Approach, Ease.None));
+
+            float gapWidth = FlatDistance(t.nearFace, t.farFace);
+            Vector3 from = transform.position;
+
+            if (gapWidth <= maxGapJump)
+            {
+                Vector3 landing = t.farFace + t.dir * 0.4f;
+                landing.y = t.end.y;
+                yield return StartCoroutine(JumpArc(from, landing, 0.55f));
+                yield return StartCoroutine(MovePhase(landing, t.end, FlatDistance(landing, t.end) / Mathf.Max(3f, agent.speed),
+                                                      TraversalPhase.Approach, Ease.None));
+                yield break;
+            }
+
+            // Troppo largo: arriva al massimo della spinta e cade nel vuoto.
+            Vector3 apex = t.nearFace + t.dir * Mathf.Min(maxGapJump * 0.75f, gapWidth * 0.5f);
+            apex.y = from.y + 0.5f;
+            yield return StartCoroutine(JumpArc(from, apex, 0f));
+            Vector3 below = apex;
+            if (Physics.Raycast(apex, Vector3.down, out RaycastHit hit, 50f, ~0, QueryTriggerInteraction.Ignore))
+                below = hit.point;
+            Vector3 landingFail = below + t.dir * 0.3f;
+            if (NavMesh.SamplePosition(landingFail, out NavMeshHit nav, 2f, NavMesh.AllAreas)) landingFail = nav.position;
+            jumpFailed = true;
+            failLanding = landingFail;
+            yield return StartCoroutine(FallPhase(apex, landingFail));
+        }
+
+        /// <summary>Arco di salto: orizzontale lineare, verticale a parabola con l'apice 'height' sopra la partenza.</summary>
+        IEnumerator JumpArc(Vector3 from, Vector3 to, float height)
+        {
+            var t = Traversal;
+            t.phase = TraversalPhase.Jump;
+            float dist = FlatDistance(from, to);
+            float duration = Mathf.Max(0.3f, dist / gapJumpSpeed);
+            float time = 0f;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float u = Mathf.Clamp01(time / duration);
+                t.phaseT = u;
+                FaceTraversal();
+                Vector3 p = Vector3.Lerp(from, to, u);
+                // parabola da from.y a to.y con apice 'height' sopra la quota più alta (se height > 0)
+                float baseY = Mathf.Lerp(from.y, to.y, u);
+                p.y = height > 0f ? baseY + 4f * height * u * (1f - u) : from.y + (to.y - from.y) * (1f - (1f - u) * (1f - u));
+                transform.position = p;
+                yield return null;
+            }
+        }
+
+        /// <summary>Muro medio: volteggio laterale stile parkour.</summary>
         IEnumerator VaultOver(bool parkour)
         {
             var t = Traversal;

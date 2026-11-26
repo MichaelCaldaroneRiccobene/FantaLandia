@@ -569,31 +569,12 @@ namespace FantaLandia.Characters.Body
                 }
 
                 case TraversalPhase.Vault:
-                {
-                    // Balzo sul muretto: mano destra sul bordo, gambe raccolte che passano sopra.
-                    Rot(BodyPart.Abdomen, 18f, 0f, 0f);
-                    Rot(BodyPart.Chest, 10f, 0f, 0f);
-                    Rot(BodyPart.Head, -15f, 0f, 0f);
-                    Rot(BodyPart.UpperArmL, -60f, 0f, -35f);
-                    Rot(BodyPart.ForearmL, -20f, 0f, 0f);
-                    Rot(BodyPart.ThighL, -85f, 0f, 0f); Rot(BodyPart.ShinL, 105f, 0f, 0f);
-                    Rot(BodyPart.ThighR, -80f, 0f, 0f); Rot(BodyPart.ShinR, 100f, 0f, 0f);
-
-                    Vector3 hand = edge + dir * 0.08f + right * 0.14f;
-                    float handW = Ramp(u, 0f, 0.15f) * (1f - Ramp(u, 0.55f, 0.75f));
-                    SetIK(3, hand + Vector3.up * 0.03f - dir * 0.04f, -dir + right, handW);
-                    SetEnd(3, PalmDown(1, dir));
-
-                    Vector3 hipsW = hips.position;
-                    float legW = Ramp(u, 0.1f, 0.3f) * (1f - Ramp(u, 0.8f, 1f));
-                    for (int i = 0; i < 2; i++)
-                    {
-                        Vector3 p = hipsW + Vector3.down * 0.42f + dir * 0.12f + right * (feet[i].side * 0.1f);
-                        p.y = Mathf.Max(p.y, t.topY + 0.06f + ankleH);
-                        SetIK(i, p, dir, legW);
-                    }
+                    StepOverPose(t, u);
                     break;
-                }
+
+                case TraversalPhase.Jump when t.kind == TraversalKind.GapJump:
+                    LongJumpPose(u);
+                    break;
 
                 case TraversalPhase.Jump when t.kind == TraversalKind.Drop:
                     TakeOffPose();
@@ -701,6 +682,82 @@ namespace FantaLandia.Characters.Body
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Scavalco a passo del muretto: piede sinistro sopra il bordo, la destra scavalca e scende dall'altra parte,
+        /// poi scende anche la sinistra. La mano destra si appoggia per un attimo sul muretto.
+        /// </summary>
+        void StepOverPose(TraversalState t, float u)
+        {
+            Vector3 dir = t.dir, right = t.right;
+            Vector3 edge = t.Edge;
+            Vector3 nearBase = t.nearFace - dir * 0.35f;
+            Vector3 nearL = nearBase - right * 0.1f, nearR = nearBase + right * 0.1f;
+            Vector3 farL = t.end - right * 0.1f, farR = t.end + right * 0.1f;
+            Vector3 topL = edge + dir * 0.1f - right * 0.08f;
+
+            // piede sinistro: sale sul bordo, resta, poi scende
+            Vector3 pl;
+            if (u < 0.3f) pl = Arc(nearL, topL, Smooth01(u / 0.3f), 0.15f);
+            else if (u < 0.78f) pl = topL;
+            else pl = Arc(topL, farL, Smooth01((u - 0.78f) / 0.22f), 0.08f);
+
+            // piede destro: fermo, poi scavalca alto oltre il muretto
+            Vector3 pr;
+            if (u < 0.45f) pr = nearR;
+            else if (u < 0.82f)
+            {
+                float v = Smooth01((u - 0.45f) / 0.37f);
+                pr = Vector3.Lerp(nearR, farR, v);
+                float clear = t.topY + 0.18f - pr.y;
+                pr.y += Mathf.Max(0f, clear) * Mathf.Sin(Mathf.PI * v) + 0.05f * Mathf.Sin(Mathf.PI * v);
+            }
+            else pr = farR;
+
+            SetIK(0, pl + Vector3.up * ankleH, dir + right * -0.2f, 1f);
+            SetIK(1, pr + Vector3.up * ankleH, dir + right * 0.3f, 1f);
+            SetEnd(0, Quaternion.LookRotation(dir, Vector3.up));
+            SetEnd(1, Quaternion.LookRotation(dir, Vector3.up));
+
+            // il bacino si abbassa mentre la gamba scavalca
+            float bump = Smooth01((u - 0.3f) / 0.2f) * (1f - Smooth01((u - 0.7f) / 0.25f));
+            desiredHipsLocal = hipsRest + Vector3.down * (0.14f * bump);
+
+            float handW = Ramp(u, 0.15f, 0.3f) * (1f - Ramp(u, 0.6f, 0.75f));
+            Vector3 hand = edge + dir * 0.05f + right * 0.22f + Vector3.up * 0.03f;
+            SetIK(3, hand, -dir + right, handW);
+            SetEnd(3, PalmDown(1, dir));
+
+            Rot(BodyPart.Abdomen, 10f + 8f * bump, 0f, 0f);
+            Rot(BodyPart.Chest, 6f, 0f, 0f);
+            Rot(BodyPart.Head, -8f, 0f, 0f);
+            Rot(BodyPart.UpperArmL, -20f, 0f, -25f);
+            Rot(BodyPart.ForearmL, -25f, 0f, 0f);
+            Rot(BodyPart.UpperArmR, -30f, 0f, 10f);
+        }
+
+        /// <summary>Salto in lungo: stacco con una gamba avanti, braccia in alto, poi gambe avanti per l'atterraggio.</summary>
+        void LongJumpPose(float u)
+        {
+            float land = Smooth01((u - 0.45f) / 0.45f);
+            Rot(BodyPart.ThighL, Mathf.Lerp(-75f, -65f, land), 0f, 0f);
+            Rot(BodyPart.ShinL, Mathf.Lerp(70f, 45f, land), 0f, 0f);
+            Rot(BodyPart.ThighR, Mathf.Lerp(25f, -60f, land), 0f, 0f);
+            Rot(BodyPart.ShinR, Mathf.Lerp(80f, 50f, land), 0f, 0f);
+            Rot(BodyPart.UpperArmL, Mathf.Lerp(-140f, -60f, land), 0f, -20f);
+            Rot(BodyPart.UpperArmR, Mathf.Lerp(-140f, -60f, land), 0f, 20f);
+            Rot(BodyPart.ForearmL, -20f, 0f, 0f);
+            Rot(BodyPart.ForearmR, -20f, 0f, 0f);
+            Rot(BodyPart.Abdomen, Mathf.Lerp(-5f, 15f, land), 0f, 0f);
+            Rot(BodyPart.Head, Mathf.Lerp(-10f, 10f, land), 0f, 0f);
+        }
+
+        static Vector3 Arc(Vector3 a, Vector3 b, float t, float height)
+        {
+            Vector3 p = Vector3.Lerp(a, b, t);
+            p.y += height * Mathf.Sin(Mathf.PI * t);
+            return p;
         }
 
         void TakeOffPose()
