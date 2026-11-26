@@ -339,6 +339,7 @@ namespace FantaLandia.Horror.Dialogue
         }
 
         GUIStyle overheadStyle;
+        const float MaxOverheadDistance = 20f;
 
         void DrawOverheadBarks()
         {
@@ -351,8 +352,12 @@ namespace FantaLandia.Horror.Dialogue
                 Vector3 world = b.position + Vector3.up * 0.45f;
                 Vector3 sp = cam.WorldToScreenPoint(world);
                 float dist = Vector3.Distance(cam.transform.position, world);
-                if (sp.z <= 0f || dist > 30f) continue;
-                float alpha = Mathf.Clamp01((30f - dist) / 10f) * Mathf.Clamp01((b.until - Time.time) * 2f);
+                if (sp.z <= 0f || dist > MaxOverheadDistance) continue;
+                if (sp.x < 0f || sp.x > Screen.width || sp.y < 0f || sp.y > Screen.height) continue;
+                // solo se chi parla si vede davvero: niente scritte attraverso muri, porte e mobili
+                // (il raggio ignora il giocatore e i personaggi, layer 2 e 7)
+                if (Physics.Linecast(cam.transform.position, b.position, ~((1 << 2) | (1 << 7)), QueryTriggerInteraction.Ignore)) continue;
+                float alpha = Mathf.Clamp01((MaxOverheadDistance - dist) / 5f) * Mathf.Clamp01((b.until - Time.time) * 2f);
                 string hex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
                 Rect r = new Rect(sp.x - 160f, Screen.height - sp.y - 20f, 320f, 40f);
                 var c = GUI.color;
