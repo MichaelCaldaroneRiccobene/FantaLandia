@@ -41,6 +41,7 @@ namespace FantaLandia.Horror.EditorTools
         static HorrorDoor backDoor, bathDoor, cellarDoor, sideDoor;
         static GeneratorStarter generator;
         static Transform cellarRadio;
+        static FlashlightPickup torchPickup;
         static CharacterMotor royMotor, jefMotor;
         static readonly List<NpcActor> neighborActors = new List<NpcActor>();
 
@@ -60,6 +61,7 @@ namespace FantaLandia.Horror.EditorTools
             generator = null;
             cellarRadio = null;
             royMotor = jefMotor = null;
+            torchPickup = null;
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             HorrorTestSceneBuilder.SetupNight();
@@ -145,10 +147,6 @@ namespace FantaLandia.Horror.EditorTools
             story.standSpots = new[] { M2("In piedi: vicino alla poltrona", new Vector3(-3.6f, F0, 5.3f), -120f),
                                        M2("In piedi: vicino alla libreria", new Vector3(-3.9f, F0, 1.2f), -60f),
                                        M2("In piedi: vicino alla TV", new Vector3(-5.6f, F0, 1.4f), -10f) };
-            // mete delle faccende di sottofondo (la rotazione dice dove guardare)
-            story.fridgeSpot = M2("Faccenda: frigo", new Vector3(6.0f, F0, 9.4f), 0f);
-            story.frontWindowSpot = M2("Faccenda: finestra soggiorno", new Vector3(-4.6f, F0, 0.75f), 180f);
-            story.backWindowSpot = M2("Faccenda: finestra sul retro", new Vector3(-4.5f, F0, 10.2f), 0f);
             story.upstairsFloorY = F1;
             story.basementBounds = new Bounds(new Vector3(0f, FB + 1.2f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0 - 0.6f, 2.6f, Z1 - Z0 - 0.6f));
             story.royDoorstep = M2("Roy sulla soglia", new Vector3(0.05f, F0, -0.6f), 0f);
@@ -166,6 +164,8 @@ namespace FantaLandia.Horror.EditorTools
             story.house = power;
             story.generator = generator;
             story.cellarRadio = cellarRadio;
+            story.torchPickup = torchPickup;
+            story.highlightMaterial = HighlightMaterial();
             story.cellarBulbs = cellarBulbs.ToArray();
 
             // l'esplosione: un edificio a qualche isolato, dietro i giardini, e altre case sullo sfondo
@@ -293,6 +293,18 @@ namespace FantaLandia.Horror.EditorTools
             seat.label = label;
             seat.group = "salotto";
             return seat;
+        }
+
+        /// <summary>Materiale del contorno luminoso che pulsa (per evidenziare gli oggetti da prendere).</summary>
+        static Material HighlightMaterial()
+        {
+            string path = $"{EditorAssetUtil.MaterialFolder}/Evidenziatura.mat";
+            EditorAssetUtil.EnsureFolder(EditorAssetUtil.MaterialFolder);
+            Shader sh = Shader.Find("FantaLandia/Highlight");
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
+            else m.shader = sh;
+            return m;
         }
 
         static Material SmokeMat(string name, bool additive, float softness, float breakup)
@@ -768,7 +780,7 @@ namespace FantaLandia.Horror.EditorTools
             island.standPoint = stand;
             Place(VoxelFurniture.Get("Telefono"), f, counter.transform.localPosition + new Vector3(-0.5f, 0.9f, 0.05f), 180f);
             GameObject torch = Place(VoxelAssetLibrary.Load("Torcia"), f, counter.transform.localPosition + new Vector3(0.4f, 0.9f, 0f), 60f);
-            torch.AddComponent<FlashlightPickup>();
+            torchPickup = torch.AddComponent<FlashlightPickup>();
 
             // bagnetto (Jef è chiuso dentro)
             Place(VoxelFurniture.Get("WC"), f, new Vector3(6.3f, F0, 1.2f), -90f);

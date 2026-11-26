@@ -57,8 +57,6 @@ namespace FantaLandia.Horror.Story
         public Transform deckTom, deckRoy, deckJef;
         public Transform livingRoom;
         public float livingRoomRadius = 3.2f;
-        [Tooltip("Mete delle faccende di sottofondo: frigo, finestra del soggiorno, finestra sul retro")]
-        public Transform fridgeSpot, frontWindowSpot, backWindowSpot;
         public Transform playerKitchen;      // per le prove: davanti all'isola
         public Transform playerCellarTop;    // per le prove: in cima alla scala della cantina
         public float basementFloorY = -2.5f;
@@ -78,6 +76,11 @@ namespace FantaLandia.Horror.Story
         public Transform cellarRadio;
         public Light[] cellarBulbs;
         public AmbientSound nightAmbience;
+        [Tooltip("La torcia sul bancone della cucina e il materiale per evidenziarla")]
+        public FlashlightPickup torchPickup;
+        public Material highlightMaterial;
+        Vector3 torchHomePos;
+        Quaternion torchHomeRot;
 
         // ------------------------------------------------------------------ stato
 
@@ -118,6 +121,7 @@ namespace FantaLandia.Horror.Story
             foreach (var b in cellarBulbs) if (b != null) b.enabled = false;
             var tvVoice = NpcSpeaker.Find("tv");
             if (tvVoice != null) NpcActor.SharedLookTarget = tvVoice.LookPoint;
+            if (torchPickup != null) { torchHomePos = torchPickup.transform.position; torchHomeRot = torchPickup.transform.rotation; }
             preferred[tom] = seatTom;
             preferred[roy] = seatRoy;
             preferred[jef] = seatJef;
@@ -614,37 +618,40 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator Basement()
         {
-            calm = true; // di sopra, al buio, gli amici si muovono un po'
-            if (flashlight != null && !flashlight.HasFlashlight)
-            {
-                Goal((tom, Speakers.Tom, "La torcia è sul bancone in cucina, Muark."),
-                     (roy, Speakers.Roy, "Che c'è, Muark? Hai paura del buio?"));
-                while (!flashlight.HasFlashlight) yield return null;
-            }
-            Goal((tom, Speakers.Tom, "Muark? La cantina è da quella parte, accanto all'isola."),
-                 (roy, Speakers.Roy, "Ehi, il generatore non si accende da solo!"));
-            while (!PlayerInBasement) yield return null;
-            Goal((null, Speakers.Muark, "Il generatore... cerca quella lucina rossa."),
-                 (null, Speakers.Muark, "Tira la corda e torna su, Muark. Facile."));
-            droneTarget = 0.22f;
+            calm = true; // di sopra, al buio, gli amici chiacchierano tra loro
 
-            // gli spaventi li sceglie il "regista della paura" finché il generatore non parte
-            StartCoroutine(ScareDirector());
-
+            // il generatore si ascolta da subito: si può avviare anche senza torcia (al buio, seguendo la spia rossa)
             bool started = false;
             System.Action onStart = () => started = true;
             System.Action<int> onPull = n =>
             {
                 if (n == 2) HorrorAudio.PlayAt(ProceduralAudio.Whisper(), player.position - player.right * 1.6f + Vector3.up * 1.5f, 0.5f, 0.9f, 6f);
             };
-            if (generator != null)
+            if (generator != null) { generator.Started += onStart; generator.Pulled += onPull; }
+
+            // la torcia: deve essere al suo posto sul bancone (se Muark l'ha lasciata in giro torna lì) ed è evidenziata
+            if (flashlight != null && !flashlight.HasFlashlight)
             {
-                generator.Started += onStart;
-                generator.Pulled += onPull;
-                while (!started) yield return null;
-                generator.Started -= onStart;
-                generator.Pulled -= onPull;
+                PutTorchBack();
+                StartCoroutine(HighlightTorchUntilTaken());
+                Goal((tom, Speakers.Tom, "La torcia è sul bancone in cucina, Muark."),
+                     (roy, Speakers.Roy, "Che c'è, Muark? Hai paura del buio?"));
+                while (!flashlight.HasFlashlight && !PlayerInBasement && !started) yield return null;
             }
+            if (!PlayerInBasement && !started)
+            {
+                Goal((tom, Speakers.Tom, "Muark? La cantina è da quella parte, accanto all'isola."),
+                     (roy, Speakers.Roy, "Ehi, il generatore non si accende da solo!"));
+                while (!PlayerInBasement && !started) yield return null;
+            }
+            Goal((null, Speakers.Muark, "Il generatore... cerca quella lucina rossa."),
+                 (null, Speakers.Muark, "Tira la corda e torna su, Muark. Facile."));
+            droneTarget = 0.22f;
+
+            // gli spaventi li sceglie il "regista della paura" finché il generatore non parte
+            StartCoroutine(ScareDirector());
+            while (!started) yield return null;
+            if (generator != null) { generator.Started -= onStart; generator.Pulled -= onPull; }
             generatorRunning = true;
             ClearGoal();
 
@@ -752,6 +759,27 @@ namespace FantaLandia.Horror.Story
             }
         }
 
+        /// <summary>Se la torcia non è sul bancone (lasciata cadere, lanciata) la rimette al suo posto.</summary>
+        void PutTorchBack()
+        {
+            if (torchPickup == null) return;
+            Transform t = torchPickup.transform;
+            if (Vector3.Distance(t.position, torchHomePos) < 0.3f) return;
+            var rb = t.GetComponent<Rigidbody>();
+            if (rb != null) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; rb.isKinematic = true; }
+            t.SetPositionAndRotation(torchHomePos, torchHomeRot);
+            torchPickup.enabled = true;
+            foreach (var c in t.GetComponentsInChildren<Collider>()) c.enabled = true;
+        }
+
+        IEnumerator HighlightTorchUntilTaken()
+        {
+            if (torchPickup == null) yield break;
+            Highlighter.Attach(torchPickup.gameObject, highlightMaterial);
+            while (flashlight != null && !flashlight.HasFlashlight) yield return null;
+            Highlighter.Remove(torchPickup.gameObject);
+        }
+
         IEnumerator BulbsOn()
         {
             HorrorAudio.Play2D(ProceduralAudio.Click(), 0.5f);
@@ -844,39 +872,45 @@ namespace FantaLandia.Horror.Story
         /// Nei momenti tranquilli ogni tanto uno degli amici si alza e fa qualcosa (Tom va al frigo, Roy guarda fuori
         /// dalla finestra, Jef resta a fissare il buio dal retro), poi torna a sedersi se il posto è libero.
         /// </summary>
+        // frasi di sottofondo degli amici, seduti al loro posto (con la luce / al buio)
+        static readonly string[] ChatterLight =
+        {
+            "tom|Sta arrivando questa pizza o no?", "tom|Questo cartone lo guardavo da piccolo.", "tom|Ricordatemi di comprare altre birre.",
+            "roy|Ehi Tom, hai ancora quel videogioco dei ninja?", "roy|Scommetto che il fattorino si è perso.", "roy|Jef è ancora in bagno? Chiamate un idraulico.",
+            "jef|Hmm.", "jef|Forse.",
+        };
+        static readonly string[] ChatterDark =
+        {
+            "tom|Muark? Tutto bene là sotto?", "tom|Che silenzio... non mi piace.", "tom|Il frigo si sta scaldando. Meglio finire le birre.",
+            "roy|Qualcuno ha delle candele?", "roy|Ragazzi, avete sentito anche voi?", "roy|Non vedo niente là fuori. Niente di niente.",
+            "jef|...Sentite?", "jef|Non è normale.",
+        };
+
+        /// <summary>
+        /// Nei momenti tranquilli gli amici restano seduti ma parlano: ogni tanto uno dice una frase (sopra la testa,
+        /// con la sua voce), da solo o rivolto agli altri. Niente giri per la casa.
+        /// </summary>
         IEnumerator IdleLife()
         {
+            int li = 0, di = 0;
             while (true)
             {
-                yield return new WaitForSeconds(Random.Range(14f, 26f));
+                yield return new WaitForSeconds(Random.Range(11f, 20f));
                 if (!calm || DialogueSystem.IsTalking || fade > 0.01f) continue;
-                var candidates = new List<CharacterMotor>();
-                foreach (var m in new[] { tom, roy, jef })
-                    if (m != null && m.gameObject.activeInHierarchy && m.IsSeated && !running.Contains(m) && (m != jef || jefOut)
-                        && (m != tom || (house != null && !house.powered))) // Tom resta in poltrona: va al frigo solo al buio, mentre Muark è in cantina
-                        candidates.Add(m);
-                if (candidates.Count == 0) continue;
-                CharacterMotor who = candidates[Random.Range(0, candidates.Count)];
-                Job(who, Errand(who));
+                bool dark = house != null && !house.powered;
+                string[] pool = dark ? ChatterDark : ChatterLight;
+                // la prossima frase di qualcuno che c'è (Jef solo quando è uscito dal bagno)
+                for (int tries = 0; tries < pool.Length; tries++)
+                {
+                    string line = pool[(dark ? di++ : li++) % pool.Length];
+                    int bar = line.IndexOf('|');
+                    string id = line.Substring(0, bar);
+                    CharacterMotor m = id == "tom" ? tom : id == "roy" ? roy : jef;
+                    if (m == null || !m.gameObject.activeInHierarchy || (m == jef && !jefOut)) continue;
+                    DialogueSystem.Bark(Speakers.Find(id), line.Substring(bar + 1), Eye(m), true);
+                    break;
+                }
             }
-        }
-
-        IEnumerator Errand(CharacterMotor m)
-        {
-            bool dark = house != null && !house.powered;
-            Transform spot = m == tom ? fridgeSpot : m == roy ? frontWindowSpot : backWindowSpot;
-            if (spot == null) yield break;
-            Stand(m);
-            yield return new WaitForSeconds(0.6f);
-            if (m == tom)
-                DialogueSystem.Bark(Speakers.Tom, dark ? "Il frigo si sta scaldando... meglio finire le birre." : "Prendo un'altra birra. Qualcuno vuole qualcosa?", Eye(tom));
-            yield return Actor(m).WalkTo(spot.position);
-            yield return Actor(m).FaceTowards(spot.position + spot.forward * 2f + Vector3.up * 1.5f, 0.6f);
-            if (m == roy)
-                DialogueSystem.Bark(Speakers.Roy, dark ? "Non si vede niente là fuori. Niente di niente." : "Niente pizza all'orizzonte...", Eye(roy), true);
-            yield return new WaitForSeconds(m == jef ? Random.Range(7f, 11f) : Random.Range(2.5f, 4.5f)); // Jef resta lì a fissare il buio
-            if (m == tom) HorrorAudio.PlayAt(ProceduralAudio.CansClink(), spot.position + spot.forward * 0.6f + Vector3.up, 0.5f);
-            yield return SitOn(m);
         }
 
         // ================================================================== salti per le prove
