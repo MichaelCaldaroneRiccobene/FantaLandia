@@ -30,6 +30,8 @@ GLOBAL_SPEED = 1.22
 # i personaggi umani (ragazzi, vicini, TV) ancora più svelti; quelli del cartone restano così
 HUMAN_SPEED = 1.2
 CARTOON = {"lucia", "rana", "tasso", "gufo"}
+# i personaggi del cartone: un po' più svelti degli umani e poi ancora un 20% (ritmo da cartone animato)
+CARTOON_SPEED = 1.2 * 1.2
 
 # voce: modello, tono (1 = invariato), velocità, filtro ffmpeg extra
 VOICES = {
@@ -124,7 +126,7 @@ def main():
             wav = os.path.join(tmp, "v.wav")
             engine(model).tts_to_file(text=spoken, file_path=wav)
             # tono: si cambia la frequenza di campionamento, poi si rimette a posto la durata; più un filo di pausa all'inizio
-            filters = [f"asetrate={int(16000 * pitch)}", "aresample=22050", f"atempo={speed * GLOBAL_SPEED * (1.0 if speaker in CARTOON else HUMAN_SPEED) / pitch:.4f}", "adelay=40", "loudnorm=I=-18:TP=-2"]
+            filters = [f"asetrate={int(16000 * pitch)}", "aresample=22050", f"atempo={speed * GLOBAL_SPEED * (CARTOON_SPEED if speaker in CARTOON else HUMAN_SPEED) / pitch:.4f}", "adelay=40", "loudnorm=I=-18:TP=-2"]
             if extra: filters.append(extra)   # dopo la normalizzazione (così il volume della TV resta più basso)
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav, "-af", ",".join(filters), "-ac", "1", "-c:a", "libvorbis", "-q:a", "4", dst], check=True)
         made += 1
