@@ -27,7 +27,7 @@ namespace FantaLandia.Horror.EditorTools
         // ------------------------------------------------------------------ salvataggio
 
         /// <summary>Crea il prefab: mesh a cubetti, un materiale per colore, collider a scatola.</summary>
-        static GameObject Save(string name, VoxelBuilder v, Vector3 pivot, bool collider = true)
+        public static GameObject Save(string name, VoxelBuilder v, Vector3 pivot, bool collider = true)
         {
             EditorAssetUtil.EnsureFolder(Folder);
             Mesh mesh = v.Build(name, pivot, out Color[] colors);
@@ -60,7 +60,7 @@ namespace FantaLandia.Horror.EditorTools
             return p;
         }
 
-        static Vector3 BottomCenter(VoxelBuilder v, int sx, int sz) => new Vector3(sx * 0.5f * v.size, 0f, sz * 0.5f * v.size);
+        public static Vector3 BottomCenter(VoxelBuilder v, int sx, int sz) => new Vector3(sx * 0.5f * v.size, 0f, sz * 0.5f * v.size);
 
         // ------------------------------------------------------------------ TV a tubo catodico
 

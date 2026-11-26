@@ -81,7 +81,7 @@ namespace FantaLandia.Horror.EditorTools
 
         // ------------------------------------------------------------------ notte
 
-        static void SetupNight()
+        public static void SetupNight()
         {
             var moon = new GameObject("Luna").AddComponent<Light>();
             moon.type = LightType.Directional;
@@ -238,12 +238,15 @@ namespace FantaLandia.Horror.EditorTools
 
         // ------------------------------------------------------------------ personaggi
 
-        static CharacterMotor BuildTom(Transform world, GameObject malePrefab)
+        static CharacterMotor BuildTom(Transform world, GameObject malePrefab) =>
+            BuildTom(world, malePrefab, new Vector3(-1.4f, FloorY, 5.2f), 200f);
+
+        public static CharacterMotor BuildTom(Transform world, GameObject malePrefab, Vector3 position, float yaw)
         {
             var tom = new GameObject("Tom");
             tom.transform.SetParent(world, false);
-            tom.transform.localPosition = new Vector3(-1.4f, FloorY, 5.2f);
-            tom.transform.localRotation = Quaternion.Euler(0f, 200f, 0f);
+            tom.transform.localPosition = position;
+            tom.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
 
             var agent = tom.AddComponent<NavMeshAgent>();
             agent.radius = 0.3f;
@@ -286,7 +289,7 @@ namespace FantaLandia.Horror.EditorTools
             return motor;
         }
 
-        static void BuildNavMesh()
+        public static void BuildNavMesh()
         {
             var go = new GameObject("NavMesh");
             var surface = go.AddComponent<NavMeshSurface>();
@@ -296,7 +299,7 @@ namespace FantaLandia.Horror.EditorTools
             go.AddComponent<RuntimeNavMeshBaker>();
         }
 
-        static Transform Marker(string name, Transform parent, Vector3 pos)
+        public static Transform Marker(string name, Transform parent, Vector3 pos)
         {
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
@@ -304,16 +307,19 @@ namespace FantaLandia.Horror.EditorTools
             return t;
         }
 
-        static void SetLayer(GameObject go, int layer)
+        public static void SetLayer(GameObject go, int layer)
         {
             foreach (Transform t in go.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = layer;
         }
 
-        static void BuildPlayer(GameObject malePrefab)
+        static void BuildPlayer(GameObject malePrefab) => BuildPlayer(malePrefab, new Vector3(0f, 0.05f, -6f), 0f);
+
+        public static void BuildPlayer(GameObject malePrefab, Vector3 position, float yaw)
         {
             var root = new GameObject("Muark (giocatore)");
             root.layer = 2;
-            root.transform.position = new Vector3(0f, 0.05f, -6f);
+            root.transform.position = position;
+            root.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             var cc = root.AddComponent<CharacterController>();
             cc.height = 1.8f;
             cc.radius = 0.3f;

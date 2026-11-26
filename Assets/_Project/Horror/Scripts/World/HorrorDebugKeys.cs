@@ -16,6 +16,8 @@ namespace FantaLandia.Horror.World
         public HorrorDoor frontDoor;
         public CrtTv tv;
         public LightSwitch[] switches;
+        [Tooltip("Se presente, N usa il contatore di tutta la casa")]
+        public HousePower power;
 
         bool blackout;
 
@@ -26,8 +28,12 @@ namespace FantaLandia.Horror.World
             if (Pressed(2))
             {
                 blackout = !blackout;
-                foreach (var s in switches) if (s != null) s.SetPowered(!blackout);
-                if (tv != null) tv.powered = !blackout;
+                if (power != null) power.SetPower(!blackout);
+                else
+                {
+                    foreach (var s in switches) if (s != null) s.SetPowered(!blackout);
+                    if (tv != null) tv.powered = !blackout;
+                }
                 DialogueSystem.Bark(Speakers.Muark, blackout ? "È saltata la corrente..." : "È tornata la luce.");
             }
         }
