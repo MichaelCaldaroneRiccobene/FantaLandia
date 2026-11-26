@@ -1,5 +1,6 @@
 using FantaLandia.CameraSystem;
 using FantaLandia.Characters;
+using FantaLandia.Characters.Body;
 using FantaLandia.Core;
 using FantaLandia.Player;
 using FantaLandia.World;
@@ -22,6 +23,11 @@ namespace FantaLandia.UI
         void Update()
         {
             if (GameInput.HelpToggle) showHelp = !showHelp;
+            var focus = SelectionController.Instance != null ? SelectionController.Instance.Focus : null;
+            var body = focus != null ? focus.GetComponentInChildren<BodyRig>() : null;
+            if (body != null && GameInput.DebugSever) body.SeverRandomLimb();
+            if (body != null && GameInput.DebugRestore) body.RestoreAll();
+
             if (GameInput.WallModeCycle)
                 BuildingVisibility.Mode = (BuildingVisibility.WallMode)(((int)BuildingVisibility.Mode + 1) % 2);
         }
@@ -74,7 +80,8 @@ namespace FantaLandia.UI
                     "Q / E o tasto centrale: ruota camera\n" +
                     "Rotellina: zoom\n" +
                     "F: segui on/off   Spazio: centra\n" +
-                    "V: modalità muri", style);
+                    "V: modalità muri\n" +
+                    "K / L: (debug) stacca / riattacca un arto", style);
             }
 
             GUILayout.EndVertical();

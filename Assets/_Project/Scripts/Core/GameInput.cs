@@ -53,6 +53,8 @@ namespace FantaLandia.Core
         public static bool CenterCamera => Pressed(Key.Space);
         public static bool WallModeCycle => Pressed(Key.V);
         public static bool HelpToggle => Pressed(Key.F1);
+        public static bool DebugSever => Pressed(Key.K);
+        public static bool DebugRestore => Pressed(Key.L);
 
         /// <summary>Restituisce 1-9 se è stato premuto un tasto numerico in questo frame, altrimenti 0.</summary>
         public static int DigitPressed()
@@ -91,6 +93,8 @@ namespace FantaLandia.Core
         public static bool CenterCamera => Pressed(KeyCode.Space);
         public static bool WallModeCycle => Pressed(KeyCode.V);
         public static bool HelpToggle => Pressed(KeyCode.F1);
+        public static bool DebugSever => Pressed(KeyCode.K);
+        public static bool DebugRestore => Pressed(KeyCode.L);
 
         public static int DigitPressed()
         {

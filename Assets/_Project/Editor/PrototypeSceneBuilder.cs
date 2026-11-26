@@ -29,7 +29,7 @@ namespace FantaLandia.EditorTools
         const int StairSteps = 16;
         const float StairRise = 0.2f, StairRun = 0.3f;
 
-        static Material matGround, matStone, matWood, matWall, matRoof, matObstacle, matDark, matSelect, matBodyA, matBodyB;
+        static Material matGround, matStone, matWood, matWall, matRoof, matObstacle, matDark, matSelect;
 
         struct Opening
         {
@@ -56,9 +56,13 @@ namespace FantaLandia.EditorTools
             BuildHouse(env, new Vector3(0f, 0f, 14f));
             BuildNavMesh();
 
+            // Modelli a blocchi generati da BlockyCharacterBuilder (rigenerati ogni volta).
+            GameObject male = BlockyCharacterBuilder.BuildMale();
+            GameObject female = BlockyCharacterBuilder.BuildFemale();
+
             // Velocità diverse per provare il movimento di gruppo (G): la Compagna è più lenta.
-            BuildCharacter("Viandante", new Vector3(-1f, 0f, -3f), matBodyA, 2.0f, 4.0f, 6.5f);
-            BuildCharacter("Compagna", new Vector3(1f, 0f, -3f), matBodyB, 1.8f, 3.5f, 5.5f);
+            BuildCharacter("Viandante", new Vector3(-1f, 0f, -3f), male, 2.0f, 4.0f, 6.5f);
+            BuildCharacter("Compagna", new Vector3(1f, 0f, -3f), female, 1.8f, 3.5f, 5.5f);
             BuildSystems();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -299,7 +303,7 @@ namespace FantaLandia.EditorTools
 
         // ------------------------------------------------------------------ personaggi e sistemi
 
-        static void BuildCharacter(string name, Vector3 position, Material bodyMat, float walk, float jog, float sprint)
+        static void BuildCharacter(string name, Vector3 position, GameObject modelPrefab, float walk, float jog, float sprint)
         {
             var root = new GameObject(name);
             root.transform.position = position;
@@ -323,21 +327,17 @@ namespace FantaLandia.EditorTools
             var selectable = root.AddComponent<SelectableCharacter>();
             selectable.displayName = name;
 
-            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            body.name = "Corpo";
-            body.transform.SetParent(root.transform, false);
-            body.transform.localPosition = new Vector3(0f, 0.9f, 0f);
-            body.transform.localScale = new Vector3(0.7f, 0.9f, 0.7f);
-            body.GetComponent<Renderer>().sharedMaterial = bodyMat;
-            body.GetComponent<Collider>().isTrigger = true;
+            // Collider per i clic di selezione (trigger: non blocca nulla)
+            var clickCollider = root.AddComponent<CapsuleCollider>();
+            clickCollider.isTrigger = true;
+            clickCollider.radius = 0.3f;
+            clickCollider.height = 1.8f;
+            clickCollider.center = new Vector3(0f, 0.9f, 0f);
 
-            var face = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            face.name = "Viso (direzione)";
-            Object.DestroyImmediate(face.GetComponent<Collider>());
-            face.transform.SetParent(root.transform, false);
-            face.transform.localPosition = new Vector3(0f, 1.55f, 0.3f);
-            face.transform.localScale = new Vector3(0.25f, 0.15f, 0.2f);
-            face.GetComponent<Renderer>().sharedMaterial = matDark;
+            // Modello a segmenti con animazione procedurale
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(modelPrefab);
+            model.name = "Modello";
+            model.transform.SetParent(root.transform, false);
 
             var ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             ring.name = "Anello selezione";
@@ -431,36 +431,11 @@ namespace FantaLandia.EditorTools
             matObstacle = Mat("Ostacolo", new Color(0.65f, 0.62f, 0.58f));
             matDark = Mat("Ferro", new Color(0.15f, 0.15f, 0.17f), 0.4f);
             matSelect = Mat("Selezione", new Color(0.3f, 1f, 0.4f));
-            matBodyA = Mat("Personaggio A", new Color(0.25f, 0.45f, 0.85f));
-            matBodyB = Mat("Personaggio B", new Color(0.85f, 0.55f, 0.20f));
             AssetDatabase.SaveAssets();
         }
 
-        static Material Mat(string name, Color color, float smoothness = 0.1f)
-        {
-            string path = $"{MatFolder}/{name}.mat";
-            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (m == null)
-            {
-                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-                if (shader == null) shader = Shader.Find("Standard");
-                m = new Material(shader);
-                AssetDatabase.CreateAsset(m, path);
-            }
-            m.color = color;
-            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
-            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", smoothness);
-            EditorUtility.SetDirty(m);
-            return m;
-        }
+        static Material Mat(string name, Color color, float smoothness = 0.1f) => EditorAssetUtil.Mat(name, color, smoothness);
 
-        static void EnsureFolder(string path)
-        {
-            if (AssetDatabase.IsValidFolder(path)) return;
-            int slash = path.LastIndexOf('/');
-            string parent = path.Substring(0, slash);
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, path.Substring(slash + 1));
-        }
+        static void EnsureFolder(string path) => EditorAssetUtil.EnsureFolder(path);
     }
 }
