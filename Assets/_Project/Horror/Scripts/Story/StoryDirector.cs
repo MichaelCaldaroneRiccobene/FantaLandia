@@ -218,6 +218,7 @@ namespace FantaLandia.Horror.Story
             bool opened = false;
             System.Action<HorrorDoor> onOpen = d => opened = true;
             frontDoor.Opened += onOpen;
+            frontDoor.requireFront = true; // si apre solo stando davanti: così Roy compare proprio di fronte
             float t = 0f;
             int reminders = 0;
             while (!opened)
@@ -233,6 +234,7 @@ namespace FantaLandia.Horror.Story
                 yield return null;
             }
             frontDoor.Opened -= onOpen;
+            frontDoor.requireFront = false;
 
             // --- scena: non c'è nessuno
             if (fpc.IsSeated) fpc.StandUp();
@@ -765,12 +767,11 @@ namespace FantaLandia.Horror.Story
             while (!PlayerInLivingRoom) yield return null;
             ClearGoal();
             yield return Gather();
-            yield return Talk(DialogueSystem.Conversation()
-                .Choice(new[] { "Chi di voi ha sbattuto la porta della cantina?", "Il generatore va. Cosa dicono?" }, i =>
-                {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Quale porta? Siamo stati qui tutto il tempo."), (Speakers.Roy, "Shh! Ascoltate!"));
-                    else DialogueSystem.Insert((Speakers.Tom, "Shh! Ascolta."));
-                }, 8f)
+            // Muark non dice niente: si ferma e guarda la TV insieme agli altri
+            Lock(true);
+            if (tv != null) yield return LookAt(tv.transform.position + Vector3.up * 0.3f, 1.2f);
+            yield return Talk(DialogueSystem.Conversation().Blocking()
+                .Say(Speakers.Tom, "Shh! Guarda...")
                 .Say(Speakers.Tv, "Interrompiamo le trasmissioni per un'edizione straordinaria.")
                 .Say(Speakers.Tv, "Questa sera, poco dopo le nove, una forte esplosione ha colpito la zona est di Maple Grove.")
                 .Say(Speakers.Tv, "Le cause non sono ancora note. Le linee elettriche e telefoniche di tutta la contea sono fuori uso.")
@@ -778,11 +779,8 @@ namespace FantaLandia.Horror.Story
                 .Say(Speakers.Tv, "Ripetiamo: non uscite di casa. Non aprite a nessuno.")
                 .Say(Speakers.Roy, "Ok... ok. Adesso ho paura sul serio.")
                 .Say(Speakers.Tom, "Non aprite a nessuno?! Che vuol dire \"non aprite a nessuno\"?!")
-                .Choice(new[] { "Calma. Chiudiamo tutto e aspettiamo domattina.", "Dobbiamo andarcene da qui!" }, i =>
-                {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Sì... sì. Porte, finestre, tutto."));
-                    else DialogueSystem.Insert((Speakers.Roy, "E dove vuoi andare, con questo buio?! Hai sentito la TV!"));
-                }, 8f)
+                .Say(Speakers.Roy, "E adesso che facciamo?!")
+                .Say(Speakers.Tom, "Chiudiamo tutto. Porte, finestre, tutto. E aspettiamo domattina.")
                 .Say(Speakers.Jef, "Non è stata un'esplosione.")
                 .Say(Speakers.Tom, "Cosa? Jef... che stai dicendo?")
                 .Say(Speakers.Jef, "..."), tom);

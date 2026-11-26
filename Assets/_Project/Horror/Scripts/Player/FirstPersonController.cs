@@ -148,7 +148,12 @@ namespace FantaLandia.Horror.Player
             if (seat != null || seatT > 0f) eye = Mathf.Lerp(eye, seatEyeHeight, seatT * seatT * (3f - 2f * seatT));
             // guardando in basso la camera avanza un po' (come la testa che si sporge): non entra nelle spalle e nei vestiti
             float down = Mathf.Clamp01(pitch / 70f);
-            cam.transform.localPosition = new Vector3(0f, eye + bob - down * 0.05f, eyeForward + down * 0.2f);
+            // ...ma non dentro quello che c'è davanti (porte, muri): la testa si ferma prima di toccarlo
+            float forward = eyeForward + down * 0.2f;
+            Vector3 head = transform.TransformPoint(new Vector3(0f, eye + bob - down * 0.05f, 0f));
+            if (Physics.SphereCast(head, 0.1f, transform.forward, out RaycastHit block, forward + 0.06f, ~((1 << 2) | (1 << 7)), QueryTriggerInteraction.Ignore))
+                forward = Mathf.Max(0f, block.distance - 0.06f);
+            cam.transform.localPosition = new Vector3(0f, eye + bob - down * 0.05f, forward);
             cam.transform.localRotation = Quaternion.Euler(pitch, Mathf.DeltaAngle(bodyYaw, yaw), 0f);
 
             // --- il corpo segue
@@ -248,7 +253,7 @@ namespace FantaLandia.Horror.Player
             if (!IsSeated || sitting || inputLocked || DialogueSystem.IsTalking) return;
             var st = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
             GUI.color = new Color(1f, 1f, 1f, 0.6f);
-            GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width, 24f), "Spazio o WASD per alzarti", st);
+            GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width, 24f), "WASD per alzarti", st);
             GUI.color = Color.white;
         }
 

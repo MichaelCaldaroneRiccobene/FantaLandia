@@ -104,6 +104,9 @@ namespace FantaLandia.Horror.EditorTools
 
             // personaggi e sistemi
             CharacterMotor tom = HorrorTestSceneBuilder.BuildTom(world, cast["tom"], new Vector3(-3.4f, F0, 1.7f), 150f);
+            // nella storia Tom non si "interroga": parla quando lo decide la regia (niente domanda sulla birra dopo il blackout)
+            var tomTalk = tom.GetComponent<Talkable>();
+            if (tomTalk != null) Object.DestroyImmediate(tomTalk);
             HorrorTestSceneBuilder.BuildPlayer(cast["muark"], new Vector3(0f, 0.08f, -9.8f), 0f);
             Step("personaggi", () => BuildCast(world, cast));
             HorrorTestSceneBuilder.BuildNavMesh();

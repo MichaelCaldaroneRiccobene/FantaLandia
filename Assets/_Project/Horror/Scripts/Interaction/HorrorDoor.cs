@@ -37,6 +37,18 @@ namespace FantaLandia.Horror.Interaction
         int openSide = 1;
         float t; // 0 chiusa .. 1 aperta
 
+        [Tooltip("Si può aprire solo stando davanti alla porta (dentro casa), non di lato")]
+        public bool requireFront;
+
+        public override bool CanInteract(Interactor who)
+        {
+            if (!enabled) return false;
+            if (!requireFront) return true;
+            Vector3 local = transform.InverseTransformPoint(who.transform.position);
+            // l'anta va da x 0 a ~0.9 (cardine in 0): davanti vuol dire in mezzo all'anta e a meno di 2 m, dal lato di dentro
+            return Mathf.Abs(local.x - 0.45f) < 0.45f && local.z > 0.3f && local.z < 2f;
+        }
+
         public override string Prompt(Interactor who)
         {
             if (locked && knockable && IsOutside(who)) return "Bussa";
