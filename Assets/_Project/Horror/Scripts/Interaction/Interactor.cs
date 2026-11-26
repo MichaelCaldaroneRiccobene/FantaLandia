@@ -37,7 +37,7 @@ namespace FantaLandia.Horror.Interaction
         void Update()
         {
             Target = null;
-            if (!interactionEnabled || DialogueSystem.IsBlocking || cam == null) return;
+            if (!interactionEnabled || DialogueSystem.IsBlocking || cam == null || FantaLandia.Horror.UI.IntroSequence.Active || FantaLandia.Horror.UI.NotebookMenu.IsOpen) return;
 
             // Il giocatore sta sul layer "Ignore Raycast": il raggio non colpisce il suo corpo.
             Ray ray = new Ray(cam.transform.position, cam.transform.forward);
@@ -84,7 +84,7 @@ namespace FantaLandia.Horror.Interaction
 
         void OnGUI()
         {
-            if (DialogueSystem.IsBlocking) return;
+            if (DialogueSystem.IsBlocking || FantaLandia.Horror.UI.IntroSequence.Active || FantaLandia.Horror.UI.NotebookMenu.IsOpen) return;
             if (promptStyle == null)
                 promptStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, richText = true };
 

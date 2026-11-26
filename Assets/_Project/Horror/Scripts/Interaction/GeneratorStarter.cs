@@ -62,8 +62,8 @@ namespace FantaLandia.Horror.Interaction
                 Running = true;
                 engine = HorrorAudio.CreateLoop(transform, ProceduralAudio.EngineLoop(), 0f, true, 14f);
                 engine.Play();
-                for (float t = 0f; t < 1f; t += Time.deltaTime / 1.2f) { engine.volume = t * engineVolume; engine.pitch = 0.7f + 0.3f * t; yield return null; }
-                engine.volume = engineVolume;
+                for (float t = 0f; t < 1f; t += Time.deltaTime / 1.2f) { engine.volume = t * engineVolume * FantaLandia.Horror.UI.GameSettings.Effects; engine.pitch = 0.7f + 0.3f * t; yield return null; }
+                engine.volume = engineVolume * FantaLandia.Horror.UI.GameSettings.Effects;
                 engine.pitch = 1f;
                 Pulled?.Invoke(Pulls);
                 Started?.Invoke();

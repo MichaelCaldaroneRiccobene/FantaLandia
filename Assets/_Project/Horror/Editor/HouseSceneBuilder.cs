@@ -211,7 +211,32 @@ namespace FantaLandia.Horror.EditorTools
                 if (mf.sharedMesh == null) { missing++; if (missing <= 10) Debug.LogWarning("[FantaLandia Horror] Senza mesh: " + mf.name, mf); }
             if (missing > 0) Debug.LogWarning($"[FantaLandia Horror] {missing} oggetti senza mesh");
 
+            Step("menu, intro e impostazioni", () =>
+            {
+                var fpcPlayer = Object.FindFirstObjectByType<FantaLandia.Horror.Player.FirstPersonController>();
+                if (fpcPlayer != null) fpcPlayer.gameObject.AddComponent<FantaLandia.Horror.UI.NotebookMenu>().notebookPrefab = VoxelAssetLibrary.Load("Taccuino");
+                new GameObject("Intro (logo 641)").AddComponent<FantaLandia.Horror.UI.IntroSequence>();
+                new GameObject("Impostazioni").AddComponent<FantaLandia.Horror.UI.SettingsApplier>();
+            });
+            Step("suoni della casa", () =>
+            {
+                var amb2 = new GameObject("Suoni della casa").AddComponent<HouseAmbience>();
+                amb2.fridge = HorrorTestSceneBuilder.Marker("Ronzio del frigo", world, new Vector3(6.3f, F0 + 1f, 10.3f));
+                amb2.clock = HorrorTestSceneBuilder.Marker("Tic-tac dell'orologio", world, new Vector3(5.0f, F0 + 2.05f, 10.7f));
+                amb2.power = power;
+                amb2.house = new Bounds(new Vector3((X0 + X1) * 0.5f, (F0 + F2) * 0.5f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0, F2 - F0, Z1 - Z0));
+                // eco delle stanze
+                Reverb(world, "Eco soggiorno", new Vector3(-4.3f, F0 + 1.4f, 3f), 3f, 5f, AudioReverbPreset.Livingroom);
+                Reverb(world, "Eco bagno", new Vector3(5.2f, F0 + 1.3f, 1.5f), 1.2f, 2.2f, AudioReverbPreset.Bathroom);
+                Reverb(world, "Eco cantina", new Vector3(0f, FB + 0.6f, (Z0 + Z1) * 0.5f), 3f, 4.5f, AudioReverbPreset.StoneCorridor);
+            });
+
             EditorSceneManager.SaveScene(scene, ScenePath);
+            // la scena nelle Build Settings: serve per "Ricomincia" dal taccuino e per la build del gioco
+            var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            scenes.RemoveAll(sc => sc.path == ScenePath);
+            scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
             Debug.Log("[FantaLandia Horror] Casa e quartiere creati: " + ScenePath);
         }
 
@@ -359,6 +384,16 @@ namespace FantaLandia.Horror.EditorTools
             return np;
         }
 
+        static void Reverb(Transform parent, string name, Vector3 pos, float minD, float maxD, AudioReverbPreset preset)
+        {
+            var z = new GameObject(name).AddComponent<AudioReverbZone>();
+            z.transform.SetParent(parent, false);
+            z.transform.position = pos;
+            z.minDistance = minD;
+            z.maxDistance = maxD;
+            z.reverbPreset = preset;
+        }
+
         /// <summary>Esegue un pezzo della costruzione: se va in errore lo segnala e continua con il resto.</summary>
         static void Step(string what, System.Action action)
         {
@@ -497,7 +532,8 @@ namespace FantaLandia.Horror.EditorTools
             Hidden(Floor("Piastrelle cucina", s, new Vector3(-1f, F0, 6.075f), new Vector3(6.75f, F0 + 0.01f, 10.75f), kitchenTiles, Surface.Concrete));
             Hidden(Floor("Piastrelle bagno", s, new Vector3(3.575f, F0, 0.25f), new Vector3(6.75f, F0 + 0.01f, 2.925f), bathTiles, Surface.Concrete));
             Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(2.1f, 1.5f, 1.325f, 4.2f));
-            foreach (Transform t in s) if (t.name.StartsWith("Pavimento primo piano")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
+            // al primo piano c'è la moquette: passi ovattati
+            foreach (Transform t in s) if (t.name.StartsWith("Pavimento primo piano")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Carpet;
             Hidden(Floor("Piastrelle bagno sopra", s, new Vector3(3.575f, F1, 0.25f), new Vector3(6.75f, F1 + 0.01f, 3.925f), bathTiles, Surface.Concrete));
             Box("Soffitto primo piano", s, new Vector3(X0, F2 - S, Z0), new Vector3(X1, F2, Z1), trim);
 

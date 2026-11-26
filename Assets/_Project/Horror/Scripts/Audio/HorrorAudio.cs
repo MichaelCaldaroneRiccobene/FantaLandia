@@ -47,9 +47,10 @@ namespace FantaLandia.Horror.Audio
         void OnDestroy() { if (instance == this) instance = null; }
 
         /// <summary>Suono nel mondo, in un punto.</summary>
-        public static void PlayAt(AudioClip clip, Vector3 position, float volume = 1f, float pitch = 1f, float maxDistance = 25f)
+        public static void PlayAt(AudioClip clip, Vector3 position, float volume = 1f, float pitch = 1f, float maxDistance = 25f, bool voice = false)
         {
             if (clip == null) return;
+            volume *= voice ? FantaLandia.Horror.UI.GameSettings.Voices : FantaLandia.Horror.UI.GameSettings.Effects;
             var self = Instance;
             AudioSource s = self.pool[self.next];
             self.next = (self.next + 1) % self.pool.Length;
@@ -62,9 +63,10 @@ namespace FantaLandia.Horror.Audio
         }
 
         /// <summary>Suono "nella testa" del giocatore (interfaccia, voci dei dialoghi).</summary>
-        public static void Play2D(AudioClip clip, float volume = 1f, float pitch = 1f)
+        public static void Play2D(AudioClip clip, float volume = 1f, float pitch = 1f, bool voice = false)
         {
             if (clip == null) return;
+            volume *= voice ? FantaLandia.Horror.UI.GameSettings.Voices : FantaLandia.Horror.UI.GameSettings.Effects;
             Instance.ui.pitch = pitch;
             Instance.ui.PlayOneShot(clip, volume);
         }

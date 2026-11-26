@@ -101,7 +101,7 @@ namespace FantaLandia.Horror.World
             else if (cartoonVoice != null && cartoonVoice.isPlaying) { cartoonVoice.Pause(); voicePaused = true; }
             // la musica si abbassa quando parlano
             if (sound != null && sound.isPlaying)
-                sound.volume = Mathf.MoveTowards(sound.volume, cartoon && cartoonVoice != null && cartoonVoice.isPlaying ? volume * 0.4f : volume, Time.deltaTime * 0.5f);
+                sound.volume = Mathf.MoveTowards(sound.volume, (cartoon && cartoonVoice != null && cartoonVoice.isPlaying ? volume * 0.4f : volume) * FantaLandia.Horror.UI.GameSettings.Music, Time.deltaTime * 0.5f);
 
             if (Time.time < nextFrame) return;
             nextFrame = Time.time + 1f / 12f;
@@ -159,7 +159,7 @@ namespace FantaLandia.Horror.World
                 if (clip != null && cartoonVoice != null)
                 {
                     cartoonVoice.clip = clip;
-                    cartoonVoice.volume = cartoonVoiceVolume;
+                    cartoonVoice.volume = cartoonVoiceVolume * FantaLandia.Horror.UI.GameSettings.Music;
                     cartoonVoice.Play();
                 }
                 speakingUntil = episodeClock + len;

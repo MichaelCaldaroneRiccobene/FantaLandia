@@ -31,8 +31,15 @@ namespace FantaLandia.Horror.Dialogue
             return null;
         }
 
+        ProceduralBodyAnimator anim;
+        FantaLandia.Characters.CharacterMotor motor;
+        float gestureStart = -10f, gestureEnd = -10f;
+        int gestureSide = 1;
+
         void Awake()
         {
+            anim = GetComponentInChildren<ProceduralBodyAnimator>();
+            motor = GetComponent<FantaLandia.Characters.CharacterMotor>();
             face = GetComponentInChildren<FaceAnimator>();
             LookPoint = new GameObject("Punto sguardo").transform;
             LookPoint.SetParent(transform, false);
@@ -52,6 +59,23 @@ namespace FantaLandia.Horror.Dialogue
             DialogueSystem.SyllableSpoken -= OnSyllable;
             DialogueSystem.LineStarted -= OnLine;
             DialogueSystem.ConversationEnded -= OnEnded;
+        }
+
+        /// <summary>La mano che gesticola: davanti al petto, palmo in su, si muove un po' mentre parla.</summary>
+        void Update()
+        {
+            if (anim == null || Time.time > gestureEnd + 0.5f) return;
+            var actor = GetComponent<FantaLandia.Horror.Story.NpcActor>();
+            if (actor != null && actor.IsLeaning) return;
+            if (motor != null && motor.IsTraversing) return;
+            float w = Mathf.Clamp01((Time.time - gestureStart) / 0.35f) * Mathf.Clamp01((gestureEnd + 0.5f - Time.time) / 0.5f);
+            if (w <= 0f) return;
+            bool seated = motor != null && motor.IsSeated;
+            Transform t = transform;
+            float wob = Mathf.Sin((Time.time - gestureStart) * 5f);
+            Vector3 hand = t.position + Vector3.up * ((seated ? 0.9f : 1.12f) + wob * 0.04f) + t.forward * (0.32f + wob * 0.03f) + t.right * (gestureSide * 0.2f);
+            Vector3 pole = t.right * gestureSide * 0.8f + Vector3.down * 0.5f - t.forward * 0.2f;
+            anim.SetExternalHandIK(gestureSide, hand, pole, w * 0.85f, null);
         }
 
         void LateUpdate()
@@ -76,6 +100,13 @@ namespace FantaLandia.Horror.Dialogue
 
             if (s.id == speakerId)
             {
+                // a volte, parlando, gesticola con una mano
+                if (Random.value < 0.6f && text.Length > 12)
+                {
+                    gestureStart = Time.time;
+                    gestureEnd = Time.time + Mathf.Clamp(text.Length * 0.05f, 1.2f, 3f);
+                    gestureSide = Random.value < 0.5f ? -1 : 1;
+                }
                 // parlo io: guardo il giocatore; sopracciglia secondo il tono della frase
                 face.lookTarget = player;
                 face.SetExpression(text.Contains("?") ? 0.7f : text.Contains("!") ? 1f : text.Contains("...") ? -0.5f : 0.15f);

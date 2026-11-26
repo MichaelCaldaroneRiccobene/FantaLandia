@@ -89,7 +89,7 @@ namespace FantaLandia.Horror.Player
         void Update()
         {
             if (torch == null) return;
-            bool blocked = DialogueSystem.IsBlocking || (actions != null && actions.Busy);
+            bool blocked = DialogueSystem.IsBlocking || (actions != null && actions.Busy) || FantaLandia.Horror.UI.NotebookMenu.IsOpen || FantaLandia.Horror.UI.IntroSequence.Active;
 
             if (!blocked && GameInput.FlashlightToggle)
             {

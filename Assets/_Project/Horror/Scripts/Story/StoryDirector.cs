@@ -29,6 +29,9 @@ namespace FantaLandia.Horror.Story
         [Header("Prova: da dove parte la storia")]
         public StartAt startAt = StartAt.Inizio;
 
+        /// <summary>Ricominciando da un salvataggio (menu del taccuino): il punto da cui ripartire, -1 = nessuno.</summary>
+        public static int PendingStart = -1;
+
         [Header("Porte")]
         public HorrorDoor frontDoor;
         public HorrorDoor backDoor;
@@ -108,6 +111,7 @@ namespace FantaLandia.Horror.Story
 
         void Start()
         {
+            if (PendingStart >= 0) { startAt = (StartAt)PendingStart; PendingStart = -1; }
             fpc = FindFirstObjectByType<FirstPersonController>();
             if (fpc != null)
             {
@@ -135,13 +139,16 @@ namespace FantaLandia.Horror.Story
             int s = (int)startAt;
             if (s > 0) yield return SkipTo(startAt);
 
+            // ogni scena raggiunta diventa il punto da cui si può ricominciare (menu del taccuino)
             if (s <= (int)StartAt.Inizio) yield return Arrival();
-            if (s <= (int)StartAt.ScherzoDiRoy) yield return RoyPrank();
-            if (s <= (int)StartAt.Salotto) yield return WaitingForPizza();
-            if (s <= (int)StartAt.Esplosione) { yield return Explosion(); yield return Backyard(); yield return JefComesOut(); yield return BackToTheTv(); }
-            if (s <= (int)StartAt.Blackout) yield return Blackout();
-            if (s <= (int)StartAt.Cantina) yield return Basement();
+            if (s <= (int)StartAt.ScherzoDiRoy) { Checkpoint(StartAt.ScherzoDiRoy); yield return RoyPrank(); }
+            if (s <= (int)StartAt.Salotto) { Checkpoint(StartAt.Salotto); yield return WaitingForPizza(); }
+            if (s <= (int)StartAt.Esplosione) { Checkpoint(StartAt.Esplosione); yield return Explosion(); yield return Backyard(); yield return JefComesOut(); yield return BackToTheTv(); }
+            if (s <= (int)StartAt.Blackout) { Checkpoint(StartAt.Blackout); yield return Blackout(); }
+            if (s <= (int)StartAt.Cantina) { Checkpoint(StartAt.Cantina); yield return Basement(); }
+            Checkpoint(StartAt.Notiziario);
             yield return News();
+            yield return Credits();
         }
 
         // ================================================================== 1. arrivo
@@ -942,6 +949,39 @@ namespace FantaLandia.Horror.Story
             }
         }
 
+        static void Checkpoint(StartAt at)
+        {
+            if ((int)at > FantaLandia.Horror.UI.GameSettings.Checkpoint) FantaLandia.Horror.UI.GameSettings.Checkpoint = (int)at;
+        }
+
+        /// <summary>Titoli di coda dopo "Fine del capitolo 1".</summary>
+        IEnumerator Credits()
+        {
+            yield return new WaitForSeconds(4f);
+            string[] cards =
+            {
+                "<size=26>641</size>\n\n<size=18>presenta</size>",
+                "<size=46><b>FantaLandia</b></size>\n\n<size=22>Capitolo 1 — La sera dell'esplosione</size>",
+                "<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank e Martha Miller · Gary e Linda Kowalski</size>",
+                "<size=18>Nel prossimo capitolo...</size>\n\n<size=26>Non aprite a nessuno.</size>",
+                "<size=22>Grazie per aver giocato</size>",
+            };
+            foreach (var card in cards)
+            {
+                for (float t = 0f; t < 1f; t += Time.deltaTime / 0.6f) { creditAlpha = 1f - t; yield return null; }
+                endTitle = card;
+                for (float t = 0f; t < 1f; t += Time.deltaTime / 0.8f) { creditAlpha = t; yield return null; }
+                creditAlpha = 1f;
+                yield return new WaitForSeconds(3.5f);
+            }
+            GameSettingsReset();
+        }
+
+        float creditAlpha = 1f;
+
+        /// <summary>Finito il capitolo, la prossima partita ricomincia dall'inizio.</summary>
+        static void GameSettingsReset() => FantaLandia.Horror.UI.GameSettings.Checkpoint = 0;
+
         // ================================================================== salti per le prove
 
         IEnumerator SkipTo(StartAt at)
@@ -1182,14 +1222,14 @@ namespace FantaLandia.Horror.Story
             // sirene: più forti fuori, attutite in casa
             if (sirens != null)
             {
-                float want = sirenTarget * (PlayerInside ? 0.45f : 1f);
+                float want = sirenTarget * (PlayerInside ? 0.45f : 1f) * FantaLandia.Horror.UI.GameSettings.Effects;
                 sirens.volume = Mathf.MoveTowards(sirens.volume, want, Time.deltaTime * (want > sirens.volume ? 0.01f : 0.12f));
                 if (sirens.volume > 0.001f && !sirens.isPlaying) sirens.Play();
                 if (sirens.volume <= 0.001f && sirens.isPlaying) sirens.Stop();
             }
             if (drone != null)
             {
-                drone.volume = Mathf.MoveTowards(drone.volume, droneTarget, Time.deltaTime * 0.08f);
+                drone.volume = Mathf.MoveTowards(drone.volume, droneTarget * FantaLandia.Horror.UI.GameSettings.Effects, Time.deltaTime * 0.08f);
                 if (drone.volume > 0.001f && !drone.isPlaying) drone.Play();
                 if (drone.volume <= 0.001f && drone.isPlaying) drone.Stop();
             }
@@ -1218,7 +1258,7 @@ namespace FantaLandia.Horror.Story
             GUI.color = Color.white;
             if (!string.IsNullOrEmpty(endTitle))
             {
-                GUI.color = new Color(1f, 1f, 1f, fade);
+                GUI.color = new Color(1f, 1f, 1f, fade * creditAlpha);
                 GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), endTitle, titleStyle);
                 GUI.color = Color.white;
             }

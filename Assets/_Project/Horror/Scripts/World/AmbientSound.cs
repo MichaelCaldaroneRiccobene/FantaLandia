@@ -16,7 +16,7 @@ namespace FantaLandia.Horror.World
         {
             AudioClip c = clip == AmbientClip.Night ? ProceduralAudio.NightAmbience()
                         : clip == AmbientClip.TvStatic ? ProceduralAudio.TvStatic() : ProceduralAudio.CartoonMusic();
-            HorrorAudio.CreateLoop(transform, c, volume, spatial).Play();
+            HorrorAudio.CreateLoop(transform, c, volume * FantaLandia.Horror.UI.GameSettings.Effects, spatial).Play();
         }
     }
 }

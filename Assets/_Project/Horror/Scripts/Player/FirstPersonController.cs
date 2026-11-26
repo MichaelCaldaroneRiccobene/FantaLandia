@@ -89,13 +89,13 @@ namespace FantaLandia.Horror.Player
         void Update()
         {
             float dt = Time.deltaTime;
-            bool locked = inputLocked || DialogueSystem.IsBlocking || sitting;
+            bool locked = inputLocked || DialogueSystem.IsBlocking || sitting || FantaLandia.Horror.UI.IntroSequence.Active;
             // mentre si parla si può camminare e guardarsi intorno, ma non correre né abbassarsi
             bool talking = DialogueSystem.IsTalking;
             if (IsSeated) locked = true;
-            if (IsSeated && !sitting && !inputLocked && !DialogueSystem.IsBlocking)
+            if (IsSeated && !sitting && !inputLocked && !DialogueSystem.IsBlocking && !FantaLandia.Horror.UI.IntroSequence.Active)
             {
-                Vector2 md = GameInput.MouseDelta * mouseSensitivity;
+                Vector2 md = GameInput.MouseDelta * mouseSensitivity * FantaLandia.Horror.UI.GameSettings.Sensitivity;
                 yaw = seatYaw + Mathf.Clamp(Mathf.DeltaAngle(seatYaw, yaw + md.x), -110f, 110f);
                 pitch = Mathf.Clamp(pitch - md.y, -70f, 75f);
                 if (GameInput.StandUp) StandUp();
@@ -104,7 +104,7 @@ namespace FantaLandia.Horror.Player
             // --- guardarsi intorno
             if (!locked)
             {
-                Vector2 md = GameInput.MouseDelta * mouseSensitivity;
+                Vector2 md = GameInput.MouseDelta * mouseSensitivity * FantaLandia.Horror.UI.GameSettings.Sensitivity;
                 yaw += md.x;
                 pitch = Mathf.Clamp(pitch - md.y, -85f, 85f);
             }

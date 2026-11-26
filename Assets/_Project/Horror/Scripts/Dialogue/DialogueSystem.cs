@@ -253,7 +253,7 @@ namespace FantaLandia.Horror.Dialogue
             voiceSource.spatialBlend = pos.HasValue ? 0.85f : 0f; // un po' "in testa" anche da lontano: si capisce sempre
             if (pos.HasValue) voiceSource.transform.position = pos.Value;
             voiceSource.clip = lineVoice;
-            voiceSource.volume = realVoiceVolume;
+            voiceSource.volume = realVoiceVolume * FantaLandia.Horror.UI.GameSettings.Voices;
             voiceSource.pitch = 1f;
             voiceSource.Play();
         }
@@ -444,8 +444,8 @@ namespace FantaLandia.Horror.Dialogue
             AudioClip clip = realVoices ? VoiceFor(who, text) : null;
             if (clip != null)
             {
-                if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, realVoiceVolume, 1f, 30f);
-                else HorrorAudio.Play2D(clip, realVoiceVolume);
+                if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, realVoiceVolume, 1f, 30f, true);
+                else HorrorAudio.Play2D(clip, realVoiceVolume, 1f, true);
                 // la bocca si muove per tutta la frase
                 for (float t = 0f; t < clip.length; t += 0.13f)
                 {
@@ -467,19 +467,23 @@ namespace FantaLandia.Horror.Dialogue
             SyllableSpoken?.Invoke(who);
             var clip = ProceduralAudio.Syllable(UnityEngine.Random.Range(0, ProceduralAudio.SyllableCount));
             float pitch = who.pitch * UnityEngine.Random.Range(0.94f, 1.08f);
-            if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, voiceVolume, pitch, 30f);
-            else HorrorAudio.Play2D(clip, voiceVolume, pitch);
+            if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, voiceVolume, pitch, 30f, true);
+            else HorrorAudio.Play2D(clip, voiceVolume, pitch, true);
         }
 
         // ------------------------------------------------------------------ interfaccia
 
+        float styleScale = -1f;
+
         void EnsureStyles()
         {
-            if (textStyle != null) return;
-            nameStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, richText = true };
-            textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, wordWrap = true, richText = true };
-            choiceStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleLeft, richText = true, padding = new RectOffset(16, 16, 6, 6) };
-            barkStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, richText = true };
+            float sc = FantaLandia.Horror.UI.GameSettings.TextScale;
+            if (textStyle != null && Mathf.Approximately(sc, styleScale)) return;
+            styleScale = sc;
+            nameStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(22 * sc), fontStyle = FontStyle.Bold, richText = true };
+            textStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(22 * sc), wordWrap = true, richText = true };
+            choiceStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(20 * sc), alignment = TextAnchor.MiddleLeft, richText = true, padding = new RectOffset(16, 16, 6, 6) };
+            barkStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(18 * sc), alignment = TextAnchor.MiddleCenter, richText = true };
             hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleRight, richText = true };
         }
 
@@ -497,14 +501,14 @@ namespace FantaLandia.Horror.Dialogue
             for (int i = barks.Count - 1; i >= 0; i--)
             {
                 var b = barks[i];
-                if (b.overhead) continue;
+                if (b.overhead || !FantaLandia.Horror.UI.GameSettings.Subtitles) continue;
                 string bhex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
                 Rect r = new Rect(x, by, w, 28f);
                 DrawShadowed(r, $"<color=#{bhex}>{b.speaker.name}:</color> {b.text}", barkStyle);
                 by -= 28f;
             }
 
-            if (!showing) return;
+            if (!showing || FantaLandia.Horror.UI.NotebookMenu.IsOpen) return;
             Step s = steps[index];
 
             if (s.options != null)
@@ -527,7 +531,8 @@ namespace FantaLandia.Horror.Dialogue
                 return;
             }
 
-            float boxH = 110f;
+            if (!FantaLandia.Horror.UI.GameSettings.Subtitles) return; // senza sottotitoli restano solo le scelte
+            float boxH = 110f * FantaLandia.Horror.UI.GameSettings.TextScale;
             Rect box = new Rect(x - 20f, Screen.height - boxH - 24f, w + 40f, boxH);
             GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(box, Texture2D.whiteTexture);

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FantaLandia.Horror.Audio
 {
-    public enum Surface { Wood, Grass, Concrete }
+    public enum Surface { Wood, Grass, Concrete, Carpet }
 
     /// <summary>
     /// Suoni generati dal codice (niente file audio): passi, porte, colpi, grilli, TV...
@@ -54,11 +54,11 @@ namespace FantaLandia.Horror.Audio
         {
             return Build($"passo_{surface}_{variant}", 0.18f, (d, r) =>
             {
-                float cutoff = surface == Surface.Grass ? 2500f : surface == Surface.Wood ? 900f : 1800f;
+                float cutoff = surface == Surface.Grass ? 2500f : surface == Surface.Wood ? 900f : surface == Surface.Carpet ? 380f : 1800f;
                 for (int i = 0; i < d.Length; i++)
                 {
                     float t = i / (float)Rate;
-                    float env = Mathf.Exp(-t * (surface == Surface.Grass ? 28f : 45f));
+                    float env = Mathf.Exp(-t * (surface == Surface.Grass ? 28f : surface == Surface.Carpet ? 60f : 45f)) * (surface == Surface.Carpet ? 0.5f : 1f);
                     d[i] = Noise(r) * env;
                     if (surface == Surface.Grass) d[i] *= 0.6f + 0.4f * Mathf.Sin(t * 900f + variant); // fruscio
                 }
@@ -506,6 +506,61 @@ namespace FantaLandia.Horror.Audio
                          + Mathf.Sin(2f * Mathf.PI * 61.6f * t) * 0.4f + air[i] * 2f;
                 }
             }, 312);
+        }
+
+        // ------------------------------------------------------------------ casa
+
+        /// <summary>Ronzio del frigorifero (compressore a 50 Hz con armoniche e un filo di vibrazione). In loop.</summary>
+        public static AudioClip FridgeHum()
+        {
+            return Build("frigo", 4f, (d, r) =>
+            {
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    d[i] = Mathf.Sin(2f * Mathf.PI * 50f * t) * 0.6f + Mathf.Sin(2f * Mathf.PI * 100f * t) * 0.3f
+                         + Mathf.Sin(2f * Mathf.PI * 150f * t) * 0.12f + Noise(r) * 0.04f;
+                    d[i] *= 0.85f + 0.15f * Mathf.Sin(2f * Mathf.PI * 0.5f * t);
+                }
+                LowPass(d, 600f);
+            }, 401);
+        }
+
+        /// <summary>Tic-tac dell'orologio da parete (un secondo per colpo). In loop.</summary>
+        public static AudioClip ClockTick()
+        {
+            return Build("orologio", 2f, (d, r) =>
+            {
+                for (int k = 0; k < 2; k++)
+                {
+                    int s0 = k * Rate;
+                    float f = k == 0 ? 3200f : 2600f;
+                    for (int i = s0; i < s0 + Rate / 40 && i < d.Length; i++)
+                    {
+                        float t = (i - s0) / (float)Rate;
+                        d[i] += (Mathf.Sin(2f * Mathf.PI * f * t) + Noise(r) * 0.6f) * Mathf.Exp(-t * 300f);
+                    }
+                }
+            }, 402);
+        }
+
+        /// <summary>Uno scricchiolio del legno della casa che si assesta (variant 0..3).</summary>
+        public static AudioClip WoodCreak(int variant)
+        {
+            return Build($"scricchiolio_{variant}", 0.5f + variant * 0.15f, (d, r) =>
+            {
+                float ph = 0f, len = d.Length / (float)Rate;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float f = 140f + variant * 30f + 60f * Mathf.Sin(2f * Mathf.PI * (1.5f + variant) * t);
+                    ph += f / Rate;
+                    float saw = (ph % 1f) * 2f - 1f;
+                    float grain = Mathf.Pow(Mathf.Abs(Mathf.Sin(Mathf.PI * t * (25f + variant * 7f))), 6f);
+                    d[i] = saw * grain * Mathf.Sin(Mathf.PI * t / len) + Noise(r) * 0.05f;
+                }
+                LowPass(d, 1400f);
+            }, 410 + variant);
         }
 
         public static float Midi(int note) => 440f * Mathf.Pow(2f, (note - 69) / 12f);

@@ -71,6 +71,13 @@ namespace FantaLandia.Core
         public static bool AdvanceDialogue => Pressed(Key.E) || Pressed(Key.Space) || LeftDown;
         /// <summary>Salta la battuta in corso nei dialoghi "camminando" (E resta per interagire).</summary>
         public static bool SkipLine => Pressed(Key.Space);
+        // menu (taccuino)
+        public static bool MenuToggle => Pressed(Key.Escape) || Pressed(Key.Tab);
+        public static bool MenuUp => Pressed(Key.W) || Pressed(Key.UpArrow);
+        public static bool MenuDown => Pressed(Key.S) || Pressed(Key.DownArrow);
+        public static bool MenuLeft => Pressed(Key.A) || Pressed(Key.LeftArrow);
+        public static bool MenuRight => Pressed(Key.D) || Pressed(Key.RightArrow);
+        public static bool MenuConfirm => Pressed(Key.E) || Pressed(Key.Enter) || Pressed(Key.Space);
         public static bool StandUp => Pressed(Key.W) || Pressed(Key.S) || Pressed(Key.A) || Pressed(Key.D);
         public static bool RetroToggle => Pressed(Key.F2);
         public static bool DropDown => Pressed(Key.Q);
@@ -130,6 +137,12 @@ namespace FantaLandia.Core
         public static bool RunHeld => Shift;
         public static bool AdvanceDialogue => Pressed(KeyCode.E) || Pressed(KeyCode.Space) || LeftDown;
         public static bool SkipLine => Pressed(KeyCode.Space);
+        public static bool MenuToggle => Pressed(KeyCode.Escape) || Pressed(KeyCode.Tab);
+        public static bool MenuUp => Pressed(KeyCode.W) || Pressed(KeyCode.UpArrow);
+        public static bool MenuDown => Pressed(KeyCode.S) || Pressed(KeyCode.DownArrow);
+        public static bool MenuLeft => Pressed(KeyCode.A) || Pressed(KeyCode.LeftArrow);
+        public static bool MenuRight => Pressed(KeyCode.D) || Pressed(KeyCode.RightArrow);
+        public static bool MenuConfirm => Pressed(KeyCode.E) || Pressed(KeyCode.Return) || Pressed(KeyCode.Space);
         public static bool StandUp => Pressed(KeyCode.W) || Pressed(KeyCode.S) || Pressed(KeyCode.A) || Pressed(KeyCode.D);
         public static bool RetroToggle => Pressed(KeyCode.F2);
         public static bool DropDown => Pressed(KeyCode.Q);

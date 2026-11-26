@@ -19,7 +19,7 @@ namespace FantaLandia.Horror.EditorTools
         public static void BuildAll()
         {
             Tv(); TvCabinet(); Door(); BeerPack(); KitchenCounter(); Armchair();
-            FloorLamp(); LightSwitchPlate(); Flashlight(); StreetLight();
+            FloorLamp(); LightSwitchPlate(); Flashlight(); StreetLight(); Notebook();
             AssetDatabase.SaveAssets();
             Debug.Log("[FantaLandia Horror] Oggetti voxel creati in " + Folder);
         }
@@ -273,6 +273,35 @@ namespace FantaLandia.Horror.EditorTools
             v.Fill(0, 0, 7, 2, 2, 8, lens);
             v.Set(0, 2, 3, button);
             return Save("Torcia", v, new Vector3(1f * v.size, 1f * v.size, 4f * v.size));
+        }
+
+        /// <summary>
+        /// Il taccuino di Muark aperto (28 x 20 cm, cubetti da 1 cm): copertina di cuoio consumato, due pagine a righe
+        /// azzurre con il margine rosso, spirale al centro, elastico e segnalibro. Le pagine guardano +Y (sopra a y = 2 cm),
+        /// il lato lontano è +Z. Il menu ci scrive sopra.
+        /// </summary>
+        public static GameObject Notebook()
+        {
+            var v = new VoxelBuilder(0.01f);
+            int leather = v.C("#5a3a22"), leatherDark = v.C("#45301d"), worn = v.C("#7a5236"), paper = v.C("#efe7d2"), paperShade = v.C("#e2d8c0"),
+                line = v.C("#a9c0d8"), margin = v.C("#d08080"), ring = v.C("#9a9ca0"), band = v.C("#1a1a1a"), ribbon = v.C("#8a1f1f"), coffee = v.C("#c9b48e");
+            v.Fill(0, 0, 0, 28, 1, 20, leather);
+            for (int x = 0; x < 28; x++) { v.Set(x, 0, 0, leatherDark); v.Set(x, 0, 19, leatherDark); }
+            v.Set(1, 0, 1, worn); v.Set(26, 0, 18, worn); v.Set(2, 0, 18, worn);
+            v.Fill(1, 1, 1, 13, 2, 19, paper);                                    // pagina sinistra
+            v.Fill(15, 1, 1, 27, 2, 19, paper);                                   // pagina destra
+            for (int x = 12; x < 16; x++) for (int z = 1; z < 19; z++) v.Set(x, 1, z, paperShade); // piega verso la spirale
+            for (int z = 2; z < 19; z += 2) v.Set(14, 2, z, ring);                // spirale
+            v.Fill(13, 1, 0, 16, 2, 1, leatherDark);
+            // righe azzurre (ogni 1 cm, sotto il testo) e margine rosso sulla destra
+            for (int z = 2; z < 17; z++)
+                for (int x = 1; x < 27; x++)
+                    if (x != 13 && x != 14 && v.Has(x, 1, z) && z % 1 == 0 && (z % 2 == 0)) v.Set(x, 1, z, line);
+            for (int z = 1; z < 19; z++) { v.Set(16, 1, z, margin); v.Set(2, 1, z, margin); }
+            v.Fill(27, 0, 8, 28, 2, 9, band); v.Fill(27, 0, 12, 28, 2, 13, band);   // elastico
+            v.Fill(20, 1, -3, 21, 2, 1, ribbon);                                 // segnalibro che pende
+            v.Set(5, 1, 15, coffee); v.Set(6, 1, 15, coffee); v.Set(5, 1, 16, coffee); // macchia di caffè
+            return Save("Taccuino", v, new Vector3(14f * v.size, 0f, 10f * v.size), false);
         }
 
         /// <summary>Lampione di periferia (cubetti da 15 cm).</summary>
