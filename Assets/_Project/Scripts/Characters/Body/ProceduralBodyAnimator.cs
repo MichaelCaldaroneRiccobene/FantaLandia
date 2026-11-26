@@ -651,11 +651,12 @@ namespace FantaLandia.Characters.Body
             Rot(BodyPart.Chest, 6f - breath * breathAmplitude, 0f, 0f);            // spalle un po' curve
             Rot(BodyPart.Neck, 8f, 0f, 0f);
             Rot(BodyPart.Head, 4f, 0f, 0f);
-            Rot(BodyPart.ThighL, -80f, -8f, -6f);
-            Rot(BodyPart.ThighR, -80f, 8f, 6f);
-            Rot(BodyPart.ShinL, 72f, 0f, 0f);
-            Rot(BodyPart.ShinR, 80f, 0f, 0f);
-            Rot(BodyPart.FootL, 8f, 0f, 0f);
+            // cosce orizzontali (contando il bacino inclinato), stinchi verticali, piedi piatti
+            Rot(BodyPart.ThighL, -82f, -5f, -4f);
+            Rot(BodyPart.ThighR, -82f, 5f, 4f);
+            Rot(BodyPart.ShinL, 86f, 0f, 0f);
+            Rot(BodyPart.ShinR, 90f, 0f, 0f);
+            Rot(BodyPart.FootL, 4f, 0f, 0f);
             Rot(BodyPart.FootR, 0f, 0f, 0f);
             Rot(BodyPart.UpperArmL, -20f, 0f, -12f);
             Rot(BodyPart.UpperArmR, -20f, 0f, 12f);

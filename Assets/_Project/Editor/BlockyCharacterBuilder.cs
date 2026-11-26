@@ -112,7 +112,7 @@ namespace FantaLandia.EditorTools
         static Material Cloth(Color c, float darken) => Cloth(new Color(c.r * darken, c.g * darken, c.b * darken));
 
         /// <summary>Capelli secondo lo stile (Default: lunghi per lei, corti con ciuffo per lui).</summary>
-        static void Hair(Shape s, Mats m, BoxMesh b)
+        static void Hair(Shape s, Mats m, BoxMesh b, FaceParts f)
         {
             float W = s.headW, H = s.headH, D = s.headD, face = D * 0.5f;
             HairStyle style = s.hairStyle != HairStyle.Default ? s.hairStyle : (s.female ? HairStyle.Long : HairStyle.Short);
@@ -130,8 +130,9 @@ namespace FantaLandia.EditorTools
                         b.Add(new Vector3(c * (W * 0.5f + 0.007f), H * 0.83f, -0.025f), new Vector3(0.014f, H * 0.32f, D * 0.6f), h);
                         b.Add(new Vector3(c * (W * 0.5f + 0.004f), H * 0.55f, 0.02f), new Vector3(0.012f, H * 0.18f, 0.02f), h); // basette
                     }
-                    if (style == HairStyle.Mullet) // corto davanti, lungo dietro: anni '90 puri
-                        b.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.014f), new Vector3(W * 0.9f, H * 1.0f, 0.04f), h, 0.012f);
+                    if (style == HairStyle.Mullet) // corto davanti, lungo dietro: anni '90 puri (la parte lunga oscilla)
+                        f.Dyn(new Vector3(0f, H * 0.75f, -face - 0.014f))
+                         .AddRounded(new Vector3(0f, H * 0.3f, -face - 0.014f), new Vector3(W * 0.9f, H * 1.0f, 0.04f), h, 0.012f);
                     if (style == HairStyle.Spiky)
                         for (int x = -2; x <= 2; x++)
                             for (int z = -1; z <= 1; z++)
@@ -153,7 +154,8 @@ namespace FantaLandia.EditorTools
                     b.AddRounded(new Vector3(0f, H * 0.9f, -0.02f), new Vector3(W + 0.036f, H * 0.32f, D), h, 0.02f);
                     b.AddRounded(new Vector3(-W * 0.12f, H * 0.86f, face + 0.004f), new Vector3(W * 0.62f, 0.035f, 0.02f), h, 0.008f);
                     b.AddRounded(new Vector3(W * 0.24f, H * 0.9f, face + 0.002f), new Vector3(W * 0.4f, 0.028f, 0.018f), h, 0.008f);
-                    b.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.012f), new Vector3(W + 0.05f, H * 1.6f, 0.055f), h, 0.02f);
+                    BoxMesh longHair = f.Dyn(new Vector3(0f, H * 0.95f, -face - 0.012f));
+                    longHair.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.012f), new Vector3(W + 0.05f, H * 1.6f, 0.055f), h, 0.02f);
                     for (int c = -1; c <= 1; c += 2)
                     {
                         b.AddRounded(new Vector3(c * (W * 0.5f + 0.014f), H * 0.42f, 0f), new Vector3(0.026f, H * 1.05f, D * 0.75f), h, 0.01f);
@@ -163,7 +165,8 @@ namespace FantaLandia.EditorTools
 
                 case HairStyle.Curly: // permanente vaporosa
                     b.AddRounded(new Vector3(0f, H + 0.025f, -0.01f), new Vector3(W + 0.08f, 0.12f, D + 0.07f), h, 0.03f);
-                    b.AddRounded(new Vector3(0f, H * 0.55f, -face - 0.025f), new Vector3(W + 0.09f, H * 1.0f, 0.07f), h, 0.025f);
+                    f.Dyn(new Vector3(0f, H * 0.95f, -face - 0.025f))
+                     .AddRounded(new Vector3(0f, H * 0.55f, -face - 0.025f), new Vector3(W + 0.09f, H * 1.0f, 0.07f), h, 0.025f);
                     for (int c = -1; c <= 1; c += 2)
                         b.AddRounded(new Vector3(c * (W * 0.5f + 0.03f), H * 0.6f, -0.01f), new Vector3(0.055f, H * 0.85f, D * 0.85f), h, 0.02f);
                     b.AddRounded(new Vector3(0f, H * 0.9f, face + 0.006f), new Vector3(W * 0.85f, 0.04f, 0.025f), h, 0.01f);
@@ -171,7 +174,8 @@ namespace FantaLandia.EditorTools
 
                 case HairStyle.Bob:
                     b.AddRounded(new Vector3(0f, H + 0.012f, -0.005f), new Vector3(W + 0.034f, 0.065f, D + 0.034f), h, 0.022f);
-                    b.AddRounded(new Vector3(0f, H * 0.55f, -face - 0.012f), new Vector3(W + 0.04f, H * 0.8f, 0.045f), h, 0.015f);
+                    f.Dyn(new Vector3(0f, H * 0.92f, -face - 0.012f))
+                     .AddRounded(new Vector3(0f, H * 0.55f, -face - 0.012f), new Vector3(W + 0.04f, H * 0.8f, 0.045f), h, 0.015f);
                     for (int c = -1; c <= 1; c += 2)
                         b.AddRounded(new Vector3(c * (W * 0.5f + 0.016f), H * 0.55f, 0.005f), new Vector3(0.03f, H * 0.8f, D * 0.85f), h, 0.01f);
                     b.AddRounded(new Vector3(0f, H * 0.88f, face + 0.005f), new Vector3(W * 0.95f, 0.04f, 0.02f), h, 0.008f);
@@ -180,8 +184,9 @@ namespace FantaLandia.EditorTools
                 case HairStyle.Ponytail:
                     b.AddRounded(new Vector3(0f, H + 0.006f, -0.004f), new Vector3(W + 0.02f, 0.05f, D + 0.02f), h, 0.018f);
                     b.AddRounded(new Vector3(0f, H * 0.75f, -face - 0.008f), new Vector3(W + 0.02f, H * 0.5f, 0.025f), h, 0.01f);
-                    b.AddRounded(new Vector3(0f, H * 0.45f, -face - 0.05f), new Vector3(0.05f, 0.24f, 0.05f), h, 0.012f);
-                    b.Add(new Vector3(0f, H * 0.68f, -face - 0.035f), new Vector3(0.04f, 0.02f, 0.03f), m.lips);
+                    BoxMesh tail = f.Dyn(new Vector3(0f, H * 0.68f, -face - 0.04f));
+                    tail.AddRounded(new Vector3(0f, H * 0.45f, -face - 0.05f), new Vector3(0.05f, 0.24f, 0.05f), h, 0.012f);
+                    tail.Add(new Vector3(0f, H * 0.68f, -face - 0.035f), new Vector3(0.04f, 0.02f, 0.03f), m.lips);
                     break;
             }
         }
@@ -355,7 +360,6 @@ namespace FantaLandia.EditorTools
                 {
                     b.Add(new Vector3(0f, -L * 0.3f + 0.015f, 0f), new Vector3(w + 0.04f, L * 0.6f + 0.03f, w + 0.04f), p);
                     b.Add(new Vector3(0f, -L * 0.75f, 0f), new Vector3(w * 0.85f + 0.04f, L * 0.5f, w * 0.85f + 0.04f), p);
-                    b.Add(new Vector3(0f, -L + 0.02f, w * 0.425f + 0.012f), new Vector3(w * 0.55f + 0.02f, 0.08f, 0.035f), p); // ginocchio
                 }
             }
             if (o.top == Top.Robe) // la vestaglia scende davanti e dietro le cosce
@@ -377,6 +381,7 @@ namespace FantaLandia.EditorTools
             b.Add(new Vector3(0f, -L * 0.25f, 0f), new Vector3(w + 0.045f, L * 0.5f, w + 0.045f), p);
             b.Add(new Vector3(0f, -L * 0.72f, 0f), new Vector3(w * 0.75f + 0.055f, L * 0.56f, w * 0.75f + 0.055f), p);
             b.Add(new Vector3(0f, -L * 0.3f, -w * 0.5f - 0.012f), new Vector3(w * 0.7f + 0.02f, L * 0.3f, 0.032f), p); // polpaccio
+            b.AddRounded(new Vector3(0f, -0.005f, 0.004f), new Vector3(w * 1.04f + 0.05f, 0.11f, w * 1.04f + 0.05f), p, 0.022f); // ginocchio
             if (o.bottom == Bottom.Sweatpants) b.Add(new Vector3(0f, -L + 0.03f, 0f), new Vector3(w * 0.75f + 0.06f, 0.04f, w * 0.75f + 0.06f), Cloth(o.bottomColor, 0.8f));
             return b;
         }
@@ -701,6 +706,15 @@ namespace FantaLandia.EditorTools
         {
             public BoxMesh irisL, irisR, lidL, lidR, browL, browR, lowerLip, mouthInside;
             public Vector3 irisLPos, irisRPos, lidLPos, lidRPos, browLPos, browRPos, lowerLipPos, mouthInsidePos;
+            /// <summary>Capelli che pendono (lunghi, coda, mullet): oscillano con la fisica dei capelli.</summary>
+            public BoxMesh hairDyn;
+            public Vector3 hairDynPos;
+
+            public BoxMesh Dyn(Vector3 pivot)
+            {
+                if (hairDyn == null) { hairDyn = new BoxMesh(pivot); hairDynPos = pivot; }
+                return hairDyn;
+            }
         }
 
         static BoxMesh Head(Shape s, Mats m, out FaceParts face)
@@ -768,7 +782,7 @@ namespace FantaLandia.EditorTools
             f.lowerLip = new BoxMesh(f.lowerLipPos);
             f.lowerLip.AddRounded(f.lowerLipPos, new Vector3(0.042f, 0.014f, 0.014f), m.lipsLower, 0.004f);
 
-            Hair(s, m, b);
+            Hair(s, m, b, f);
             return b;
         }
 
@@ -833,7 +847,7 @@ namespace FantaLandia.EditorTools
             f.lowerLip = new BoxMesh(f.lowerLipPos);
             f.lowerLip.Add(f.lowerLipPos, new Vector3(W * 0.26f, 0.008f, 0.012f), m.lipsLower);
 
-            Hair(s, m, b);
+            Hair(s, m, b, f);
             return b;
         }
 
@@ -849,6 +863,11 @@ namespace FantaLandia.EditorTools
             rig.browR = FacePart(headSkin, "Sopracciglio destro", f.browR, f.browRPos, meshes, id);
             rig.lowerLip = FacePart(headSkin, "Labbro inferiore", f.lowerLip, f.lowerLipPos, meshes, id);
             rig.mouthInside = FacePart(headSkin, "Interno bocca", f.mouthInside, f.mouthInsidePos, meshes, id);
+            if (f.hairDyn != null && !f.hairDyn.IsEmpty)
+            {
+                Transform hair = FacePart(headSkin, "Capelli mobili", f.hairDyn, f.hairDynPos, meshes, id);
+                root.AddComponent<HairPhysics>().hair = hair;
+            }
             root.AddComponent<FaceAnimator>();
         }
 
@@ -923,6 +942,7 @@ namespace FantaLandia.EditorTools
             b.Add(new Vector3(0f, -L * 0.25f, 0f), new Vector3(w, L * 0.5f, w), m.skin);
             b.Add(new Vector3(0f, -L * 0.72f, 0f), new Vector3(w * 0.75f, L * 0.56f, w * 0.75f), m.skin);
             b.Add(new Vector3(0f, -L * 0.3f, -w * 0.5f - 0.009f), new Vector3(w * 0.7f, L * 0.3f, 0.022f), m.skin); // polpaccio
+            b.AddRounded(new Vector3(0f, -0.005f, 0.004f), new Vector3(w * 1.04f, 0.1f, w * 1.04f), m.skin, 0.02f); // ginocchio: copre lo stacco quando la gamba si piega
             return b;
         }
 

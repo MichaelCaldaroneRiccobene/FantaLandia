@@ -10,5 +10,6 @@ namespace FantaLandia.Characters.Body
         public Transform browL, browR;
         public Transform lowerLip;
         public Transform mouthInside;
+        public Transform hairDyn;
     }
 }

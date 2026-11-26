@@ -38,6 +38,20 @@ namespace FantaLandia.Horror.EditorTools
             return go;
         }
 
+        /// <summary>Scatola inclinata tra due punti (corrimano, fascioni delle scale).</summary>
+        public static GameObject SlopedBox(string name, Transform parent, Vector3 a, Vector3 b, float width, float height, Material mat)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = (a + b) * 0.5f;
+            Vector3 d = b - a;
+            go.transform.localRotation = Quaternion.LookRotation(d.normalized, Vector3.up);
+            go.transform.localScale = new Vector3(width, height, d.magnitude);
+            go.GetComponent<Renderer>().sharedMaterial = mat;
+            return go;
+        }
+
         public static GameObject BoxIf(string name, Transform parent, Vector3 min, Vector3 max, Material mat)
         {
             Vector3 s = max - min;
@@ -127,14 +141,15 @@ namespace FantaLandia.Horror.EditorTools
                     Seg(o.a, o.b, o.bottom, o.top, glass, 0.03f, "vetro");
                 if (trim != null)
                 {
-                    const float w = 0.08f;
+                    // le cornici sporgono di qualche millimetro dentro l'apertura: niente facce coincidenti con il muro (sfarfallio)
+                    const float w = 0.08f, e = 0.006f;
                     float tt = thick + 0.12f;
-                    Seg(o.a - w, o.a, o.bottom, o.top + w, trim, tt, "cornice");
-                    Seg(o.b, o.b + w, o.bottom, o.top + w, trim, tt, "cornice");
-                    Seg(o.a, o.b, o.top, o.top + w, trim, tt, "cornice");
+                    Seg(o.a - w, o.a + e, o.bottom, o.top + w, trim, tt, "cornice");
+                    Seg(o.b - e, o.b + w, o.bottom, o.top + w, trim, tt, "cornice");
+                    Seg(o.a, o.b, o.top - e, o.top + w, trim, tt, "cornice");
                     if (o.kind == OpeningKind.Window)
                     {
-                        Seg(o.a - w, o.b + w, o.bottom - w, o.bottom, trim, tt + 0.06f, "davanzale");
+                        Seg(o.a - w, o.b + w, o.bottom - w, o.bottom + e, trim, tt + 0.06f, "davanzale");
                         Seg((o.a + o.b) * 0.5f - 0.03f, (o.a + o.b) * 0.5f + 0.03f, o.bottom, o.top, trim, 0.05f, "traverso");
                         Seg(o.a, o.b, (o.bottom + o.top) * 0.5f - 0.03f, (o.bottom + o.top) * 0.5f + 0.03f, trim, 0.05f, "traverso");
                     }

@@ -65,13 +65,13 @@ namespace FantaLandia.Horror.EditorTools
             return s;
         }
 
-        /// <summary>Jef, quello silenzioso: pallido, alto e magro, capelli lunghi neri, occhiali, felpa nera, pantaloni scuri.</summary>
+        /// <summary>Jef, quello silenzioso: pallido, alto e magro, capelli rasati da militare, occhiali, felpa nera, pantaloni scuri.</summary>
         public static Shape Jef()
         {
             Shape s = Male();
             s.id = "Personaggio_Jef"; s.displayName = "Jef";
             s.skin = C("#ecd2bd"); s.hair = C("#141414"); s.pupil = C("#2a2a2a");
-            s.hairStyle = HairStyle.Long; s.beard = BeardStyle.None;
+            s.hairStyle = HairStyle.Buzz; s.beard = BeardStyle.None; // taglio da militare
             s.thighLen += 0.02f; s.shinLen += 0.02f;
             s.thighW *= 0.88f; s.shinW *= 0.9f; s.upperArmW *= 0.88f; s.forearmW *= 0.9f;
             s.chestW *= 0.92f; s.absW *= 0.9f; s.pelvisW *= 0.94f;

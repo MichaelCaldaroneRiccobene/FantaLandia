@@ -33,7 +33,7 @@ namespace FantaLandia.Horror.EditorTools
         const float FenceHeight = 1.2f;
 
         static Material siding, trim, interior, interiorUp, wood, tiles, concrete, basementWall, roof, glass, grass,
-                        asphalt, sidewalk, porchWood, fenceWood, deckWood, garageFloor, bathTiles, kitchenTiles, railing;
+                        asphalt, sidewalk, porchWood, fenceWood, deckWood, garageFloor, bathTiles, kitchenTiles, railing, stairSide, stairTread;
 
         static readonly List<Light> houseLights = new List<Light>();
 
@@ -144,7 +144,8 @@ namespace FantaLandia.Horror.EditorTools
         {
             Transform people = Group("Personaggi", world);
             HorrorTestSceneBuilder.BuildNpc(people, cast["jef"], "Jef", "jef", new Vector3(5.6f, F0, 1.9f), 200f);
-            HorrorTestSceneBuilder.BuildNpc(people, cast["roy"], "Roy", "roy", new Vector3(-8.3f, 0f, 1.2f), 90f);
+            // Roy è nascosto del tutto: la sequenza lo attiverà quando bussa alla porta
+            HorrorTestSceneBuilder.BuildNpc(people, cast["roy"], "Roy", "roy", new Vector3(-8.3f, 0f, 1.2f), 90f).gameObject.SetActive(false);
 
             // vicini: pedana alta 0.6 m, corrimano a 1.58 m sul lato verso il fondo del giardino (z = 13)
             Neighbor(people, cast["frank"], "Frank", "frank", new Vector3(-27.1f, 0.6f, 12.3f), new Vector3(-27.1f, 1.58f, 12.95f),
@@ -188,6 +189,8 @@ namespace FantaLandia.Horror.EditorTools
             deckWood = M("Pedana", "#806040");
             garageFloor = M("Pavimento garage", "#5a5854");
             railing = M("Ringhiera", "#efede6");
+            stairSide = M("Fianco scala", "#5a3c26", 0.2f);
+            stairTread = M("Pedata scala", "#8a6040", 0.35f);
             AssetDatabase.SaveAssets();
         }
 
@@ -242,11 +245,11 @@ namespace FantaLandia.Horror.EditorTools
             Transform s = Group("Struttura", house);
 
             // solai
-            Slab(s, "Pavimento piano terra", X0, X1, Z0, Z1, F0 - S, F0, wood, new Rect(4.0f, 3.01f, 1.4f, 2.64f));
+            Slab(s, "Pavimento piano terra", X0, X1, Z0, Z1, F0 - S, F0, wood, new Rect(3.72f, 3.01f, 1.4f, 2.64f));
             foreach (Transform t in s) if (t.name.StartsWith("Pavimento piano terra")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
             Floor("Piastrelle cucina", s, new Vector3(-1f, F0, 6.075f), new Vector3(6.75f, F0 + 0.01f, 10.75f), kitchenTiles, Surface.Concrete);
             Floor("Piastrelle bagno", s, new Vector3(3.575f, F0, 0.25f), new Vector3(6.75f, F0 + 0.01f, 2.925f), bathTiles, Surface.Concrete);
-            Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(2.1f, 1.5f, 1.3f, 4.2f));
+            Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(2.1f, 1.5f, 1.325f, 4.2f));
             foreach (Transform t in s) if (t.name.StartsWith("Pavimento primo piano")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
             Floor("Piastrelle bagno sopra", s, new Vector3(3.575f, F1, 0.25f), new Vector3(6.75f, F1 + 0.01f, 3.925f), bathTiles, Surface.Concrete);
             Box("Soffitto primo piano", s, new Vector3(X0, F2 - S, Z0), new Vector3(X1, F2, Z1), trim);
@@ -259,14 +262,12 @@ namespace FantaLandia.Horror.EditorTools
             Box("Muro cantina sx", s, new Vector3(X0, FB, Z0), new Vector3(X0 + 0.3f, FB + bh, Z1), basementWall);
             Box("Muro cantina dx", s, new Vector3(X1 - 0.3f, FB, Z0), new Vector3(X1, FB + bh, Z1), basementWall);
             // scala della cantina: larga 1.4 m, parte subito oltre la porta della cucina e scende dritta verso -Z
-            Stairs(s, "Scala cantina", false, 5.65f, -1, 4.0f, 5.4f, F0, 11, -2.8f / 11f, 0.24f, FB, porchWood, Surface.Wood);
-            Railing(s, new Vector3(5.45f, F0, 3.01f), new Vector3(5.45f, F0, 5.65f));
-            Railing(s, new Vector3(3.95f, F0, 3.01f), new Vector3(3.95f, F0, 5.65f));
+            Stairs(s, "Scala cantina", false, 5.65f, -1, 3.72f, 5.12f, F0, 11, -2.8f / 11f, 0.24f, FB, porchWood, Surface.Wood); // centrata sulla porta
 
             // scala per il primo piano (nell'ingresso, sale verso +Z)
             // contro il muro destro dell'ingresso, lasciando libero lo spazio davanti alla porta
-            Stairs(s, "Scala", false, 1.5f, 1, 2.1f, 3.4f, F0, 15, 0.2f, 0.28f, F0, wood, Surface.Wood);
-            StairBanister(s);
+            Stairs(s, "Scala", false, 1.5f, 1, 2.1f, 3.425f, F0, 15, 0.2f, 0.28f, F0, stairSide, Surface.Wood);
+            StairDetails(s);
 
             // muri esterni: nucleo (colore interno) + rivestimento esterno (azzurro) con le stesse aperture
             var front0 = new[] { new Opening(-0.47f, 0.47f, F0, F0 + 2.15f, OpeningKind.Door), Window(-4.6f, 2f, F0 + 0.85f, F0 + 2.2f), Window(5.2f, 0.8f, F0 + 1.5f, F0 + 2.1f) };
@@ -340,19 +341,44 @@ namespace FantaLandia.Horror.EditorTools
             return front;
         }
 
-        /// <summary>Ringhiera della scala: colonnina su ogni gradino e corrimano a gradini; ringhiera al primo piano.</summary>
-        static void StairBanister(Transform s)
+        /// <summary>
+        /// Dettagli della scala: pedate chiare con il bordo che sporge, battiscopa sul muro, fascione inclinato sul lato
+        /// aperto, due colonnine per gradino, corrimano continuo in pendenza, pilastrini in basso e in alto,
+        /// ringhiera al primo piano.
+        /// </summary>
+        static void StairDetails(Transform s)
         {
-            Transform g = Group("Ringhiera scala", s);
-            for (int i = 0; i < 15; i++)
+            Transform g = Group("Dettagli scala", s);
+            const float x0 = 2.1f, x1 = 3.425f, z0 = 1.5f, run = 0.28f, rise = 0.2f;
+            const int steps = 15;
+            for (int i = 0; i < steps; i++)
             {
-                float z0 = 1.5f + i * 0.28f, top = F0 + (i + 1) * 0.2f;
-                Box("Colonnina", g, new Vector3(2.11f, top, z0 + 0.11f), new Vector3(2.16f, top + 0.85f, z0 + 0.16f), railing);
-                Box("Corrimano", g, new Vector3(2.09f, top + 0.85f, z0), new Vector3(2.18f, top + 0.92f, z0 + 0.28f), porchWood);
+                float z = z0 + i * run, top = F0 + (i + 1) * rise;
+                Box("Pedata", g, new Vector3(x0 - 0.02f, top, z - 0.03f), new Vector3(x1, top + 0.025f, z + run), stairTread);
             }
-            Box("Pilastrino", g, new Vector3(2.08f, F0, 1.42f), new Vector3(2.2f, F0 + 1.1f, 1.56f), porchWood);
-            Railing(g, new Vector3(2.08f, F1, 1.48f), new Vector3(2.08f, F1, 5.7f));
-            Railing(g, new Vector3(2.08f, F1, 1.48f), new Vector3(3.4f, F1, 1.48f));
+            // fascione inclinato sul lato aperto e battiscopa inclinato contro il muro
+            SlopedBox("Fascione", g, new Vector3(x0 - 0.03f, F0 + 0.05f, z0 - 0.1f), new Vector3(x0 - 0.03f, F0 + steps * rise + 0.05f, z0 + steps * run - 0.1f), 0.05f, 0.3f, porchWood);
+            SlopedBox("Battiscopa scala", g, new Vector3(x1 - 0.012f, F0 + 0.12f, z0), new Vector3(x1 - 0.012f, F0 + steps * rise + 0.12f, z0 + steps * run), 0.02f, 0.12f, porchWood);
+            // colonnine e corrimano (altezza 0.9 m sopra il filo dei gradini)
+            float railBase = 0.95f;
+            for (int i = 0; i < steps; i++)
+            {
+                float top = F0 + (i + 1) * rise;
+                foreach (float f in new[] { 0.07f, 0.19f })
+                {
+                    float z = z0 + i * run + f;
+                    float railY = F0 + railBase + (z - z0) / run * rise;
+                    Box("Colonnina", g, new Vector3(x0 + 0.02f, top + 0.02f, z - 0.02f), new Vector3(x0 + 0.06f, railY, z + 0.02f), railing);
+                }
+            }
+            SlopedBox("Corrimano", g, new Vector3(x0 + 0.04f, F0 + railBase + 0.03f, z0 - 0.1f),
+                      new Vector3(x0 + 0.04f, F0 + railBase + 0.03f + steps * rise, z0 + steps * run - 0.1f), 0.08f, 0.07f, porchWood);
+            Box("Pilastrino basso", g, new Vector3(x0 - 0.03f, F0, z0 - 0.2f), new Vector3(x0 + 0.11f, F0 + 1.1f, z0 - 0.06f), porchWood);
+            Box("Pomolo", g, new Vector3(x0 - 0.01f, F0 + 1.1f, z0 - 0.18f), new Vector3(x0 + 0.09f, F0 + 1.18f, z0 - 0.08f), stairTread);
+            Box("Pilastrino alto", g, new Vector3(x0 - 0.03f, F1, z0 + steps * run - 0.14f), new Vector3(x0 + 0.11f, F1 + 1.05f, z0 + steps * run), porchWood);
+            // ringhiera al primo piano attorno all'apertura
+            Railing(g, new Vector3(x0 + 0.04f, F1, z0 - 0.02f), new Vector3(x0 + 0.04f, F1, z0 + steps * run - 0.14f));
+            Railing(g, new Vector3(x0 + 0.04f, F1, z0 - 0.02f), new Vector3(x1, F1, z0 - 0.02f));
         }
 
         /// <summary>Ringhiera dritta: colonnine ogni 15 cm e corrimano.</summary>
