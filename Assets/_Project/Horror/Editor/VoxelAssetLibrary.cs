@@ -32,8 +32,17 @@ namespace FantaLandia.Horror.EditorTools
             EditorAssetUtil.EnsureFolder(Folder);
             Mesh mesh = v.Build(name, pivot, out Color[] colors);
             string meshPath = $"{Folder}/{name}_Mesh.asset";
-            AssetDatabase.DeleteAsset(meshPath);
-            AssetDatabase.CreateAsset(mesh, meshPath);
+            // la mesh esistente viene aggiornata al suo posto: gli oggetti già piazzati nelle scene non la perdono
+            var existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+            if (existing != null)
+            {
+                EditorUtility.CopySerialized(mesh, existing);
+                existing.name = name;
+                EditorUtility.SetDirty(existing);
+                Object.DestroyImmediate(mesh);
+                mesh = existing;
+            }
+            else AssetDatabase.CreateAsset(mesh, meshPath);
 
             var mats = new Material[colors.Length];
             for (int i = 0; i < colors.Length; i++)

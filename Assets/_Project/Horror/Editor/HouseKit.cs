@@ -54,7 +54,12 @@ namespace FantaLandia.Horror.EditorTools
 
         public static GameObject Place(GameObject prefab, Transform parent, Vector3 localPos, float yaw)
         {
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            GameObject go = prefab != null ? PrefabUtility.InstantiatePrefab(prefab) as GameObject : null;
+            if (go == null)
+            {
+                Debug.LogError($"[FantaLandia Horror] Prefab mancante: {(prefab != null ? prefab.name : "null")} (posizione {localPos})");
+                go = new GameObject("OGGETTO MANCANTE");
+            }
             if (parent != null) go.transform.SetParent(parent, false);
             go.transform.localPosition = localPos;
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);

@@ -52,18 +52,22 @@ namespace FantaLandia.Horror.EditorTools
 
             Transform world = Group("Mondo", null);
             Transform street = Group("Strada e lotti", world);
-            BuildGround(street);
-            BuildStreet(street);
+            Step("terreno", () => BuildGround(street));
+            Step("strada", () => BuildStreet(street));
 
             Transform house = Group("Casa di Tom", world);
-            HorrorDoor frontDoor = BuildHouseStructure(house);
-            CrtTv tv = BuildFurniture(house, out Transform armchair, out PlaceSpot island);
-            BuildGarage(house);
-            BuildPorch(house);
-            BuildYard(house);
+            HorrorDoor frontDoor = null;
+            CrtTv tv = null;
+            Transform armchair = null;
+            Step("struttura della casa", () => frontDoor = BuildHouseStructure(house));
+            Step("arredamento", () => tv = BuildFurniture(house, out armchair, out _));
+            Step("garage", () => BuildGarage(house));
+            Step("veranda", () => BuildPorch(house));
+            Step("giardino", () => BuildYard(house));
 
             Transform hood = Group("Vicinato", world);
-            BuildNeighbors(hood);
+            Step("vicinato", () => BuildNeighbors(hood));
+            if (armchair == null) armchair = HorrorTestSceneBuilder.Marker("Poltrona (mancante)", world, new Vector3(-4.7f, F0, 5.1f));
 
             // personaggi e sistemi
             CharacterMotor tom = HorrorTestSceneBuilder.BuildTom(world, malePrefab, new Vector3(-3.4f, F0, 1.7f), 150f);
@@ -98,8 +102,21 @@ namespace FantaLandia.Horror.EditorTools
             dbg.power = power;
             dbg.switches = new LightSwitch[0];
 
+            // controllo finale: oggetti senza mesh (se ce ne sono, qualcosa è andato storto nella creazione dei prefab)
+            int missing = 0;
+            foreach (MeshFilter mf in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
+                if (mf.sharedMesh == null) { missing++; if (missing <= 10) Debug.LogWarning("[FantaLandia Horror] Senza mesh: " + mf.name, mf); }
+            if (missing > 0) Debug.LogWarning($"[FantaLandia Horror] {missing} oggetti senza mesh");
+
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log("[FantaLandia Horror] Casa e quartiere creati: " + ScenePath);
+        }
+
+        /// <summary>Esegue un pezzo della costruzione: se va in errore lo segnala e continua con il resto.</summary>
+        static void Step(string what, System.Action action)
+        {
+            try { action(); }
+            catch (System.Exception e) { Debug.LogError($"[FantaLandia Horror] Errore costruendo {what}: {e}"); }
         }
 
         // ------------------------------------------------------------------ materiali
