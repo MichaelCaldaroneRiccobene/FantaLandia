@@ -655,14 +655,6 @@ namespace FantaLandia.Horror.Story
             DialogueSystem.Bark(Speakers.Muark, "Sì! Ce l'ho fatta.");
             yield return new WaitForSeconds(2.2f);
 
-            // la porta della cantina sbatte di colpo
-            Vector3 doorPos = cellarDoor != null ? cellarDoor.transform.position : player.position + Vector3.up * 3f;
-            if (cellarDoor != null && cellarDoor.IsOpen) cellarDoor.Close();
-            HorrorAudio.PlayAt(ProceduralAudio.DoorShut(), doorPos, 1f, 0.85f, 30f);
-            HorrorAudio.Play2D(ProceduralAudio.Sting(), 0.8f);
-            Shake(0.9f, 0.5f);
-            yield return new WaitForSeconds(1.4f);
-            DialogueSystem.Bark(Speakers.Muark, "...Ragazzi?! Non è divertente!");
             Goal((roy, Speakers.Roy, "Muark! Sali, presto!"),
                  (null, Speakers.Muark, "Devo tornare di sopra."));
 

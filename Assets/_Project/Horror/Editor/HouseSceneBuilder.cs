@@ -224,7 +224,7 @@ namespace FantaLandia.Horror.EditorTools
             Transform bg = Group("Sfondo", world);
             Material dark = M("Sagoma lontana", "#2a2c30");
             Material darkRoof = M("Tetto lontano", "#1d1e22");
-            Material brick = M("Mattoni centrale", "#4a2c22");
+            Material brick = MT("Mattoni centrale", "#4a2c22", ProceduralTextures.Kind.Brick, 1.4f, 0.05f, 0.3f);
             Material burnt = M("Bruciato", "#120f0d");
             Material concreteDark = M("Cemento scuro", "#3a3a3a");
 
@@ -389,28 +389,29 @@ namespace FantaLandia.Horror.EditorTools
 
         static void Materials()
         {
-            siding = M("Rivestimento", "#9fb2bd");
-            trim = M("Finiture bianche", "#eeece4");
-            interior = M("Pareti piano terra", "#cdbf9f");
-            interiorUp = M("Pareti primo piano", "#bfc3ad");
-            wood = M("Parquet", "#6b4a30", 0.3f);
+            const ProceduralTextures.Kind T0 = ProceduralTextures.Kind.Clapboard;
+            siding = MT("Rivestimento", "#9fb2bd", T0, 1f, 0.15f);
+            trim = MT("Finiture bianche", "#eeece4", ProceduralTextures.Kind.Plaster, 1f, 0.25f, 0.06f);
+            interior = MT("Pareti piano terra", "#cdbf9f", ProceduralTextures.Kind.Plaster, 1.2f, 0.08f, 0.1f);
+            interiorUp = MT("Pareti primo piano", "#bfc3ad", ProceduralTextures.Kind.Wallpaper, 0.9f, 0.08f, 0.08f);
+            wood = MT("Parquet", "#6b4a30", ProceduralTextures.Kind.Boards, 0.9f, 0.3f);
             tiles = M("Piastrelle", "#c9c2b0", 0.4f);
             kitchenTiles = M("Piastrelle cucina", "#d9cf9e", 0.4f);
             bathTiles = M("Piastrelle bagno", "#a9c2c8", 0.5f);
-            concrete = M("Cemento cantina", "#6e6c68");
-            basementWall = M("Muro cantina", "#7d7a73");
-            roof = M("Tegole", "#3b3c42");
+            concrete = MT("Cemento cantina", "#6e6c68", ProceduralTextures.Kind.Concrete, 2f, 0.1f, 0.2f);
+            basementWall = MT("Muro cantina", "#7d7a73", ProceduralTextures.Kind.CinderBlock, 0.8f, 0.05f, 0.22f);
+            roof = MT("Tegole", "#3b3c42", ProceduralTextures.Kind.Shingles, 1f, 0.12f, 0.15f);
             glass = EditorAssetUtil.Glass("Casa Vetro", new Color(0.55f, 0.7f, 0.8f));
-            grass = M("Prato", "#2a3d20");
-            asphalt = M("Asfalto", "#1d1d20");
-            sidewalk = M("Marciapiede", "#6c6a66");
-            porchWood = M("Veranda", "#7a5a3c");
-            fenceWood = M("Staccionata", "#6b5034");
-            deckWood = M("Pedana", "#806040");
-            garageFloor = M("Pavimento garage", "#5a5854");
-            railing = M("Ringhiera", "#efede6");
-            stairSide = M("Fianco scala", "#5a3c26", 0.2f);
-            stairTread = M("Pedata scala", "#8a6040", 0.35f);
+            grass = MT("Prato", "#2e4322", ProceduralTextures.Kind.Grass, 2.5f, 0.05f, 0.25f);
+            asphalt = MT("Asfalto", "#232327", ProceduralTextures.Kind.Asphalt, 2f, 0.2f, 0.15f);
+            sidewalk = MT("Marciapiede", "#6c6a66", ProceduralTextures.Kind.Slabs, 2.4f, 0.12f, 0.15f);
+            porchWood = MT("Veranda", "#7a5a3c", ProceduralTextures.Kind.Boards, 0.9f, 0.18f);
+            fenceWood = MT("Staccionata", "#6b5034", ProceduralTextures.Kind.VerticalBoards, 1f, 0.08f, 0.18f);
+            deckWood = MT("Pedana", "#806040", ProceduralTextures.Kind.Boards, 0.9f, 0.15f);
+            garageFloor = MT("Pavimento garage", "#5a5854", ProceduralTextures.Kind.Concrete, 2f, 0.15f, 0.25f);
+            railing = MT("Ringhiera", "#efede6", ProceduralTextures.Kind.WoodGrain, 1f, 0.2f, 0.05f);
+            stairSide = MT("Fianco scala", "#5a3c26", ProceduralTextures.Kind.WoodGrain, 1f, 0.2f);
+            stairTread = MT("Pedata scala", "#8a6040", ProceduralTextures.Kind.WoodGrain, 1f, 0.35f);
             AssetDatabase.SaveAssets();
         }
 
@@ -695,6 +696,7 @@ namespace FantaLandia.Horror.EditorTools
             root.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             var hinge = new GameObject("Cardine").transform;
             hinge.SetParent(root.transform, false);
+            hinge.localPosition = new Vector3(0f, 0.015f, 0f); // un filo sopra il pavimento: l'anta non entra nel parquet
             Place(prefab, hinge, Vector3.zero, 0f);
             var door = root.AddComponent<HorrorDoor>();
             door.hinge = hinge;
@@ -716,25 +718,35 @@ namespace FantaLandia.Horror.EditorTools
             Transform f = Group("Arredamento", house);
 
             // soggiorno
-            Place(VoxelFurniture.Get("Tappeto"), f, new Vector3(-4.4f, F0, 3f), 90f);
+            Place(VoxelFurniture.Get("Tappeto"), f, new Vector3(-4.35f, F0, 3.05f), 94f);     // un po' storto, come sempre
             Place(VoxelAssetLibrary.Load("Mobile TV"), f, new Vector3(-6.45f, F0, 3f), 90f);
             CrtTv tv = BuildTv(f, new Vector3(-6.42f, F0 + 0.5f, 3f), 90f);
             Place(VoxelFurniture.Get("Divano"), f, new Vector3(-2.75f, F0, 3f), -90f);
-            Place(VoxelFurniture.Get("Tavolino"), f, new Vector3(-4.4f, F0, 3f), 90f);
+            Place(VoxelFurniture.Get("Tavolino"), f, new Vector3(-4.4f, F0, 2.95f), 97f);
             armchair = Place(VoxelAssetLibrary.Load("Poltrona"), f, new Vector3(-4.7f, F0, 5.1f), -136f).transform;
             Place(VoxelAssetLibrary.Load("Lampada stelo"), f, new Vector3(-6.35f, F0, 5.45f), 0f);
             GameObject shade = Place(VoxelAssetLibrary.Load("Lampada paralume"), f, new Vector3(-6.35f, F0 + 1.44f, 5.45f), 0f);
             houseLights.Add(PointLight(shade.transform, "Luce lampada", new Vector3(0f, 0.1f, 0f), 4.5f, 1.1f, new Color(1f, 0.7f, 0.42f), true));
             Place(VoxelFurniture.Get("Libreria"), f, new Vector3(-3f, F0, 0.4f), 0f);
+            // vita vissuta: pianta nell'angolo, zaino di qualcuno buttato accanto al divano, quadro sul muro
+            Place(VoxelFurniture.Get("Pianta"), f, new Vector3(-6.35f, F0, 0.65f), 20f);
+            Place(VoxelFurniture.Get("Zaino"), f, new Vector3(-2.55f, F0, 1.45f), -70f);
+            Place(VoxelFurniture.Get("Quadro A"), f, new Vector3(-2.08f, F0 + 1.55f, 5.4f), -90f);
+            // ingresso: scarpe lasciate lì, quadro accanto alla porta
+            Place(VoxelFurniture.Get("Scarpe"), f, new Vector3(-1.05f, F0, 0.6f), 15f);
+            Place(VoxelFurniture.Get("Quadro C"), f, new Vector3(1.7f, F0 + 1.5f, 0.26f), 0f);
 
 
             // sala da pranzo
             Place(VoxelFurniture.Get("Tavolo"), f, new Vector3(-4.2f, F0, 8.5f), 0f);
-            foreach (float x in new[] { -5.0f, -3.4f })
-            {
-                Place(VoxelFurniture.Get("Sedia"), f, new Vector3(x, F0, 7.6f), 0f);
-                Place(VoxelFurniture.Get("Sedia"), f, new Vector3(x, F0, 9.4f), 180f);
-            }
+            // sedie non allineate: una tirata fuori e girata, una con la giacca sullo schienale
+            Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-5.05f, F0, 7.55f), -6f);
+            Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-3.3f, F0, 7.25f), 24f);
+            Place(VoxelFurniture.Get("Sedia con giacca"), f, new Vector3(-4.95f, F0, 9.45f), 187f);
+            Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-3.45f, F0, 9.5f), 172f);
+            Place(VoxelFurniture.Get("Pianta"), f, new Vector3(-6.35f, F0, 10.4f), -40f);
+            Place(VoxelFurniture.Get("Quadro B"), f, new Vector3(-2.8f, F0 + 1.55f, 10.74f), 180f);
+            Place(VoxelFurniture.Get("Orologio"), f, new Vector3(5.0f, F0 + 2.05f, 10.74f), 180f);
 
             // cucina
             GameObject counter = Place(VoxelAssetLibrary.Load("Bancone"), f, new Vector3(0.5f, F0, 10.4f), 180f);
@@ -769,6 +781,8 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Armadio"), f, new Vector3(-6.45f, F1, 5.2f), 90f);
             Place(VoxelFurniture.Get("Letto singolo"), f, new Vector3(-5.75f, F1, 9.4f), 90f);
             Place(VoxelFurniture.Get("Scrivania"), f, new Vector3(-3.2f, F1, 10.4f), 180f);
+            Place(VoxelFurniture.Get("Cesto bucato"), f, new Vector3(-6.2f, F1, 2.7f), 12f);
+            Place(VoxelFurniture.Get("Scarpe"), f, new Vector3(4.2f, F1, 8.2f), -35f);
             Place(VoxelFurniture.Get("Letto singolo"), f, new Vector3(5.75f, F1, 9.2f), -90f);
             Place(VoxelFurniture.Get("Scrivania"), f, new Vector3(0.2f, F1, 10.4f), 180f);
             Place(VoxelFurniture.Get("Libreria"), f, new Vector3(4.6f, F1, 10.6f), 180f);
@@ -793,7 +807,7 @@ namespace FantaLandia.Horror.EditorTools
                 generator.indicatorLamp = lamp.GetComponent<Renderer>();
                 generator.lampOn = lampOn;
                 generator.lampOff = lampOff;
-                generator.indicator = PointLight(gen.transform, "Luce spia", new Vector3(0.55f, 0.5f, 0.7f), 3.5f, 0.6f, new Color(1f, 0.1f, 0.05f), false);
+                generator.indicator = PointLight(gen.transform, "Luce spia", new Vector3(0.55f, 0.5f, 0.7f), 2.2f, 0.6f, new Color(1f, 0.1f, 0.05f), true);
             }
             Place(VoxelFurniture.Get("Tanica"), b, new Vector3(-4.3f, FB, 10.3f), 20f);
             Place(VoxelFurniture.Get("Scaffale"), b, new Vector3(-6.45f, FB, 2.8f), 90f);
@@ -1081,7 +1095,7 @@ namespace FantaLandia.Horror.EditorTools
             Transform h = Group(name, parent);
             h.localPosition = frontCenter;
             h.localRotation = Quaternion.Euler(0f, yaw, 0f);
-            Material side = M("Rivestimento " + sidingHex, sidingHex);
+            Material side = MT("Rivestimento " + sidingHex, sidingHex, ProceduralTextures.Kind.Clapboard, 1f, 0.12f, 0.15f);
             Material on = EditorAssetUtil.Emissive("Casa Finestra accesa", new Color(0.95f, 0.75f, 0.45f), 1.6f);
             Material off = M("Finestra buia", "#141a22", 0.8f);
             Material W(int i) => lit[i % lit.Length] ? on : off;

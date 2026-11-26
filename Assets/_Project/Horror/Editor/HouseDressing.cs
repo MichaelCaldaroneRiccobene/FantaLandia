@@ -136,8 +136,8 @@ namespace FantaLandia.Horror.EditorTools
             Material dirt = M("Sporco", "#3b3a2c");
             Material moss = M("Muschio", "#33402a");
             Material crack = M("Crepa", "#2a2824");
-            Material brick = M("Mattoni", "#7a3e2e");
-            Material brickDark = M("Mattoni scuri", "#5e2e22");
+            Material brick = MT("Mattoni", "#7a3e2e", ProceduralTextures.Kind.Brick, 0.9f, 0.1f);
+            Material brickDark = MT("Mattoni scuri", "#5e2e22", ProceduralTextures.Kind.Brick, 0.9f, 0.1f);
             Material metal = M("Antenna", "#8a8c90", 0.5f);
             var rng = new Random(seed);
 

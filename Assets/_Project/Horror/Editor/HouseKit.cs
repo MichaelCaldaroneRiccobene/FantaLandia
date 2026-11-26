@@ -19,6 +19,29 @@ namespace FantaLandia.Horror.EditorTools
             return EditorAssetUtil.Mat("Casa " + name, c, smooth);
         }
 
+        /// <summary>
+        /// Materiale con texture "nel mondo" (FantaLandia/WorldTextured): la texture procedurale 'kind' si ripete ogni
+        /// 'tile' metri senza stirarsi sui blocchi scalati. Se lo shader manca torna al materiale semplice.
+        /// </summary>
+        public static Material MT(string name, string hex, ProceduralTextures.Kind kind, float tile, float smooth = 0.1f, float bigNoise = 0.12f)
+        {
+            Shader sh = Shader.Find("FantaLandia/WorldTextured");
+            if (sh == null) return M(name, hex, smooth);
+            ColorUtility.TryParseHtmlString(hex, out Color c);
+            EditorAssetUtil.EnsureFolder(EditorAssetUtil.MaterialFolder);
+            string path = $"{EditorAssetUtil.MaterialFolder}/Casa T {name}.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
+            else if (m.shader != sh) m.shader = sh;
+            m.SetColor("_BaseColor", c);
+            m.SetTexture("_DetailMap", ProceduralTextures.Get(kind));
+            m.SetFloat("_TileSize", tile);
+            m.SetFloat("_Smoothness", smooth);
+            m.SetFloat("_BigNoise", bigNoise);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
         public static Transform Group(string name, Transform parent)
         {
             var t = new GameObject(name).transform;

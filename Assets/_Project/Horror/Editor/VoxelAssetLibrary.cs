@@ -118,21 +118,21 @@ namespace FantaLandia.Horror.EditorTools
             size = new Vector2(7 * s, 6 * s);
         }
 
-        /// <summary>Mobile basso per la TV (cubetti da 10 cm, 1 x 0.5 x 0.5 m) con videoregistratore sul ripiano.</summary>
+
+        /// <summary>Mobile basso per la TV (1 x 0.5 x 0.5 m, cubetti da 5 cm): videoregistratore con l'orologio verde, videocassette, ante con pomelli, piedini.</summary>
         public static GameObject TvCabinet()
         {
-            var v = new VoxelBuilder(0.1f);
-            int wood = v.C("#5a3c24"), woodDark = v.C("#45301d"), knob = v.C("#c9a24a");
-            int vcr = v.C("#1a1a1c"), led = v.C("#40ff70");
-
-            v.Fill(0, 0, 0, 10, 5, 5, wood);
-            v.Fill(0, 0, 4, 10, 1, 5, woodDark);           // zoccolo
-            v.Carve(1, 3, 1, 9, 4, 5);                     // ripiano aperto
-            v.Fill(2, 3, 1, 7, 4, 4, vcr);                 // videoregistratore
-            v.Set(6, 3, 4, led);
-            v.Fill(1, 1, 4, 9, 3, 5, woodDark);            // ante
-            v.Set(4, 2, 5, knob); v.Set(5, 2, 5, knob);    // pomelli
-            return Save("Mobile TV", v, BottomCenter(v, 10, 5));
+            var v = new VoxelBuilder(0.05f);
+            int wood = v.C("#5a3c24"), woodDark = v.C("#45301d"), knob = v.C("#c9a24a"), vcr = v.C("#1a1a1c"), led = v.C("#40ff70"), slot = v.C("#0a0a0a"),
+                tape = v.C("#151517"), label = v.C("#e8e2d2"), label2 = v.C("#d13b3b");
+            v.Fill(0, 1, 0, 20, 10, 10, wood);
+            foreach (int x in new[] { 0, 18 }) foreach (int z in new[] { 0, 8 }) v.Fill(x, 0, z, x + 2, 1, z + 2, woodDark);
+            v.Carve(1, 6, 1, 19, 9, 10);                                          // ripiano aperto
+            v.Fill(2, 6, 2, 12, 8, 9, vcr); v.Fill(3, 7, 9, 8, 8, 10, slot); v.Set(10, 7, 9, led); v.Set(11, 7, 9, led);
+            for (int k = 0; k < 3; k++) { v.Fill(13 + k * 2, 6, 2, 15 + k * 2, 9, 8, tape); v.Set(13 + k * 2, 8, 8, k == 1 ? label2 : label); }
+            v.Fill(1, 2, 9, 10, 5, 10, woodDark); v.Fill(10, 2, 9, 19, 5, 10, woodDark); // ante
+            v.Set(9, 3, 10, knob); v.Set(10, 3, 10, knob);
+            return Save("Mobile TV", v, BottomCenter(v, 20, 10));
         }
 
         // ------------------------------------------------------------------ porta
@@ -190,40 +190,40 @@ namespace FantaLandia.Horror.EditorTools
 
         // ------------------------------------------------------------------ cucina e soggiorno
 
-        /// <summary>Bancone della cucina (cubetti da 10 cm, 2 x 0.9 x 0.6 m): ante bianche, piano in laminato, maniglie.</summary>
+
+        /// <summary>Bancone della cucina (2 x 0.9 x 0.6 m, cubetti da 5 cm): ante a pannello, cassetti, piano con sbalzo; macchina del caffè e posta sulle estremità (al centro restano telefono e torcia).</summary>
         public static GameObject KitchenCounter()
         {
-            var v = new VoxelBuilder(0.1f);
-            int body = v.C("#d9d3c3"), door = v.C("#e6e0d0"), handle = v.C("#3a3a3a"), top = v.C("#b6a487"), plinth = v.C("#4a4540");
-
-            v.Fill(0, 0, 0, 20, 8, 6, body);
-            v.Fill(0, 0, 5, 20, 1, 6, plinth);
-            v.Fill(0, 8, 0, 20, 9, 7, top);                 // piano con sbalzo davanti
-            for (int i = 0; i < 4; i++)
-            {
-                int x0 = i * 5;
-                v.Fill(x0 + 1, 1, 6, x0 + 4, 5, 7, door);   // ante
-                v.Fill(x0 + 1, 6, 6, x0 + 4, 7, 7, door);   // cassetti
-                v.Set(x0 + 3, 4, 7, handle);
-                v.Set(x0 + 2, 6, 7, handle);
-            }
-            return Save("Bancone", v, BottomCenter(v, 20, 6));
+            var v = new VoxelBuilder(0.05f);
+            VoxelFurniture.CounterBase(v);
+            int black = v.C("#1c1c1e"), pot = v.C("#3a2a1a"), glassC = v.C("#6a7a80"), red = v.C("#d03030"), mail = v.C("#f2efe6"), mail2 = v.C("#e8d8a8"), jar = v.C("#c9a24a");
+            v.Fill(34, 18, 2, 39, 26, 7, black); v.Carve(35, 18, 4, 38, 22, 7);   // macchina del caffè
+            v.Fill(35, 18, 4, 38, 21, 7, glassC); v.Fill(35, 18, 5, 38, 20, 7, pot); v.Set(38, 24, 7, red);
+            v.Fill(31, 18, 8, 33, 21, 10, jar);
+            v.Fill(1, 18, 3, 6, 19, 8, mail); v.Fill(2, 19, 4, 6, 20, 7, mail2);
+            return Save("Bancone", v, BottomCenter(v, 40, 12));
         }
 
-        /// <summary>Poltrona bordeaux anni '90 (cubetti da 10 cm, seduta a 0.5 m) con cuscini e piedini. Il fronte guarda +Z.</summary>
+
+        /// <summary>Poltrona bordeaux anni '90 (0.9 x 0.9 m, seduta a 0.5 m, cubetti da 5 cm): piedini, cuscini, centrino sullo schienale, telecomando sul bracciolo. Il fronte guarda +Z.</summary>
         public static GameObject Armchair()
         {
-            var v = new VoxelBuilder(0.1f);
-            int fabric = v.C("#6b2329"), cushion = v.C("#7d2b32"), wood = v.C("#3c2a1a");
-
-            v.Fill(0, 1, 0, 9, 4, 9, fabric);               // base
-            v.Fill(0, 4, 0, 9, 9, 2, fabric);               // schienale
-            v.Fill(0, 4, 2, 2, 6, 9, fabric);               // braccioli
-            v.Fill(7, 4, 2, 9, 6, 9, fabric);
-            v.Fill(2, 4, 2, 7, 5, 8, cushion);              // cuscino seduta
-            v.Fill(2, 5, 2, 7, 8, 3, cushion);              // cuscino schiena
-            v.Set(0, 0, 0, wood); v.Set(8, 0, 0, wood); v.Set(0, 0, 8, wood); v.Set(8, 0, 8, wood);
-            return Save("Poltrona", v, BottomCenter(v, 9, 9));
+            var v = new VoxelBuilder(0.05f);
+            int fabric = v.C("#6b2329"), dark = v.C("#581c22"), cushion = v.C("#7d2b32"), worn = v.C("#8d3a40"), wood = v.C("#3c2a1a"), doily = v.C("#e8e2d2"),
+                remote = v.C("#1c1c1e"), red = v.C("#d03030"), button = v.C("#4a1418");
+            foreach (int x in new[] { 1, 15 }) foreach (int z in new[] { 1, 15 }) v.Fill(x, 0, z, x + 2, 2, z + 2, wood);
+            v.Fill(0, 2, 0, 18, 8, 18, fabric);
+            v.Fill(0, 7, 17, 18, 8, 18, dark);
+            v.Fill(0, 8, 0, 18, 18, 4, fabric); v.Carve(0, 17, 0, 1, 18, 4); v.Carve(17, 17, 0, 18, 18, 4);
+            v.Fill(0, 8, 4, 3, 12, 18, fabric); v.Fill(0, 12, 4, 3, 13, 17, dark);
+            v.Fill(15, 8, 4, 18, 12, 18, fabric); v.Fill(15, 12, 4, 18, 13, 17, dark);
+            v.Fill(3, 8, 4, 15, 9, 17, cushion); v.Fill(3, 9, 4, 15, 10, 16, cushion);
+            v.Paint(6, 9, 8, 12, 10, 14, worn);                                  // seduta consumata (è la poltrona di Tom)
+            v.Fill(3, 10, 4, 15, 16, 7, cushion); v.Fill(3, 16, 4, 15, 17, 6, cushion);
+            v.Set(6, 13, 6, button); v.Set(11, 13, 6, button);
+            v.Fill(5, 17, 0, 13, 18, 4, doily); v.Fill(6, 15, 0, 12, 17, 1, doily); // centrino
+            v.Fill(15, 13, 9, 17, 14, 13, remote); v.Set(16, 13, 9, red);
+            return Save("Poltrona", v, BottomCenter(v, 18, 18));
         }
 
         /// <summary>Lampada da terra (cubetti da 8 cm): base, stelo alto 1.44 m, paralume color crema.</summary>

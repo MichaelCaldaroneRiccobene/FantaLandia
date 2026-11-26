@@ -28,7 +28,7 @@ namespace FantaLandia.Horror.Interaction
             if (firstTime)
             {
                 firstTime = false;
-                DialogueSystem.Bark(Speakers.Muark, "Una torcia. F accende, Q la lascia, Q tenuto la lancia.");
+                FantaLandia.Horror.UI.TutorialHint.Show("Torcia", "<b>F</b>  accendi / spegni\n<b>Q</b>  lasciala cadere\n<b>Q</b> tenuto premuto  lanciala");
             }
         }
     }
