@@ -22,9 +22,9 @@ namespace FantaLandia.Horror.World
         [Tooltip("Il giocatore può accenderla e spegnerla con E (nella storia no: la TV la gestisce la regia)")]
         public bool playerCanToggle;
         [Tooltip("Volume del suono della TV (cartoni, neve)")]
-        [Range(0f, 1f)] public float volume = 0.042f;
+        [Range(0f, 1f)] public float volume = 0.021f;
         [Tooltip("Volume delle voci del cartone (basse: è la TV accesa in sottofondo)")]
-        [Range(0f, 1f)] public float cartoonVoiceVolume = 0.3f;
+        [Range(0f, 1f)] public float cartoonVoiceVolume = 0.75f;
 
         // il cartone "Lucia e il buio": va avanti solo mentre è sul canale dei cartoni, poi ricomincia
         AudioSource cartoonVoice;
