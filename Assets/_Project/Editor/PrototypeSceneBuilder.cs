@@ -387,6 +387,8 @@ namespace FantaLandia.EditorTools
             var surface = go.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.All;
             surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            // Il layer "Ignore Raycast" (porte) non entra nella NavMesh: le porte non devono chiudere i passaggi.
+            surface.layerMask = ~(1 << 2);
             go.AddComponent<RuntimeNavMeshBaker>();
         }
 
