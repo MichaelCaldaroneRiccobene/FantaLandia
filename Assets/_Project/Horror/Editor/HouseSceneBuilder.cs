@@ -61,6 +61,8 @@ namespace FantaLandia.Horror.EditorTools
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             HorrorTestSceneBuilder.SetupNight();
+            HorrorVisuals.Cones.Clear();
+            Step("pipeline grafica", HorrorVisuals.ConfigurePipeline);
 
             Transform world = Group("Mondo", null);
             Transform street = Group("Strada e lotti", world);
@@ -183,6 +185,18 @@ namespace FantaLandia.Horror.EditorTools
             amb.volume = 0.3f;
 
             story.nightAmbience = amb;
+            Step("post-processing e atmosfera", () =>
+            {
+                Transform fx = Group("Grafica", world);
+                Bounds inside = new Bounds(new Vector3((X0 + X1) * 0.5f, (F0 + F2) * 0.5f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0, F2 - F0 + 0.2f, Z1 - Z0));
+                Bounds cellar = new Bounds(new Vector3((X0 + X1) * 0.5f, (FB + F0 - S) * 0.5f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0 - 0.6f, F0 - S - FB, Z1 - Z0 - 0.6f));
+                HorrorVisuals.BuildVolumes(fx, inside, cellar);
+                // polvere sospesa: si vede nel fascio della torcia e vicino alle lampade
+                HorrorVisuals.Dust(fx, "soggiorno", new Bounds(new Vector3(-4.4f, F0 + 1.4f, 3f), new Vector3(4.6f, 2.6f, 5.6f)), 260);
+                HorrorVisuals.Dust(fx, "cucina", new Bounds(new Vector3(2.5f, F0 + 1.4f, 8.5f), new Vector3(8f, 2.6f, 4.6f)), 200);
+                HorrorVisuals.Dust(fx, "cantina", new Bounds(cellar.center, cellar.size - new Vector3(0.4f, 0.3f, 0.4f)), 700);
+                HorrorVisuals.Dust(fx, "corridoio sopra", new Bounds(new Vector3(0.5f, F1 + 1.4f, 4f), new Vector3(4.5f, 2.6f, 6f)), 160);
+            });
             Step("corrente del quartiere", () => story.neighborhood = BuildNeighborhoodPower(world, tv));
 
             // controllo finale: oggetti senza mesh (se ce ne sono, qualcosa è andato storto nella creazione dei prefab)
@@ -321,6 +335,7 @@ namespace FantaLandia.Horror.EditorTools
             np.lights = lights.ToArray();
             np.glowRenderers = glow.ToArray();
             np.darkMaterial = M("Finestra buia", "#141a22", 0.8f);
+            np.glowObjects = HorrorVisuals.Cones.ToArray();
             return np;
         }
 
@@ -444,6 +459,8 @@ namespace FantaLandia.Horror.EditorTools
             glow.range = 4f;
             glow.intensity = 1.2f;
             glow.color = new Color(1f, 0.8f, 0.5f);
+            // cono di luce nella nebbia sotto la lampada
+            HorrorVisuals.LightCone(lamp.transform, new Vector3(0f, 3.95f, 0.6f), 3.9f, 2.6f, new Color(1f, 0.78f, 0.48f), 0.16f);
         }
 
         // ------------------------------------------------------------------ casa di Tom: struttura
@@ -543,12 +560,12 @@ namespace FantaLandia.Horror.EditorTools
             Color warm = Warm;
             RoomLight(s, "Luce soggiorno", new Vector3(-4.5f, F1 - S, 3f), 7f, 1.5f, warm, true);
             RoomLight(s, "Luce ingresso", new Vector3(0.8f, F1 - S, 2.5f), 5f, 1.1f, warm, true);
-            RoomLight(s, "Luce sala da pranzo", new Vector3(-4f, F1 - S, 8.5f), 6f, 1.2f, warm, false);
+            RoomLight(s, "Luce sala da pranzo", new Vector3(-4f, F1 - S, 8.5f), 6f, 1.2f, warm, true);
             RoomLight(s, "Luce cucina", new Vector3(2.8f, F1 - S, 8.5f), 7f, 1.5f, new Color(1f, 0.95f, 0.85f), true);
-            RoomLight(s, "Luce bagno", new Vector3(5.2f, F1 - S, 1.5f), 3.5f, 1f, warm, false);
+            RoomLight(s, "Luce bagno", new Vector3(5.2f, F1 - S, 1.5f), 3.5f, 1f, warm, true);
             RoomLight(s, "Luce disimpegno", new Vector3(5.2f, F1 - S, 5.4f), 3.5f, 0.6f, warm, false);
-            RoomLight(s, "Luce corridoio sopra", new Vector3(0.5f, F2 - S, 3.5f), 6f, 0.9f, warm, false);
-            RoomLight(s, "Luce camera Tom", new Vector3(2.5f, F2 - S, 9f), 6f, 0.9f, warm, false);
+            RoomLight(s, "Luce corridoio sopra", new Vector3(0.5f, F2 - S, 3.5f), 6f, 0.9f, warm, true);
+            RoomLight(s, "Luce camera Tom", new Vector3(2.5f, F2 - S, 9f), 6f, 0.9f, warm, true);
             return front;
         }
 
@@ -701,7 +718,7 @@ namespace FantaLandia.Horror.EditorTools
             armchair = Place(VoxelAssetLibrary.Load("Poltrona"), f, new Vector3(-4.7f, F0, 5.1f), -136f).transform;
             Place(VoxelAssetLibrary.Load("Lampada stelo"), f, new Vector3(-6.35f, F0, 5.45f), 0f);
             GameObject shade = Place(VoxelAssetLibrary.Load("Lampada paralume"), f, new Vector3(-6.35f, F0 + 1.44f, 5.45f), 0f);
-            houseLights.Add(PointLight(shade.transform, "Luce lampada", new Vector3(0f, 0.1f, 0f), 4f, 0.9f, new Color(1f, 0.75f, 0.45f), false));
+            houseLights.Add(PointLight(shade.transform, "Luce lampada", new Vector3(0f, 0.1f, 0f), 4.5f, 1.1f, new Color(1f, 0.7f, 0.42f), true));
             Place(VoxelFurniture.Get("Libreria"), f, new Vector3(-3f, F0, 0.4f), 0f);
 
 
@@ -782,7 +799,7 @@ namespace FantaLandia.Horror.EditorTools
             foreach (Vector3 p in new[] { new Vector3(-3f, F0 - S, 3f), new Vector3(0f, F0 - S, 8f), new Vector3(4.5f, F0 - S, 7f) })
             {
                 Place(VoxelFurniture.Get("Lampadina"), b, p, 0f);
-                var bulb = PointLight(b, "Luce cantina (spenta)", p + Vector3.down * 0.5f, 6f, 1f, new Color(1f, 0.85f, 0.6f), false);
+                var bulb = PointLight(b, "Luce cantina (spenta)", p + Vector3.down * 0.5f, 6f, 1.1f, new Color(1f, 0.8f, 0.52f), true);
                 bulb.enabled = false;
                 cellarBulbs.Add(bulb);
             }
@@ -960,7 +977,7 @@ namespace FantaLandia.Horror.EditorTools
             quad.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             quad.transform.localScale = new Vector3(ss.x, ss.y, 1f);
             tv.screen = quad.GetComponent<Renderer>();
-            tv.screenLight = PointLight(tvGo.transform, "Luce schermo", new Vector3(0f, 0.3f, 0.6f), 4.5f, 1.2f, Color.white, false);
+            tv.screenLight = PointLight(tvGo.transform, "Luce schermo", new Vector3(0f, 0.3f, 0.6f), 5f, 1.4f, Color.white, true); // le ombre di chi guarda la TV sui muri
             // la "voce" della TV nei dialoghi: lo sguardo di chi ascolta va sullo schermo (il punto degli occhi è 1.6 m sopra)
             var voice = new GameObject("Voce TV");
             voice.transform.SetParent(tvGo.transform, false);
@@ -1002,6 +1019,7 @@ namespace FantaLandia.Horror.EditorTools
             for (float x = -2.9f; x < -1.1f; x += 0.25f) Box("Colonnina", p, new Vector3(x, F0, -2.38f), new Vector3(x + 0.05f, F0 + 0.8f, -2.33f), railing);
             for (float x = 1.2f; x < 3f; x += 0.25f) Box("Colonnina", p, new Vector3(x, F0, -2.38f), new Vector3(x + 0.05f, F0 + 0.8f, -2.33f), railing);
             houseLights.Add(PointLight(p, "Luce veranda", new Vector3(0.9f, 2.5f, -0.35f), 6f, 1.3f, new Color(1f, 0.8f, 0.5f), true));
+            HorrorVisuals.LightCone(p, new Vector3(0.9f, 2.45f, -0.32f), 2.4f, 1.3f, new Color(1f, 0.8f, 0.5f), 0.1f);
             Box("Lampada veranda", p, new Vector3(0.82f, 2.45f, -0.3f), new Vector3(0.98f, 2.65f, -0.25f), EditorAssetUtil.Emissive("Casa Lampada accesa", new Color(1f, 0.85f, 0.55f), 2f));
         }
 
@@ -1078,7 +1096,11 @@ namespace FantaLandia.Horror.EditorTools
             Box("Tetto veranda", h, new Vector3(-2.7f, 3f, -2.2f), new Vector3(2.7f, 3.15f, 0f), trim);
             Place(VoxelFurniture.Get("Pilastro veranda"), h, new Vector3(-2.3f, 0.3f, -1.85f), 0f);
             Place(VoxelFurniture.Get("Pilastro veranda"), h, new Vector3(2.3f, 0.3f, -1.85f), 0f);
-            if (lit[0]) PointLight(h, "Luce veranda", new Vector3(0.8f, 2.5f, -0.4f), 5f, 1f, new Color(1f, 0.8f, 0.5f), false);
+            if (lit[0])
+            {
+                PointLight(h, "Luce veranda", new Vector3(0.8f, 2.5f, -0.4f), 5f, 1f, new Color(1f, 0.8f, 0.5f), false);
+                HorrorVisuals.LightCone(h, new Vector3(0.8f, 2.45f, -0.4f), 2.4f, 1.2f, new Color(1f, 0.8f, 0.5f), 0.08f);
+            }
             Floor("Vialetto", h, new Vector3(-0.6f, 0f, -9f), new Vector3(0.6f, 0.03f, -2f), sidewalk, Surface.Concrete);
             Floor("Passo carraio", h, new Vector3(4.5f, 0f, -9f), new Vector3(7.5f, 0.03f, 0f), sidewalk, Surface.Concrete);
             Place(VoxelFurniture.Get("Cassetta posta"), h, new Vector3(-1.4f, 0f, -8.6f), 0f);

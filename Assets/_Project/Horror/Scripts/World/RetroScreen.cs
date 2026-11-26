@@ -11,8 +11,9 @@ namespace FantaLandia.Horror.World
     public class RetroScreen : MonoBehaviour
     {
         [Tooltip("Altezza in pixel dell'immagine (240 = PS1)")]
-        public int verticalResolution = 270;
-        public bool retroEnabled = true;
+        public int verticalResolution = 360;
+        [Tooltip("Spento di default: con le luci e il post-processing l'immagine piena è molto più bella (F2 per provarlo)")]
+        public bool retroEnabled = false;
 
         Camera cam;
         RenderTexture rt;

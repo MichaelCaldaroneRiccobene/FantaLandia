@@ -85,14 +85,18 @@ namespace FantaLandia.Horror.EditorTools
         {
             var moon = new GameObject("Luna").AddComponent<Light>();
             moon.type = LightType.Directional;
-            moon.color = new Color(0.45f, 0.55f, 0.85f);
-            moon.intensity = 0.18f;
+            moon.color = new Color(0.5f, 0.6f, 0.9f);
+            moon.intensity = 0.32f;
             moon.shadows = LightShadows.Soft;
+            moon.shadowStrength = 0.9f;
             moon.transform.rotation = Quaternion.Euler(35f, 160f, 0f);
 
             RenderSettings.skybox = null;
-            RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.045f, 0.05f, 0.075f);
+            // luce ambiente a tre colori: cielo blu notte dall'alto, grigio all'orizzonte, quasi nera da terra
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.055f, 0.07f, 0.12f);
+            RenderSettings.ambientEquatorColor = new Color(0.035f, 0.038f, 0.05f);
+            RenderSettings.ambientGroundColor = new Color(0.014f, 0.013f, 0.012f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
             RenderSettings.fogDensity = 0.045f;
@@ -346,6 +350,7 @@ namespace FantaLandia.Horror.EditorTools
             cam.fieldOfView = 70f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = RenderSettings.fogColor;
+            HorrorVisuals.SetupCamera(cam);
             camGo.AddComponent<AudioListener>();
             camGo.AddComponent<RetroScreen>();
 
@@ -365,11 +370,15 @@ namespace FantaLandia.Horror.EditorTools
             spotGo.transform.SetParent(root.transform, false);
             var spot = spotGo.AddComponent<Light>();
             spot.type = LightType.Spot;
-            spot.spotAngle = 55f;
-            spot.range = 18f;
-            spot.intensity = 3f;
-            spot.color = new Color(1f, 0.93f, 0.78f);
+            spot.spotAngle = 58f;
+            spot.innerSpotAngle = 18f;
+            spot.range = 22f;
+            spot.intensity = 4.5f;
+            spot.color = new Color(1f, 0.9f, 0.74f);   // lampadina a incandescenza, un po' gialla
             spot.shadows = LightShadows.Soft;
+            spot.shadowStrength = 0.95f;
+            spot.shadowNearPlane = 0.1f;
+            spot.cookie = HorrorVisuals.FlashlightCookie();
             var fl = root.AddComponent<PlayerFlashlight>();
             fl.spot = spot;
 

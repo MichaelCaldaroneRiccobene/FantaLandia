@@ -93,7 +93,7 @@ namespace FantaLandia.Horror.EditorTools
             return l;
         }
 
-        public static readonly Color Warm = new Color(1f, 0.82f, 0.58f);
+        public static readonly Color Warm = new Color(1f, 0.76f, 0.5f); // lampadina a incandescenza
 
         // ------------------------------------------------------------------ muri con aperture
 

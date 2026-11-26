@@ -13,6 +13,8 @@ namespace FantaLandia.Horror.World
         public Renderer[] glowRenderers;
         [Tooltip("Materiale che prende il posto di quelli luminosi senza corrente")]
         public Material darkMaterial;
+        [Tooltip("Oggetti che spariscono senza corrente (i coni di luce sotto lampioni e lampade)")]
+        public GameObject[] glowObjects = new GameObject[0];
         public bool powered = true;
 
         Material[][] original;
@@ -22,6 +24,7 @@ namespace FantaLandia.Horror.World
             if (powered == on) return;
             powered = on;
             foreach (var l in lights) if (l != null) l.enabled = on;
+            foreach (var g in glowObjects) if (g != null) g.SetActive(on);
             if (original == null)
             {
                 original = new Material[glowRenderers.Length][];
@@ -48,9 +51,11 @@ namespace FantaLandia.Horror.World
             {
                 bool on = Random.value > 0.45f;
                 foreach (var l in lights) if (l != null) l.enabled = on && powered;
+                foreach (var g in glowObjects) if (g != null) g.SetActive(on && powered);
                 yield return new WaitForSeconds(Random.Range(0.04f, 0.14f));
             }
             foreach (var l in lights) if (l != null) l.enabled = powered;
+            foreach (var g in glowObjects) if (g != null) g.SetActive(powered);
         }
     }
 }

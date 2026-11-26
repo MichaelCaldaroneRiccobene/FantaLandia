@@ -15,17 +15,24 @@ namespace FantaLandia.Horror.World
         public float basementBelowY = -0.5f;
         public Color basementAmbient = new Color(0.006f, 0.006f, 0.008f);
 
-        Color normalAmbient;
+        Color normalSky, normalEquator, normalGround;
         float basementT;
 
-        void Start() => normalAmbient = RenderSettings.ambientLight;
+        void Start()
+        {
+            normalSky = RenderSettings.ambientSkyColor;
+            normalEquator = RenderSettings.ambientEquatorColor;
+            normalGround = RenderSettings.ambientGroundColor;
+        }
 
         void Update()
         {
             Camera cam = Camera.main;
             if (cam == null) return;
             basementT = Mathf.MoveTowards(basementT, cam.transform.position.y < basementBelowY ? 1f : 0f, Time.deltaTime * 0.8f);
-            RenderSettings.ambientLight = Color.Lerp(normalAmbient, basementAmbient, basementT);
+            RenderSettings.ambientSkyColor = Color.Lerp(normalSky, basementAmbient, basementT);
+            RenderSettings.ambientEquatorColor = Color.Lerp(normalEquator, basementAmbient, basementT);
+            RenderSettings.ambientGroundColor = Color.Lerp(normalGround, basementAmbient * 0.5f, basementT);
             float target = indoor.Contains(cam.transform.position) ? insideDensity : outsideDensity;
             RenderSettings.fogDensity = Mathf.MoveTowards(RenderSettings.fogDensity, target, blendSpeed * 0.1f * Time.deltaTime);
         }
