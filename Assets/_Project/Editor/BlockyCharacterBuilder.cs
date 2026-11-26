@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using FantaLandia.Characters.Body;
 using UnityEditor;
 using UnityEngine;
+using BodyPart = FantaLandia.Characters.Body.BodyPart;
 
 namespace FantaLandia.EditorTools
 {
