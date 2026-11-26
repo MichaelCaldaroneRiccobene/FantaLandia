@@ -339,20 +339,40 @@ namespace FantaLandia.Horror.EditorTools
             return Save(name, v, BottomCenter(v, sx, sz));
         }
 
-        /// <summary>Generatore portatile (cubetti da 8 cm): telaio, motore, serbatoio rosso, maniglia della corda.</summary>
+        /// <summary>
+        /// Generatore d'emergenza grande (1.4 x 1 x 0.9 m): telaio a tubi, motore, alternatore, serbatoio rosso,
+        /// marmitta, pannello comandi sul davanti (+Z) con prese; la spia rossa la aggiunge la scena (luce vera).
+        /// </summary>
         public static GameObject Generator()
         {
-            var v = new VoxelBuilder(0.08f);
-            int frame = v.C("#2a2a2a"), engine = v.C("#7a7d82"), tank = v.C("#b02a24"), cord = v.C("#111111"), label = v.C("#e3c23a"), outlet = v.C("#e8e4da");
-            for (int x = 0; x < 9; x += 8) for (int z = 0; z < 6; z += 5) v.Fill(x, 0, z, x + 1, 7, z + 1, frame);
-            v.Fill(0, 6, 0, 9, 7, 6, frame);
-            v.Fill(1, 1, 1, 6, 5, 5, engine);                 // motore
-            v.Fill(1, 5, 1, 8, 7, 5, tank);                   // serbatoio
-            v.Set(4, 7, 3, label);
-            v.Fill(6, 1, 1, 8, 4, 5, engine);
-            v.Set(8, 3, 2, cord);                             // maniglia della corda d'avviamento
-            v.Fill(7, 2, 5, 8, 3, 6, outlet);                 // prese
-            return Save("Generatore", v, BottomCenter(v, 9, 6));
+            var v = new VoxelBuilder(0.1f);
+            int frame = v.C("#262626"), engine = v.C("#6f7277"), engineDark = v.C("#4a4d52"), tank = v.C("#a8261f"),
+                cord = v.C("#111111"), label = v.C("#e3c23a"), outlet = v.C("#e8e4da"), panel = v.C("#1c1c1e"), rust = v.C("#6a3a22"), pipe = v.C("#3a3530");
+            // telaio a tubi
+            foreach (int x in new[] { 0, 13 }) foreach (int z in new[] { 0, 8 }) v.Fill(x, 0, z, x + 1, 10, z + 1, frame);
+            v.Fill(0, 0, 0, 14, 1, 1, frame); v.Fill(0, 0, 8, 14, 1, 9, frame);
+            v.Fill(0, 9, 0, 14, 10, 1, frame); v.Fill(0, 9, 8, 14, 10, 9, frame);
+            v.Fill(0, 0, 0, 1, 1, 9, frame); v.Fill(13, 0, 0, 14, 1, 9, frame);
+            // motore con alette
+            v.Fill(1, 1, 1, 7, 6, 8, engine);
+            for (int y = 2; y < 6; y += 2) v.Fill(1, y, 1, 7, y + 1, 8, engineDark);
+            v.Fill(2, 6, 2, 6, 7, 7, engineDark);
+            // alternatore
+            v.Fill(7, 1, 2, 13, 6, 7, engineDark);
+            v.Fill(8, 2, 1, 12, 5, 8, engine);
+            // serbatoio rosso con tappo ed etichetta, qualche macchia di ruggine
+            v.Fill(1, 7, 1, 13, 9, 8, tank);
+            v.Fill(10, 9, 4, 12, 10, 6, frame);
+            v.Fill(3, 8, 8, 7, 9, 8 + 1, label);
+            v.Set(2, 7, 1, rust); v.Set(11, 8, 1, rust); v.Set(6, 7, 7, rust);
+            // marmitta sul retro
+            v.Fill(2, 3, 0, 6, 5, 1, pipe);
+            // pannello comandi davanti con prese e (a destra) il posto della spia
+            v.Fill(8, 1, 8, 13, 6, 9, panel);
+            v.Set(9, 2, 8, outlet); v.Set(11, 2, 8, outlet); v.Set(9, 4, 8, outlet);
+            // maniglia della corda d'avviamento
+            v.Fill(1, 4, 8, 3, 5, 9, cord);
+            return Save("Generatore", v, BottomCenter(v, 14, 9));
         }
 
         public static GameObject FuelCan()

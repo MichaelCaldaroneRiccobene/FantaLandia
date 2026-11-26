@@ -177,7 +177,7 @@ namespace FantaLandia.Horror.Player
                 var s = hit.collider.GetComponentInParent<FootstepSurface>();
                 if (s != null) surface = s.surface;
             }
-            float vol = IsCrouching ? 0.15f : IsRunning ? 0.6f : 0.35f;
+            float vol = IsCrouching ? 0.06f : IsRunning ? 0.26f : 0.14f;
             HorrorAudio.PlayAt(ProceduralAudio.Footstep(surface, Random.Range(0, 4)), point, vol, Random.Range(0.92f, 1.08f), 12f);
         }
     }

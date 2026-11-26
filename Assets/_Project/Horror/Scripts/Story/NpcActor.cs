@@ -140,7 +140,11 @@ namespace FantaLandia.Horror.Story
             string line = ambientLines[lineIndex++ % ambientLines.Length];
             int bar = line.IndexOf('|');
             if (bar <= 0) return;
-            DialogueSystem.Bark(Speakers.Find(line.Substring(0, bar)), line.Substring(bar + 1), transform.position + Vector3.up * 1.6f);
+            string who = line.Substring(0, bar);
+            // la frase compare sopra la testa di chi la dice (Martha e Frank condividono la lista: cerca chi parla)
+            NpcSpeaker speaker = NpcSpeaker.Find(who);
+            Vector3 at = speaker != null ? speaker.EyePoint : transform.position + Vector3.up * 1.6f;
+            DialogueSystem.Bark(Speakers.Find(who), line.Substring(bar + 1), at, true);
         }
     }
 }

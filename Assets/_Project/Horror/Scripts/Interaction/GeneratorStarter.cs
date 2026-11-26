@@ -17,6 +17,11 @@ namespace FantaLandia.Horror.Interaction
         public int pullsToStart = 3;
         [Tooltip("Finché la storia non lo permette non si può avviare")]
         public bool armed;
+        [Header("Spia rossa (si vede al buio)")]
+        public Light indicator;
+        public Renderer indicatorLamp;
+        public Material lampOn, lampOff;
+        [Range(0f, 1f)] public float engineVolume = 0.28f;
 
         public bool Running { get; private set; }
         public int Pulls { get; private set; }
@@ -55,10 +60,10 @@ namespace FantaLandia.Horror.Interaction
                 HorrorAudio.PlayAt(ProceduralAudio.Sputter(1), transform.position, 0.9f);
                 yield return new WaitForSeconds(0.7f);
                 Running = true;
-                engine = HorrorAudio.CreateLoop(transform, ProceduralAudio.EngineLoop(), 0f, true, 18f);
+                engine = HorrorAudio.CreateLoop(transform, ProceduralAudio.EngineLoop(), 0f, true, 14f);
                 engine.Play();
-                for (float t = 0f; t < 1f; t += Time.deltaTime / 1.2f) { engine.volume = t * 0.7f; engine.pitch = 0.7f + 0.3f * t; yield return null; }
-                engine.volume = 0.7f;
+                for (float t = 0f; t < 1f; t += Time.deltaTime / 1.2f) { engine.volume = t * engineVolume; engine.pitch = 0.7f + 0.3f * t; yield return null; }
+                engine.volume = engineVolume;
                 engine.pitch = 1f;
                 Pulled?.Invoke(Pulls);
                 Started?.Invoke();
@@ -73,6 +78,22 @@ namespace FantaLandia.Horror.Interaction
 
             if (fpc != null) fpc.inputLocked = false;
             busy = false;
+        }
+
+        /// <summary>La spia lampeggia piano da spento, resta accesa fissa quando il motore gira.</summary>
+        void Update()
+        {
+            bool on = Running || Mathf.Repeat(Time.time, 1.6f) < 0.8f;
+            if (indicator != null)
+            {
+                indicator.enabled = on;
+                indicator.intensity = Running ? 0.9f : 0.6f;
+            }
+            if (indicatorLamp != null && lampOn != null && lampOff != null)
+            {
+                Material want = on ? lampOn : lampOff;
+                if (indicatorLamp.sharedMaterial != want) indicatorLamp.sharedMaterial = want;
+            }
         }
 
         static IEnumerator Look(FirstPersonController fpc, float y0, float p0, float y1, float p1, float duration)

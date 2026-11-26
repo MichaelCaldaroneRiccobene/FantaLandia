@@ -115,11 +115,16 @@ namespace FantaLandia.Horror.Dialogue
         /// <summary>True mentre una conversazione blocca il giocatore.</summary>
         public static bool IsBlocking => instance != null && instance.active;
 
-        /// <summary>Frase di sottofondo (non blocca): compare per qualche secondo nei sottotitoli.</summary>
-        public static void Bark(Speaker who, string text, Vector3? position = null)
+        /// <summary>
+        /// Frase di sottofondo (non blocca): compare per qualche secondo nei sottotitoli.
+        /// Con 'overhead' (chiacchiere dei personaggi, non rivolte a Muark) non va nei sottotitoli in basso:
+        /// appare sopra la testa di chi parla, solo se è nell'inquadratura e abbastanza vicino.
+        /// </summary>
+        public static void Bark(Speaker who, string text, Vector3? position = null, bool overhead = false)
         {
             var self = Instance;
-            self.barks.Add(new BarkLine { speaker = who, text = text, until = Time.time + 2.5f + text.Length * 0.05f });
+            self.barks.Add(new BarkLine { speaker = who, text = text, until = Time.time + 2.5f + text.Length * 0.05f,
+                                          overhead = overhead && position.HasValue, position = position ?? Vector3.zero });
             LineStarted?.Invoke(who, text);
             self.StartCoroutine(self.BarkVoice(who, text, position));
         }
@@ -151,7 +156,7 @@ namespace FantaLandia.Horror.Dialogue
         int insertCursor;
         int startFrame;
 
-        class BarkLine { public Speaker speaker; public string text; public float until; }
+        class BarkLine { public Speaker speaker; public string text; public float until; public bool overhead; public Vector3 position; }
         readonly List<BarkLine> barks = new List<BarkLine>();
 
         GUIStyle nameStyle, textStyle, choiceStyle, barkStyle;
@@ -286,9 +291,11 @@ namespace FantaLandia.Horror.Dialogue
 
             // frasi di sottofondo
             float by = Screen.height - (active ? 260f : 90f);
+            DrawOverheadBarks();
             for (int i = barks.Count - 1; i >= 0; i--)
             {
                 var b = barks[i];
+                if (b.overhead) continue;
                 string hex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
                 Rect r = new Rect(x, by, w, 28f);
                 DrawShadowed(r, $"<color=#{hex}>{b.speaker.name}:</color> {b.text}", barkStyle);
@@ -329,6 +336,30 @@ namespace FantaLandia.Horror.Dialogue
 
             if (visibleChars >= s.text.Length && Mathf.Repeat(Time.time, 1f) < 0.6f)
                 GUI.Label(new Rect(box.xMax - 60f, box.yMax - 34f, 50f, 30f), "▼", textStyle);
+        }
+
+        GUIStyle overheadStyle;
+
+        void DrawOverheadBarks()
+        {
+            Camera cam = Camera.main;
+            if (cam == null) return;
+            if (overheadStyle == null) overheadStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter, richText = true, wordWrap = true };
+            foreach (var b in barks)
+            {
+                if (!b.overhead) continue;
+                Vector3 world = b.position + Vector3.up * 0.45f;
+                Vector3 sp = cam.WorldToScreenPoint(world);
+                float dist = Vector3.Distance(cam.transform.position, world);
+                if (sp.z <= 0f || dist > 30f) continue;
+                float alpha = Mathf.Clamp01((30f - dist) / 10f) * Mathf.Clamp01((b.until - Time.time) * 2f);
+                string hex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
+                Rect r = new Rect(sp.x - 160f, Screen.height - sp.y - 20f, 320f, 40f);
+                var c = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, alpha);
+                DrawShadowed(r, $"<color=#{hex}>{b.speaker.name}:</color> {b.text}", overheadStyle);
+                GUI.color = c;
+            }
         }
 
         static void DrawShadowed(Rect r, string text, GUIStyle style)

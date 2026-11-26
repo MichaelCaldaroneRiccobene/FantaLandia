@@ -249,7 +249,6 @@ namespace FantaLandia.Horror.Story
             Lock(false);
 
             // Roy entra, chiude la porta e va sul divano
-            objective = "Raggiungi gli altri in salotto";
             Job(roy, RoyGoesIn());
         }
 
@@ -287,8 +286,11 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator WaitingForPizza()
         {
-            objective = "Raggiungi gli altri in salotto";
-            while (!PlayerInLivingRoom) yield return null;
+            // l'obiettivo compare quando Roy si è seduto; la scena parte davanti al divano
+            while (!roy.IsSeated) yield return null;
+            objective = "Vai in salotto";
+            Vector3 sofaFront = (sofaFrontRoy.position + sofaFrontJef.position) * 0.5f;
+            while (!(Flat(player.position, sofaFront) < 1.7f && Mathf.Abs(player.position.y - sofaFront.y) < 1f)) yield return null;
             objective = "";
             yield return Talk(DialogueSystem.Conversation()
                 .Say(Speakers.Tom, "Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno.")
@@ -313,6 +315,7 @@ namespace FantaLandia.Horror.Story
             if (neighborhood != null) StartCoroutine(neighborhood.Flicker(1.3f));
             StartCoroutine(FlickerHouse(1.3f));
             HorrorAudio.PlayAt(ProceduralAudio.Thud(), tv != null ? tv.transform.position : player.position, 0.4f, 1.6f); // vibrano i vetri
+            StartCoroutine(TvLosesSignal(3.5f));
             yield return new WaitForSeconds(1.8f);
 
             Stand(tom);
@@ -330,6 +333,28 @@ namespace FantaLandia.Horror.Story
             objective = "Segui gli altri in giardino";
             Job(tom, Actor(tom).WalkTo(deckTom.position, Gait.Jog, 25f));
             Job(roy, Actor(roy).WalkTo(deckRoy.position, Gait.Jog, 25f));
+        }
+
+        IEnumerator TvLosesSignal(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (tv == null) yield break;
+            tv.SetChannel(TvChannel.Off);
+            yield return new WaitForSeconds(0.12f);
+            tv.SetChannel(TvChannel.Static);
+        }
+
+        /// <summary>Tom cambia canale: clic, schermo nero un attimo, e di nuovo neve.</summary>
+        IEnumerator ChannelSurf(int times)
+        {
+            for (int i = 0; i < times && tv != null; i++)
+            {
+                HorrorAudio.PlayAt(ProceduralAudio.Click(), tv.transform.position, 0.8f, Random.Range(0.9f, 1.1f));
+                tv.SetChannel(TvChannel.Off);
+                yield return new WaitForSeconds(0.15f);
+                tv.SetChannel(TvChannel.Static);
+                yield return new WaitForSeconds(0.55f);
+            }
         }
 
         IEnumerator FlickerHouse(float seconds)
@@ -370,8 +395,7 @@ namespace FantaLandia.Horror.Story
 
         // ================================================================== 5. in giardino
 
-        bool InBackyard => player != null && player.position.z > Z(deckTom) - 2.2f && Mathf.Abs(player.position.x) < 13f && player.position.y < 1.2f;
-        static float Z(Transform t) => t != null ? t.position.z : 12f;
+        bool InBackyard => player != null && Flat(player.position, deckTom.position) < 4.5f && player.position.y < 1.2f;
 
         IEnumerator Backyard()
         {
@@ -395,6 +419,7 @@ namespace FantaLandia.Horror.Story
                     if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Verso la vecchia centrale, forse. Dietro Elm Street."));
                     else DialogueSystem.Insert((Speakers.Roy, "Già... senti quante sirene."));
                 })
+                .Do(() => Job(jef, JefRunsOut()))   // intanto Jef esce dal bagno e arriva di corsa
                 .Say(Speakers.Gary, "Ehi, Tom! L'avete sentita anche voi?!")
                 .Say(Speakers.Tom, "Sì, Gary! Sai cos'è successo?")
                 .Say(Speakers.Gary, "Non ne ho idea! Ha tremato tutta la casa!")
@@ -404,12 +429,23 @@ namespace FantaLandia.Horror.Story
 
         // ================================================================== 6. Jef esce dal bagno
 
-        IEnumerator JefComesOut()
+        bool jefOut;
+
+        IEnumerator JefRunsOut()
         {
+            if (jefOut) yield break;
+            jefOut = true;
             bathDoor.Unlock();
             bathDoor.Open(-1);
             HorrorAudio.PlayAt(ProceduralAudio.DoorCreak(1), bathDoor.transform.position, 0.6f);
-            yield return Actor(jef).WalkTo(deckJef.position, Gait.Walk, 40f);
+            yield return Actor(jef).WalkTo(deckJef.position, Gait.Jog, 40f);
+        }
+
+        IEnumerator JefComesOut()
+        {
+            if (!jefOut) Job(jef, JefRunsOut());
+            for (float t = 0f; t < 40f && Flat(jef.transform.position, deckJef.position) > 0.8f; t += Time.deltaTime) yield return null;
+            yield return new WaitForSeconds(0.3f);
             yield return Actor(jef).FaceTowards(player.position, 0.5f);
 
             yield return Talk(DialogueSystem.Conversation()
@@ -435,12 +471,15 @@ namespace FantaLandia.Horror.Story
             while (!PlayerInLivingRoom) yield return null;
             objective = "";
             if (backDoor.IsOpen) backDoor.Close();
-            if (tv != null) tv.SetChannel(TvChannel.Cartoon);
+            if (tv != null) tv.SetChannel(TvChannel.Static);
             yield return new WaitForSeconds(1f);
             yield return Talk(DialogueSystem.Conversation()
-                .Say(Speakers.Tom, "Niente. Ancora i cartoni animati.")
+                .Say(Speakers.Tom, "Ma che... c'è solo la neve.")
+                .Do(() => StartCoroutine(ChannelSurf(3)))
                 .Say(Speakers.Roy, "Cambia canale, dai!")
-                .Say(Speakers.Tom, "Ho provato. Sono tutti così, nessuno dice niente.")
+                .Say(Speakers.Tom, "Ci sto provando! Canale 4... canale 7...")
+                .Do(() => StartCoroutine(ChannelSurf(4)))
+                .Say(Speakers.Tom, "Niente. Sono tutti così. Nessun segnale.")
                 .Say(Speakers.Jef, "..."));
             yield return new WaitForSeconds(7f);
         }

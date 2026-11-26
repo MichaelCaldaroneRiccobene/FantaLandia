@@ -139,9 +139,10 @@ namespace FantaLandia.Horror.EditorTools
             story.sofaSeatJef = M2("Divano (Jef)", new Vector3(-2.9f, F0, 2.4f), -90f);
             story.sofaHeight = 0.5f;
             story.royDoorstep = M2("Roy sulla soglia", new Vector3(0.05f, F0, -0.6f), 0f);
-            story.deckTom = M2("Pedana: Tom", new Vector3(-0.6f, 0.15f, 13.3f));
-            story.deckRoy = M2("Pedana: Roy", new Vector3(0.8f, 0.15f, 12.9f));
-            story.deckJef = M2("Pedana: Jef", new Vector3(-2.5f, 0.15f, 12.1f));
+            // in fondo al giardino, vicino alla staccionata, da dove si vede meglio l'incendio
+            story.deckTom = M2("Giardino: Tom", new Vector3(-1.0f, 0f, 18.6f));
+            story.deckRoy = M2("Giardino: Roy", new Vector3(0.7f, 0f, 18.2f));
+            story.deckJef = M2("Giardino: Jef", new Vector3(-2.7f, 0f, 17.8f));
             story.livingRoom = M2("Soggiorno", new Vector3(-4.3f, F0, 3.2f), -90f);
             story.playerKitchen = M2("Prova: cucina", new Vector3(1.4f, F0, 7.2f), 90f);
             story.playerCellarTop = M2("Prova: in cima alla cantina", new Vector3(3.6f, F0, 6.9f), -90f);
@@ -154,13 +155,9 @@ namespace FantaLandia.Horror.EditorTools
             story.generator = generator;
             story.cellarBulbs = cellarBulbs.ToArray();
 
-            // l'esplosione: dietro le case, a qualche isolato
-            var smokeGo = new GameObject("Esplosione (fumo)");
-            smokeGo.transform.SetParent(world, false);
-            smokeGo.transform.localPosition = new Vector3(9f, 0f, 58f);
-            var smokeCol = smokeGo.AddComponent<SmokeColumn>();
-            smokeCol.smokeMaterial = SmokeMat("Fumo", false, 0.7f, 0.6f);
-            smokeCol.glowMaterial = SmokeMat("Bagliore incendio", true, 0.9f, 0.3f);
+            // l'esplosione: un edificio a qualche isolato, dietro i giardini, e altre case sullo sfondo
+            SmokeColumn smokeCol = null;
+            Step("sfondo e incendio", () => smokeCol = BuildBackground(world));
             story.smoke = smokeCol;
 
             // erba al vento (si piega quando ci si passa in mezzo)
@@ -191,6 +188,61 @@ namespace FantaLandia.Horror.EditorTools
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log("[FantaLandia Horror] Casa e quartiere creati: " + ScenePath);
+        }
+
+        /// <summary>
+        /// Lo sfondo dietro i giardini: file di case e alberi lontani (nella nebbia sono sagome scure contro il fuoco)
+        /// e il vecchio edificio della centrale che esplode e brucia (tetto squarciato, finestre, ciminiera).
+        /// </summary>
+        static SmokeColumn BuildBackground(Transform world)
+        {
+            Transform bg = Group("Sfondo", world);
+            Material dark = M("Sagoma lontana", "#2a2c30");
+            Material darkRoof = M("Tetto lontano", "#1d1e22");
+            Material brick = M("Mattoni centrale", "#4a2c22");
+            Material burnt = M("Bruciato", "#120f0d");
+            Material concreteDark = M("Cemento scuro", "#3a3a3a");
+
+            // case lontane (lasciano libera la vista sull'incendio)
+            foreach (var hpos in new[] { new Vector3(-40f, 0f, 36f), new Vector3(-27f, 0f, 38f), new Vector3(-14f, 0f, 37f), new Vector3(28f, 0f, 36f),
+                                         new Vector3(41f, 0f, 38f), new Vector3(-34f, 0f, 56f), new Vector3(-16f, 0f, 60f), new Vector3(30f, 0f, 58f) })
+            {
+                Transform h = Group("Casa lontana", bg);
+                h.localPosition = hpos;
+                Box("Corpo", h, new Vector3(-5f, 0f, -4f), new Vector3(5f, 5.5f, 4f), dark);
+                SteppedRoof(h, "Tetto", -5.4f, 5.4f, -4.4f, 4.4f, 5.5f, 7, 0.35f, true, darkRoof, dark);
+            }
+            foreach (var t in new[] { new Vector3(-20f, 0f, 30f), new Vector3(-6f, 0f, 31f), new Vector3(22f, 0f, 31f), new Vector3(34f, 0f, 46f), new Vector3(-28f, 0f, 47f), new Vector3(24f, 0f, 44f) })
+                Place(VoxelFurniture.Get("Albero"), bg, t, t.x * 7f);
+
+            // la vecchia centrale: 16 x 10 m, alta 8, tetto squarciato, finestre buie, ciminiera
+            Transform c = Group("Vecchia centrale (incendio)", bg);
+            c.localPosition = new Vector3(10f, 0f, 46f);
+            Box("Muro fronte", c, new Vector3(-8f, 0f, -5f), new Vector3(8f, 8f, -4.6f), brick);
+            Box("Muro retro", c, new Vector3(-8f, 0f, 4.6f), new Vector3(8f, 8f, 5f), brick);
+            Box("Muro sx", c, new Vector3(-8f, 0f, -5f), new Vector3(-7.6f, 8f, 5f), brick);
+            Box("Muro dx", c, new Vector3(7.6f, 0f, -5f), new Vector3(8f, 7f, 5f), brick);
+            Box("Tetto rimasto", c, new Vector3(-8f, 7.7f, -5f), new Vector3(-2f, 8.1f, 5f), concreteDark);
+            Box("Tetto crollato", c, new Vector3(3f, 6.2f, -5f), new Vector3(8f, 6.6f, 1f), burnt);
+            Box("Interno bruciato", c, new Vector3(-7.6f, 0f, -4.6f), new Vector3(7.6f, 0.6f, 4.6f), burnt);
+            Box("Ciminiera", c, new Vector3(5f, 0f, 2.5f), new Vector3(6.4f, 17f, 3.9f), brick);
+            Box("Bordo ciminiera", c, new Vector3(4.85f, 16.6f, 2.35f), new Vector3(6.55f, 17.2f, 4.05f), concreteDark);
+            var windowFires = new List<Vector3>();
+            int wi = 0;
+            for (float x = -6f; x <= 6f; x += 3f)
+                foreach (float y in new[] { 1.6f, 4.8f })
+                {
+                    Box("Finestra", c, new Vector3(x - 0.7f, y, -5.05f), new Vector3(x + 0.7f, y + 1.6f, -4.9f), burnt);
+                    if ((wi++ % 3) != 1) windowFires.Add(new Vector3(x, y + 0.4f, -5.3f));
+                }
+
+            var smokeCol = c.gameObject.AddComponent<SmokeColumn>();
+            smokeCol.smokeMaterial = SmokeMat("Fumo", false, 0.7f, 0.6f);
+            smokeCol.glowMaterial = SmokeMat("Bagliore incendio", true, 0.9f, 0.45f);
+            smokeCol.roofHeight = 7.6f;
+            smokeCol.roofFireSize = new Vector2(12f, 8f);
+            smokeCol.windowFires = windowFires.ToArray();
+            return smokeCol;
         }
 
         static Material SmokeMat(string name, bool additive, float softness, float breakup)
@@ -224,6 +276,7 @@ namespace FantaLandia.Horror.EditorTools
             foreach (var l in world.GetComponentsInChildren<Light>(true))
             {
                 if (l.type == LightType.Directional || cellarBulbs.Contains(l)) continue;
+                if (generator != null && l.transform.IsChildOf(generator.transform)) continue; // la spia ha la sua batteria
                 if (tv != null && l.transform.IsChildOf(tv.transform)) continue;
                 lights.Add(l);
             }
@@ -231,6 +284,7 @@ namespace FantaLandia.Horror.EditorTools
             foreach (var r in world.GetComponentsInChildren<Renderer>(true))
             {
                 if (tv != null && r.transform.IsChildOf(tv.transform)) continue;
+                if (generator != null && r.transform.IsChildOf(generator.transform)) continue;
                 foreach (var m in r.sharedMaterials)
                     if (m != null && m.IsKeywordEnabled("_EMISSION")) { glow.Add(r); break; }
             }
@@ -675,18 +729,26 @@ namespace FantaLandia.Horror.EditorTools
             // cantina: sporca e piena di roba, luce spenta (la accenderà il generatore)
             Transform b = Group("Cantina", f);
             GameObject gen = Place(VoxelFurniture.Get("Generatore"), b, new Vector3(-5.3f, FB, 9.9f), 180f);
-            if (gen != null) generator = gen.AddComponent<GeneratorStarter>();
+            if (gen != null)
+            {
+                generator = gen.AddComponent<GeneratorStarter>();
+                // spia rossa sul pannello comandi: si vede al buio e indica dove andare
+                Material lampOn = EditorAssetUtil.Emissive("Casa Spia rossa accesa", new Color(1f, 0.08f, 0.05f), 4f);
+                Material lampOff = M("Spia rossa spenta", "#3a0a08", 0.6f);
+                GameObject lamp = Box("Spia generatore", gen.transform, new Vector3(0.5f, 0.42f, 0.45f), new Vector3(0.6f, 0.52f, 0.49f), lampOn);
+                Object.DestroyImmediate(lamp.GetComponent<Collider>());
+                generator.indicatorLamp = lamp.GetComponent<Renderer>();
+                generator.lampOn = lampOn;
+                generator.lampOff = lampOff;
+                generator.indicator = PointLight(gen.transform, "Luce spia", new Vector3(0.55f, 0.5f, 0.7f), 3.5f, 0.6f, new Color(1f, 0.1f, 0.05f), false);
+            }
             Place(VoxelFurniture.Get("Tanica"), b, new Vector3(-4.3f, FB, 10.3f), 20f);
             Place(VoxelFurniture.Get("Scaffale"), b, new Vector3(-6.45f, FB, 2.8f), 90f);
             Place(VoxelFurniture.Get("Scaffale"), b, new Vector3(-6.45f, FB, 6.2f), 90f);
             Place(VoxelFurniture.Get("Caldaia"), b, new Vector3(5.6f, FB, 10.2f), 0f);
             Place(VoxelFurniture.Get("Lavatrice"), b, new Vector3(3.6f, FB, 10.3f), 180f);
             Place(VoxelFurniture.Get("Banco da lavoro"), b, new Vector3(0.2f, FB, 10.4f), 180f);
-            Vector3[] boxes = { new Vector3(-3.5f, 0f, 1.2f), new Vector3(-2.6f, 0f, 1.0f), new Vector3(-3.1f, 0.3f, 1.1f), new Vector3(1.5f, 0f, 2.2f),
-                                new Vector3(-1.2f, 0f, 6.8f), new Vector3(2.4f, 0f, 7.6f), new Vector3(-5.6f, 0f, 8.3f), new Vector3(0.5f, 0f, 1.0f) };
-            string[] kinds = { "Scatola grande", "Scatola", "Scatola piccola" };
-            for (int i = 0; i < boxes.Length; i++)
-                Place(VoxelFurniture.Get(kinds[i % kinds.Length]), b, new Vector3(boxes[i].x, FB + boxes[i].y, boxes[i].z), i * 23f);
+            BuildCellarClutter(b);
             foreach (Vector3 p in new[] { new Vector3(-3f, F0 - S, 3f), new Vector3(0f, F0 - S, 8f), new Vector3(4.5f, F0 - S, 7f) })
             {
                 Place(VoxelFurniture.Get("Lampadina"), b, p, 0f);
@@ -695,6 +757,152 @@ namespace FantaLandia.Horror.EditorTools
                 cellarBulbs.Add(bulb);
             }
             return tv;
+        }
+
+        /// <summary>
+        /// La cantina sporca e incasinata: vecchi mobili coperti da teli, pile di scatoloni lungo i muri,
+        /// travi e tubi al soffitto, ragnatele, muffa e colature d'umido sui muri, pozza d'acqua, assi per terra.
+        /// Resta libero un passaggio dalla scala al generatore.
+        /// </summary>
+        static void BuildCellarClutter(Transform b)
+        {
+            Material sheet = M("Telo polveroso", "#7f7b70");
+            Material mold = M("Muffa", "#2f3328");
+            Material damp = M("Macchia umido", "#4c4a44");
+            Material beam = M("Trave", "#3a2a1c");
+            Material pipe = M("Tubo", "#5a5650", 0.5f);
+            Material puddle = M("Pozza", "#15171a", 0.95f);
+            Material plank = M("Asse vecchia", "#4e3a26");
+            Material mattress = M("Materasso macchiato", "#8a8270");
+            Material web = EditorAssetUtil.Glass("Ragnatela", new Color(0.75f, 0.75f, 0.72f), 0.18f);
+            const float ix0 = X0 + 0.3f, ix1 = X1 - 0.3f, iz0 = Z0 + 0.3f, iz1 = Z1 - 0.3f;
+            float ceil = F0 - S;
+            var rng = new System.Random(77);
+            float R() => (float)rng.NextDouble();
+
+            // vecchi mobili coperti dai teli
+            GameObject sofa = Place(VoxelFurniture.Get("Divano"), b, new Vector3(-1.8f, FB, 1.05f), 0f);
+            if (sofa != null) { Box("Telo", sofa.transform, new Vector3(-1.12f, 0f, -0.5f), new Vector3(1.12f, 0.96f, 0.5f), sheet); Box("Telo (piega)", sofa.transform, new Vector3(-0.4f, 0.96f, -0.45f), new Vector3(0.5f, 1.02f, 0.1f), sheet); }
+            GameObject arm = Place(VoxelAssetLibrary.Load("Poltrona"), b, new Vector3(-4.3f, FB, 1.1f), 25f);
+            if (arm != null) Box("Telo", arm.transform, new Vector3(-0.5f, 0f, -0.5f), new Vector3(0.5f, 1.05f, 0.5f), sheet);
+            Place(VoxelFurniture.Get("Armadio"), b, new Vector3(1.3f, FB, 0.7f), 0f);
+            Place(VoxelFurniture.Get("Libreria"), b, new Vector3(-6.45f, FB, 8.1f), 90f);
+            Place(VoxelAssetLibrary.Load("Lampada stelo"), b, new Vector3(-3.1f, FB, 0.65f), 0f);
+            Place(VoxelFurniture.Get("Sedia"), b, new Vector3(2.7f, FB, 1.0f), 160f);
+            Place(VoxelFurniture.Get("Sedia"), b, new Vector3(3.3f, FB, 0.9f), 200f);
+            Place(VoxelFurniture.Get("Comodino"), b, new Vector3(6.2f, FB, 8.5f), -90f);
+            GameObject oldTv = Place(VoxelAssetLibrary.Load("TV"), b, new Vector3(0.9f, FB + 0.4f, 2.4f), 200f);
+            Place(VoxelFurniture.Get("Scatola grande"), b, new Vector3(0.9f, FB, 2.4f), 15f);
+            Box("Materasso", b, new Vector3(6.45f, FB, 6.3f), new Vector3(6.68f, FB + 1.9f, 7.25f), mattress);
+            Place(VoxelFurniture.Get("Tanica"), b, new Vector3(-3.9f, FB, 10.35f), -10f);
+
+            // pile di scatoloni lungo i muri (non sul passaggio scala → generatore e non davanti alle cose)
+            Vector2 stairFoot = new Vector2(4.4f, 3.0f), genFront = new Vector2(-5.3f, 8.9f);
+            var taken = new List<Vector2> { new Vector2(-1.8f, 1.05f), new Vector2(-4.3f, 1.1f), new Vector2(1.3f, 0.7f), new Vector2(-6.45f, 8.1f),
+                new Vector2(-3.1f, 0.65f), new Vector2(2.7f, 1.0f), new Vector2(3.3f, 0.9f), new Vector2(6.2f, 8.5f), new Vector2(0.9f, 2.4f),
+                new Vector2(6.55f, 6.8f), new Vector2(-6.45f, 2.8f), new Vector2(-6.45f, 6.2f), new Vector2(5.6f, 10.2f), new Vector2(3.6f, 10.3f),
+                new Vector2(0.2f, 10.4f), new Vector2(-5.3f, 9.9f), new Vector2(-3.9f, 10.35f) };
+            string[] kinds = { "Scatola grande", "Scatola", "Scatola piccola" };
+            float[] heights = { 0.4f, 0.3f, 0.2f };
+            int placed = 0;
+            for (int tries = 0; tries < 400 && placed < 26; tries++)
+            {
+                var p = new Vector2(Mathf.Lerp(ix0 + 0.35f, ix1 - 0.35f, R()), Mathf.Lerp(iz0 + 0.35f, iz1 - 0.35f, R()));
+                float wallDist = Mathf.Min(Mathf.Min(p.x - ix0, ix1 - p.x), Mathf.Min(p.y - iz0, iz1 - p.y));
+                if (wallDist > 1.3f && R() > 0.15f) continue;                                  // quasi tutte vicino ai muri
+                if (DistToSegment(p, stairFoot, genFront) < 1.3f) continue;                    // il passaggio
+                if (p.x > 3.4f && p.x < 5.6f && p.y > 1.8f && p.y < 6.2f) continue;            // la scala
+                if (Vector2.Distance(p, genFront) < 1.4f) continue;                            // davanti al generatore
+                bool clash = false;
+                foreach (var q in taken) if (Vector2.Distance(p, q) < 0.75f) { clash = true; break; }
+                if (clash) continue;
+                taken.Add(p);
+                placed++;
+                // una pila da 1 a 3 scatole, grandi sotto e piccole sopra
+                float y = FB;
+                int stack = 1 + rng.Next(3);
+                for (int k = 0; k < stack; k++)
+                {
+                    int kind = Mathf.Min(2, k + rng.Next(2));
+                    Place(VoxelFurniture.Get(kinds[kind]), b, new Vector3(p.x + (R() - 0.5f) * 0.08f, y, p.y + (R() - 0.5f) * 0.08f), R() * 360f);
+                    y += heights[kind];
+                }
+            }
+
+            // travi e tubi sotto il solaio (interrotti sopra la scala)
+            for (float z = iz0 + 0.6f; z < iz1; z += 1.2f)
+            {
+                bool overStair = z > 2.9f && z < 5.8f;
+                if (overStair)
+                {
+                    Box("Trave", b, new Vector3(ix0, ceil - 0.2f, z - 0.08f), new Vector3(3.6f, ceil, z + 0.08f), beam);
+                    Box("Trave", b, new Vector3(5.25f, ceil - 0.2f, z - 0.08f), new Vector3(ix1, ceil, z + 0.08f), beam);
+                }
+                else Box("Trave", b, new Vector3(ix0, ceil - 0.2f, z - 0.08f), new Vector3(ix1, ceil, z + 0.08f), beam);
+            }
+            Box("Tubo", b, new Vector3(ix0, ceil - 0.32f, 9.6f), new Vector3(ix1, ceil - 0.24f, 9.68f), pipe);
+            Box("Tubo", b, new Vector3(ix0, ceil - 0.36f, 9.85f), new Vector3(ix1, ceil - 0.3f, 9.91f), pipe);
+            Box("Tubo caldaia", b, new Vector3(5.55f, FB + 1.4f, 9.85f), new Vector3(5.63f, ceil - 0.3f, 9.93f), pipe);
+
+            // muffa e colature d'umido sui muri (sottili, appena staccate dal muro)
+            for (int i = 0; i < 34; i++)
+            {
+                int wall = rng.Next(4);
+                float along = R(), w = 0.3f + R() * 1.2f, h = 0.2f + R() * 0.9f;
+                bool streak = R() < 0.45f;
+                if (streak) { w = 0.06f + R() * 0.1f; h = 0.6f + R() * 1.4f; }
+                float top = streak ? ceil - 0.05f : FB + 0.05f + R() * 1.6f + h;
+                Material mat = streak ? damp : (R() < 0.6f ? mold : damp);
+                Vector3 min, max;
+                if (wall < 2)
+                {
+                    float x = Mathf.Lerp(ix0 + 0.3f, ix1 - 0.3f, along), z = wall == 0 ? iz0 + 0.004f : iz1 - 0.004f;
+                    min = new Vector3(x - w * 0.5f, top - h, z - 0.003f); max = new Vector3(x + w * 0.5f, top, z + 0.003f);
+                }
+                else
+                {
+                    float z = Mathf.Lerp(iz0 + 0.3f, iz1 - 0.3f, along), x = wall == 2 ? ix0 + 0.004f : ix1 - 0.004f;
+                    min = new Vector3(x - 0.003f, top - h, z - w * 0.5f); max = new Vector3(x + 0.003f, top, z + w * 0.5f);
+                }
+                Object.DestroyImmediate(Box(streak ? "Colatura" : "Muffa", b, min, max, mat).GetComponent<Collider>());
+            }
+
+            // ragnatele negli angoli e tra le travi
+            for (int i = 0; i < 18; i++)
+            {
+                var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                q.name = "Ragnatela";
+                Object.DestroyImmediate(q.GetComponent<Collider>());
+                q.transform.SetParent(b, false);
+                bool corner = i < 4;
+                float x = corner ? (i % 2 == 0 ? ix0 + 0.25f : ix1 - 0.25f) : Mathf.Lerp(ix0 + 0.5f, ix1 - 0.5f, R());
+                float z = corner ? (i < 2 ? iz0 + 0.25f : iz1 - 0.25f) : Mathf.Lerp(iz0 + 0.5f, iz1 - 0.5f, R());
+                q.transform.localPosition = new Vector3(x, ceil - 0.28f, z);
+                q.transform.localRotation = Quaternion.Euler(20f + R() * 40f, corner ? (x < 0 ? 45f : -45f) + (z > 5f ? 180f : 0f) : R() * 360f, 0f);
+                q.transform.localScale = Vector3.one * (0.5f + R() * 0.5f);
+                q.GetComponent<Renderer>().sharedMaterial = web;
+                q.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+
+            // pozza d'acqua sotto la caldaia e assi vecchie per terra
+            Object.DestroyImmediate(Box("Pozza", b, new Vector3(4.4f, FB + 0.001f, 8.9f), new Vector3(5.4f, FB + 0.006f, 9.6f), puddle).GetComponent<Collider>());
+            Object.DestroyImmediate(Box("Pozza", b, new Vector3(5.0f, FB + 0.001f, 9.5f), new Vector3(5.6f, FB + 0.006f, 9.9f), puddle).GetComponent<Collider>());
+            for (int i = 0; i < 7; i++)
+            {
+                var p = new Vector2(Mathf.Lerp(ix0 + 0.5f, ix1 - 0.5f, R()), Mathf.Lerp(iz0 + 0.5f, iz1 - 0.5f, R()));
+                if (DistToSegment(p, stairFoot, genFront) < 0.9f) continue;
+                float a = R() * Mathf.PI;
+                Vector3 d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (0.6f + R() * 0.6f);
+                Vector3 c = new Vector3(p.x, FB + 0.02f, p.y);
+                SlopedBox("Asse", b, c - d, c + d, 0.16f, 0.03f, plank);
+            }
+        }
+
+        static float DistToSegment(Vector2 p, Vector2 a, Vector2 b)
+        {
+            Vector2 ab = b - a;
+            float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude);
+            return Vector2.Distance(p, a + ab * t);
         }
 
         static CrtTv BuildTv(Transform parent, Vector3 pos, float yaw)

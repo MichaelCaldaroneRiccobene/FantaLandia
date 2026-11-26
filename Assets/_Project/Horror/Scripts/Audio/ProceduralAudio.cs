@@ -421,10 +421,10 @@ namespace FantaLandia.Horror.Audio
                 for (int i = 0; i < d.Length; i++)
                 {
                     float t = i / (float)Rate;
-                    float firing = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * 30f * t), 6f);
-                    d[i] = firing * (Mathf.Sin(2f * Mathf.PI * 60f * t) + Noise(r) * 0.5f) + Mathf.Sin(2f * Mathf.PI * 120f * t) * 0.15f;
+                    float firing = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * 30f * t), 4f);
+                    d[i] = firing * (Mathf.Sin(2f * Mathf.PI * 60f * t) + Noise(r) * 0.15f) + Mathf.Sin(2f * Mathf.PI * 30f * t) * 0.3f;
                 }
-                LowPass(d, 900f);
+                LowPass(d, 450f); // un borbottio cupo e morbido, non un trapano
             }, 308);
         }
 
