@@ -41,7 +41,13 @@ VOICES = {
     "martha": ("female", 0.93, 0.92, ""),
     "linda":  ("female", 1.07, 1.05, ""),
     "vicina": ("female", 1.00, 1.00, ""),
+    # i personaggi del cartone "Lucia e il buio" (escono dall'altoparlante della TV)
+    "lucia":  ("female", 1.30, 1.05, "highpass=f=250,lowpass=f=4000"),
+    "rana":   ("female", 1.18, 1.10, "highpass=f=250,lowpass=f=4000"),
+    "tasso":  ("male",   0.86, 0.98, "highpass=f=250,lowpass=f=4000"),
+    "gufo":   ("male",   0.80, 0.90, "highpass=f=250,lowpass=f=4000"),
 }
+IDS = "|".join(VOICES.keys())
 
 STR = r'"((?:[^"\\]|\\.)*)"'
 
@@ -57,14 +63,14 @@ def collect():
         src = open(path, encoding="utf-8").read()
         for field, text in re.findall(r"Speakers\.(\w+)\s*,\s*" + STR, src):
             if field in FIELD_TO_ID: lines.add((FIELD_TO_ID[field], unescape(text)))
-        for who, text in re.findall(r'"(muark|tom|jef|roy|frank|martha|gary|linda|vicino|vicina|tv)\|((?:[^"\\]|\\.)*)"', src):
+        for who, text in re.findall(r'"(' + IDS + r')\|((?:[^"\\]|\\.)*)"', src):
             lines.add((who, unescape(text)))
         for body in re.findall(r"\.Choice\(new\[\]\s*\{([^}]*)\}", src):
             for text in re.findall(STR, body): lines.add(("muark", unescape(text)))
     # chiacchiere dei vicini scritte nel generatore della scena
     for path in glob.glob(os.path.join(ROOT, "Assets/_Project/Horror/Editor/*.cs")):
         src = open(path, encoding="utf-8").read()
-        for who, text in re.findall(r'"(muark|tom|jef|roy|frank|martha|gary|linda|vicino|vicina|tv)\|((?:[^"\\]|\\.)*)"', src):
+        for who, text in re.findall(r'"(' + IDS + r')\|((?:[^"\\]|\\.)*)"', src):
             lines.add((who, unescape(text)))
     # battute costruite dal codice (non sono stringhe intere nel sorgente)
     for p in ["Carta! Carta batte sasso.", "Forbice! Forbice batte carta.", "Sasso! Sasso batte forbice."]:

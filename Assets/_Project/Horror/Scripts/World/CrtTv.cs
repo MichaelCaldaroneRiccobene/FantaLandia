@@ -23,6 +23,15 @@ namespace FantaLandia.Horror.World
         public bool playerCanToggle;
         [Tooltip("Volume del suono della TV (cartoni, neve)")]
         [Range(0f, 1f)] public float volume = 0.14f;
+        [Tooltip("Volume delle voci del cartone (basse: è la TV accesa in sottofondo)")]
+        [Range(0f, 1f)] public float cartoonVoiceVolume = 0.3f;
+
+        // il cartone "Lucia e il buio": va avanti solo mentre è sul canale dei cartoni, poi ricomincia
+        AudioSource cartoonVoice;
+        float episodeClock, waitUntil, sceneStart, speakingUntil;
+        int beat, scene;
+        bool cartoonGlow, voicePaused;
+        string speaker;
 
         const int W = 96, H = 72;
         Texture2D tex;
@@ -51,6 +60,15 @@ namespace FantaLandia.Horror.World
             }
             if (screenLight != null) lightIntensity = screenLight.intensity;
             sound = HorrorAudio.CreateLoop(transform, null, volume, true, 12f);
+            var vgo = new GameObject("Voci del cartone");
+            vgo.transform.SetParent(transform, false);
+            vgo.transform.localPosition = Vector3.up * 0.3f;
+            cartoonVoice = vgo.AddComponent<AudioSource>();
+            cartoonVoice.playOnAwake = false;
+            cartoonVoice.spatialBlend = 1f;
+            cartoonVoice.rolloffMode = AudioRolloffMode.Linear;
+            cartoonVoice.minDistance = 1f;
+            cartoonVoice.maxDistance = 10f;
         }
 
         public override bool CanInteract(Interactor who) => enabled && playerCanToggle;
@@ -77,11 +95,19 @@ namespace FantaLandia.Horror.World
                 if (clip != null) sound.Play();
             }
 
+            // il cartone avanza solo quando lo si guarda (canale dei cartoni, TV accesa)
+            bool cartoon = on && channel == TvChannel.Cartoon;
+            if (cartoon) StepEpisode(Time.deltaTime);
+            else if (cartoonVoice != null && cartoonVoice.isPlaying) { cartoonVoice.Pause(); voicePaused = true; }
+            // la musica si abbassa quando parlano
+            if (sound != null && sound.isPlaying)
+                sound.volume = Mathf.MoveTowards(sound.volume, cartoon && cartoonVoice != null && cartoonVoice.isPlaying ? volume * 0.4f : volume, Time.deltaTime * 0.5f);
+
             if (Time.time < nextFrame) return;
             nextFrame = Time.time + 1f / 12f;
 
             if (!on) Fill(new Color32(6, 8, 8, 255));
-            else if (channel == TvChannel.Cartoon) DrawCartoon(Time.time);
+            else if (channel == TvChannel.Cartoon) CartoonRenderer.Draw(pixels, W, H, scene, episodeClock - sceneStart, episodeClock < speakingUntil ? speaker : null, cartoonGlow);
             else if (channel == TvChannel.Static) DrawStatic();
             else DrawNews(Time.time);
 
@@ -98,6 +124,47 @@ namespace FantaLandia.Horror.World
                     screenLight.color = Color.Lerp(avg, Color.white, 0.25f);
                     screenLight.intensity = lightIntensity * Random.Range(0.85f, 1.05f);
                 }
+            }
+        }
+
+        /// <summary>Fa scorrere la sceneggiatura del cartone: scene, pause, luce di Lucia e battute con la voce.</summary>
+        void StepEpisode(float dt)
+        {
+            episodeClock += dt;
+            if (voicePaused) { cartoonVoice.UnPause(); voicePaused = false; }
+            if (episodeClock < waitUntil) return;
+            string[] script = CartoonEpisode.Script;
+            for (int guard = 0; guard < 64; guard++)
+            {
+                if (beat >= script.Length)
+                {
+                    // fine: si ricomincia dal titolo
+                    beat = 0; scene = 0; cartoonGlow = false; sceneStart = episodeClock;
+                }
+                string b = script[beat++];
+                if (b.StartsWith("@")) { int.TryParse(b.Substring(1), out scene); sceneStart = episodeClock; continue; }
+                if (b.StartsWith("~"))
+                {
+                    float.TryParse(b.Substring(1), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float pause);
+                    waitUntil = episodeClock + pause;
+                    return;
+                }
+                if (b == "!luce") { cartoonGlow = true; continue; }
+                int bar = b.IndexOf('|');
+                if (bar <= 0) continue;
+                speaker = b.Substring(0, bar);
+                string text = b.Substring(bar + 1);
+                AudioClip clip = FantaLandia.Horror.Dialogue.DialogueSystem.VoiceFor(FantaLandia.Horror.Dialogue.Speakers.Find(speaker), text);
+                float len = clip != null ? clip.length : 1.5f + text.Length * 0.06f;
+                if (clip != null && cartoonVoice != null)
+                {
+                    cartoonVoice.clip = clip;
+                    cartoonVoice.volume = cartoonVoiceVolume;
+                    cartoonVoice.Play();
+                }
+                speakingUntil = episodeClock + len;
+                waitUntil = episodeClock + len + 1.0f; // un respiro tra una battuta e l'altra, come nei cartoni
+                return;
             }
         }
 
@@ -125,30 +192,6 @@ namespace FantaLandia.Horror.World
             for (int y = (int)(cy - r); y <= (int)(cy + r); y++)
                 for (int x = (int)(cx - r); x <= (int)(cx + r); x++)
                     if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r) Set(x, y, c);
-        }
-
-        /// <summary>Un cartone: cielo, sole, colline e un personaggio tondo che saltella inseguito da un altro.</summary>
-        void DrawCartoon(float t)
-        {
-            Color32 sky = new Color32(110, 190, 255, 255);
-            for (int y = 0; y < H; y++)
-                for (int x = 0; x < W; x++)
-                    pixels[y * W + x] = y < 22 ? new Color32(90, 200, 90, 255) : sky;
-            for (int x = 0; x < W; x++)
-            {
-                int hill = 22 + (int)(5f * Mathf.Sin(x * 0.12f + t * 0.5f));
-                for (int y = 22; y < hill; y++) Set(x, y, new Color32(70, 170, 80, 255));
-            }
-            Circle(80, 58, 7, new Color32(255, 220, 60, 255)); // sole
-
-            float px = Mathf.Repeat(t * 22f, W + 30) - 15f;
-            float py = 30 + Mathf.Abs(Mathf.Sin(t * 5f)) * 12f;
-            Circle(px, py, 6, new Color32(255, 120, 40, 255));
-            Set((int)px + 2, (int)py + 2, new Color32(0, 0, 0, 255));
-            Set((int)px + 3, (int)py + 2, new Color32(0, 0, 0, 255));
-            float cx = px - 18f, cy = 28 + Mathf.Abs(Mathf.Sin(t * 5f + 1.3f)) * 8f;
-            Circle(cx, cy, 5, new Color32(150, 80, 220, 255));
-            Set((int)cx + 2, (int)cy + 2, new Color32(255, 255, 255, 255));
         }
 
         void DrawStatic()
