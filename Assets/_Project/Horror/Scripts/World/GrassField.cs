@@ -15,27 +15,33 @@ namespace FantaLandia.Horror.World
         public Vector2 areaMin = new Vector2(-40f, -9f);
         public Vector2 areaMax = new Vector2(40f, 22f);
         [Tooltip("Ciuffi per metro quadro")]
-        public float density = 9f;
+        public float density = 10f;
         public float chunkSize = 10f;
-        public Vector2 heightRange = new Vector2(0.14f, 0.34f);
+        public Vector2 heightRange = new Vector2(0.18f, 0.42f);
         public float tuftWidth = 0.14f;
         public int seed = 12345;
 
         static readonly Color32[] Greens =
         {
-            new Color32(58, 86, 42, 255), new Color32(70, 98, 48, 255), new Color32(50, 76, 38, 255),
-            new Color32(82, 104, 52, 255), new Color32(64, 92, 40, 255),
+            new Color32(80, 122, 55, 255), new Color32(95, 135, 62, 255), new Color32(70, 106, 48, 255),
+            new Color32(108, 142, 68, 255), new Color32(88, 126, 52, 255),
         };
 
         void Start() => Generate();
 
+        int tufts;
+
         public void Generate()
         {
-            if (material == null) return;
+            if (material == null) { Debug.LogWarning("[Erba] Nessun materiale assegnato", this); return; }
+            if (!material.shader.isSupported)
+                Debug.LogError($"[Erba] Lo shader '{material.shader.name}' non è supportato su questa piattaforma", this);
             var rng = new System.Random(seed);
+            tufts = 0;
             for (float cx = areaMin.x; cx < areaMax.x; cx += chunkSize)
                 for (float cz = areaMin.y; cz < areaMax.y; cz += chunkSize)
                     BuildChunk(rng, cx, cz, Mathf.Min(cx + chunkSize, areaMax.x), Mathf.Min(cz + chunkSize, areaMax.y));
+            Debug.Log($"[Erba] {name}: {tufts} ciuffi generati (shader {material.shader.name})", this);
         }
 
         void BuildChunk(System.Random rng, float x0, float z0, float x1, float z1)
@@ -59,6 +65,7 @@ namespace FantaLandia.Horror.World
                 if (surf == null || surf.surface != Surface.Grass) continue;  // niente erba su vialetti, pedane, sotto auto e staccionate
 
                 Vector3 basePos = hit.point - origin;
+                tufts++;
                 for (int q = 0; q < 2; q++)
                 {
                     float a = yaw + q * Mathf.PI * 0.5f;

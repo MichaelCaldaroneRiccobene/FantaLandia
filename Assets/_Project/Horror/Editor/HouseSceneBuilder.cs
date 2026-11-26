@@ -187,11 +187,6 @@ namespace FantaLandia.Horror.EditorTools
                 StreetLamp(parent, lampPrefab, new Vector3(x + 12f, 0.08f, -17.9f), 0f);
             }
 
-            // auto parcheggiate lungo il marciapiede (il muso guarda +X o -X)
-            Place(VoxelFurniture.Get("Auto rossa"), parent, new Vector3(-17f, 0.01f, -11.6f), 0f);
-            Place(VoxelFurniture.Get("Station wagon beige"), parent, new Vector3(23f, 0.01f, -11.6f), 0f);
-            Place(VoxelFurniture.Get("Auto bianca"), parent, new Vector3(-6f, 0.01f, -16.4f), 180f);
-            Place(VoxelFurniture.Get("Station wagon verde"), parent, new Vector3(31f, 0.01f, -16.4f), 180f);
         }
 
         static void StreetLamp(Transform parent, GameObject prefab, Vector3 pos, float yaw)
@@ -216,7 +211,7 @@ namespace FantaLandia.Horror.EditorTools
             Transform s = Group("Struttura", house);
 
             // solai
-            Slab(s, "Pavimento piano terra", X0, X1, Z0, Z1, F0 - S, F0, wood, new Rect(4.1f, 3.15f, 2.65f, 1.7f));
+            Slab(s, "Pavimento piano terra", X0, X1, Z0, Z1, F0 - S, F0, wood, new Rect(4.0f, 3.01f, 1.4f, 2.64f));
             foreach (Transform t in s) if (t.name.StartsWith("Pavimento piano terra")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
             Floor("Piastrelle cucina", s, new Vector3(-1f, F0, 6.075f), new Vector3(6.75f, F0 + 0.01f, 10.75f), kitchenTiles, Surface.Concrete);
             Floor("Piastrelle bagno", s, new Vector3(3.575f, F0, 0.25f), new Vector3(6.75f, F0 + 0.01f, 2.925f), bathTiles, Surface.Concrete);
@@ -232,8 +227,10 @@ namespace FantaLandia.Horror.EditorTools
             Box("Muro cantina retro", s, new Vector3(X0, FB, Z1 - 0.3f), new Vector3(X1, FB + bh, Z1), basementWall);
             Box("Muro cantina sx", s, new Vector3(X0, FB, Z0), new Vector3(X0 + 0.3f, FB + bh, Z1), basementWall);
             Box("Muro cantina dx", s, new Vector3(X1 - 0.3f, FB, Z0), new Vector3(X1, FB + bh, Z1), basementWall);
-            Stairs(s, "Scala cantina", true, 4.1f, 1, 3.15f, 4.85f, F0, 11, -2.8f / 11f, 0.24f, FB, porchWood, Surface.Wood);
-            Box("Ringhiera scala cantina", s, new Vector3(4.1f, F0, 4.85f), new Vector3(6.75f, F0 + 1f, 4.9f), railing);
+            // scala della cantina: larga 1.4 m, parte subito oltre la porta della cucina e scende dritta verso -Z
+            Stairs(s, "Scala cantina", false, 5.65f, -1, 4.0f, 5.4f, F0, 11, -2.8f / 11f, 0.24f, FB, porchWood, Surface.Wood);
+            Railing(s, new Vector3(5.45f, F0, 3.01f), new Vector3(5.45f, F0, 5.65f));
+            Railing(s, new Vector3(3.95f, F0, 3.01f), new Vector3(3.95f, F0, 5.65f));
 
             // scala per il primo piano (nell'ingresso, sale verso +Z)
             // contro il muro destro dell'ingresso, lasciando libero lo spazio davanti alla porta
@@ -271,7 +268,7 @@ namespace FantaLandia.Horror.EditorTools
             // muri interni primo piano
             float uh = F2 - S - F1;
             Wall(s, "Muro camere", false, -2f, Z0 + ET, Z1 - ET, F1, uh, IT, interiorUp,
-                 new[] { HouseKit.Door(4.6f, 0.84f), HouseKit.Door(7.0f, 0.84f) }, null, trim);
+                 new[] { HouseKit.Door(4.6f, 0.84f), HouseKit.Door(6.5f, 0.84f) }, null, trim);
             Wall(s, "Muro matrimoniale-cameretta", true, 6f, X0 + ET, -2f, F1, uh, IT, interiorUp, null);
             Wall(s, "Muro camera Tom", true, 7f, -2f, X1 - ET, F1, uh, IT, interiorUp, new[] { HouseKit.Door(0.7f, 0.84f) }, null, trim);
             Wall(s, "Muro bagno sopra", false, 3.5f, Z0 + ET, 7f, F1, uh, IT, interiorUp,
@@ -294,7 +291,7 @@ namespace FantaLandia.Horror.EditorTools
             DoorAt(s, "Porta cantina", inner, new Vector3(4.42f + 0.4f, F0, 6f), 180f); // dalla cucina verso la scala della cantina
             DoorAt(s, "Porta garage", inner, new Vector3(X1 - ET * 0.5f, F0, 5.85f), 90f);
             DoorAt(s, "Porta camera matrimoniale", inner, new Vector3(-2f, F1, 4.6f - 0.4f), -90f);
-            DoorAt(s, "Porta cameretta", inner, new Vector3(-2f, F1, 7.0f - 0.4f), -90f);
+            DoorAt(s, "Porta cameretta", inner, new Vector3(-2f, F1, 6.5f - 0.4f), -90f);
             DoorAt(s, "Porta camera Tom", inner, new Vector3(0.7f - 0.4f, F1, 7f), 0f);
             DoorAt(s, "Porta bagno sopra", inner, new Vector3(3.5f, F1, 0.85f + 0.4f), 90f);
             DoorAt(s, "Porta ripostiglio", inner, new Vector3(3.5f, F1, 6.5f + 0.4f), 90f);
@@ -401,9 +398,6 @@ namespace FantaLandia.Horror.EditorTools
             houseLights.Add(PointLight(shade.transform, "Luce lampada", new Vector3(0f, 0.1f, 0f), 4f, 0.9f, new Color(1f, 0.75f, 0.45f), false));
             Place(VoxelFurniture.Get("Libreria"), f, new Vector3(-3f, F0, 0.4f), 0f);
 
-            // ingresso: tavolino con il telefono
-            Place(VoxelFurniture.Get("Tavolino ingresso"), f, new Vector3(0.2f, F0, 5.7f), 180f);
-            Place(VoxelFurniture.Get("Telefono"), f, new Vector3(0.2f, F0 + 0.8f, 5.7f), 180f);
 
             // sala da pranzo
             Place(VoxelFurniture.Get("Tavolo"), f, new Vector3(-4.2f, F0, 8.5f), 0f);
@@ -431,6 +425,7 @@ namespace FantaLandia.Horror.EditorTools
             stand.SetParent(isl.transform, false);
             stand.localPosition = new Vector3(-0.2f, 0f, -0.95f);
             island.standPoint = stand;
+            Place(VoxelFurniture.Get("Telefono"), f, counter.transform.localPosition + new Vector3(-0.5f, 0.9f, 0.05f), 180f);
             GameObject torch = Place(VoxelAssetLibrary.Load("Torcia"), f, counter.transform.localPosition + new Vector3(0.4f, 0.9f, 0f), 60f);
             torch.AddComponent<FlashlightPickup>();
 
@@ -442,13 +437,13 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Letto matrimoniale"), f, new Vector3(-4.4f, F1, 0.25f + 1.1f), 0f);
             Place(VoxelFurniture.Get("Comodino"), f, new Vector3(-5.6f, F1, 0.5f), 0f);
             Place(VoxelFurniture.Get("Comodino"), f, new Vector3(-3.2f, F1, 0.5f), 0f);
-            Place(VoxelFurniture.Get("Armadio"), f, new Vector3(-6.45f, F1, 4.2f), 90f);
+            Place(VoxelFurniture.Get("Armadio"), f, new Vector3(-6.45f, F1, 5.2f), 90f);
             Place(VoxelFurniture.Get("Letto singolo"), f, new Vector3(-5.75f, F1, 9.4f), 90f);
             Place(VoxelFurniture.Get("Scrivania"), f, new Vector3(-3.2f, F1, 10.4f), 180f);
             Place(VoxelFurniture.Get("Letto singolo"), f, new Vector3(5.75f, F1, 9.2f), -90f);
             Place(VoxelFurniture.Get("Scrivania"), f, new Vector3(0.2f, F1, 10.4f), 180f);
-            Place(VoxelFurniture.Get("Libreria"), f, new Vector3(2.6f, F1, 10.6f), 180f);
-            Place(VoxelFurniture.Get("Armadio"), f, new Vector3(-1.4f, F1, 9.4f), 90f);
+            Place(VoxelFurniture.Get("Libreria"), f, new Vector3(4.6f, F1, 10.6f), 180f);
+            Place(VoxelFurniture.Get("Armadio"), f, new Vector3(-1.6f, F1, 9.4f), 90f);
             Place(VoxelFurniture.Get("Vasca"), f, new Vector3(5.1f, F1, 0.7f), 0f);
             Place(VoxelFurniture.Get("WC"), f, new Vector3(6.3f, F1, 2.6f), -90f);
             Place(VoxelFurniture.Get("Lavandino"), f, new Vector3(4.4f, F1, 3.92f), 180f);
@@ -509,7 +504,6 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Scaffale"), g, new Vector3(12.1f, 0.1f, 3.8f), -90f);
             Place(VoxelFurniture.Get("Scatola grande"), g, new Vector3(11.6f, 0.1f, 6f), 10f);
             Floor("Vialetto garage", g, new Vector3(8f, 0f, -9f), new Vector3(10.7f, 0.03f, gz0), sidewalk, Surface.Concrete);
-            Place(VoxelFurniture.Get("Auto blu"), g, new Vector3(9.35f, 0.03f, -4.2f), 90f);
             Place(VoxelFurniture.Get("Bidone"), g, new Vector3(11.3f, 0.03f, -0.4f), 0f);
             Place(VoxelFurniture.Get("Bidone"), g, new Vector3(11.95f, 0.03f, -0.4f), 0f);
         }
@@ -566,9 +560,6 @@ namespace FantaLandia.Horror.EditorTools
             Shell(hood, "Casa di fronte B", new Vector3(0f, 0f, -27f), 180f, "#b8a8a8", false, new[] { true, false, false, false, true }, false, false);
             Shell(hood, "Casa di fronte C", new Vector3(26f, 0f, -27f), 180f, "#e2dfc9", false, new[] { false, false, false, true, false }, true, true);
 
-            Place(VoxelFurniture.Get("Station wagon verde"), hood, new Vector3(-20f, 0.03f, -4.5f), 90f);
-            Place(VoxelFurniture.Get("Auto rossa"), hood, new Vector3(-6f, 0.03f, -31f), -90f);
-            Place(VoxelFurniture.Get("Auto bianca"), hood, new Vector3(32f, 0.03f, -4.5f), 90f);
             foreach (var t in new[] { new Vector3(-38f, 0f, 14f), new Vector3(36f, 0f, 16f), new Vector3(-14f, 0f, -36f), new Vector3(14f, 0f, -38f), new Vector3(40f, 0f, -6f) })
                 Place(VoxelFurniture.Get("Albero"), hood, t, 0f);
         }
