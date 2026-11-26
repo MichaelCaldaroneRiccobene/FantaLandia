@@ -126,18 +126,23 @@ namespace FantaLandia.Horror.EditorTools
             story.tomAtDoor = M2("Tom alla porta", new Vector3(0f, F0, 1.4f));
             story.tomBesideDoor = M2("Tom accanto alla porta", new Vector3(-1.3f, F0, 1.0f));
             story.tomCloseDoor = M2("Tom chiude la porta", new Vector3(0.3f, F0, 1.05f));
+            // posti a sedere del salotto: la poltrona di Tom e i tre posti del divano (rivolto verso la TV, -X)
             Vector3 chairDir = armchair.rotation * Vector3.forward;
-            story.chairFront = M2("Davanti alla poltrona", armchair.position + chairDir * 0.85f);
-            // seduto un po' avanti sul cuscino: le ginocchia escono dal bordo e gli stinchi scendono davanti alla poltrona
-            story.chairSeat = M2("Sedile poltrona", armchair.position + chairDir * 0.14f);
-            story.chairSeat.rotation = armchair.rotation;
-            story.chairHeight = 0.5f;
-            // divano a x -2.75 rivolto verso la TV (-X): Roy a destra, Jef a sinistra
-            story.sofaFrontRoy = M2("Davanti al divano (Roy)", new Vector3(-3.65f, F0, 3.6f), -90f);
-            story.sofaSeatRoy = M2("Divano (Roy)", new Vector3(-2.9f, F0, 3.6f), -90f);
-            story.sofaFrontJef = M2("Davanti al divano (Jef)", new Vector3(-3.65f, F0, 2.4f), -90f);
-            story.sofaSeatJef = M2("Divano (Jef)", new Vector3(-2.9f, F0, 2.4f), -90f);
-            story.sofaHeight = 0.5f;
+            // in poltrona un po' avanti sul cuscino: le ginocchia escono dal bordo e gli stinchi scendono davanti
+            story.seatTom = MakeSeat(marks, "Posto: poltrona", armchair.position + chairDir * 0.14f, armchair.rotation.eulerAngles.y,
+                                     armchair.position + chairDir * 0.85f, "Siediti in poltrona");
+            story.seatRoy = MakeSeat(marks, "Posto: divano destra", new Vector3(-2.9f, F0, 3.6f), -90f, new Vector3(-3.65f, F0, 3.6f), "Siediti sul divano");
+            MakeSeat(marks, "Posto: divano centro", new Vector3(-2.9f, F0, 3.0f), -90f, new Vector3(-3.65f, F0, 3.0f), "Siediti sul divano");
+            story.seatJef = MakeSeat(marks, "Posto: divano sinistra", new Vector3(-2.9f, F0, 2.4f), -90f, new Vector3(-3.65f, F0, 2.4f), "Siediti sul divano");
+            story.standSpots = new[] { M2("In piedi: vicino alla poltrona", new Vector3(-3.6f, F0, 5.3f), -120f),
+                                       M2("In piedi: vicino alla libreria", new Vector3(-3.9f, F0, 1.2f), -60f),
+                                       M2("In piedi: vicino alla TV", new Vector3(-5.6f, F0, 1.4f), -10f) };
+            // mete delle faccende di sottofondo (la rotazione dice dove guardare)
+            story.fridgeSpot = M2("Faccenda: frigo", new Vector3(6.0f, F0, 9.4f), 0f);
+            story.frontWindowSpot = M2("Faccenda: finestra soggiorno", new Vector3(-4.6f, F0, 0.75f), 180f);
+            story.backWindowSpot = M2("Faccenda: finestra sul retro", new Vector3(-4.5f, F0, 10.2f), 0f);
+            story.upstairsFloorY = F1;
+            story.basementBounds = new Bounds(new Vector3(0f, FB + 1.2f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0 - 0.6f, 2.6f, Z1 - Z0 - 0.6f));
             story.royDoorstep = M2("Roy sulla soglia", new Vector3(0.05f, F0, -0.6f), 0f);
             // in fondo al giardino, vicino alla staccionata, da dove si vede meglio l'incendio
             story.deckTom = M2("Giardino: Tom", new Vector3(-1.0f, 0f, 18.6f));
@@ -146,7 +151,6 @@ namespace FantaLandia.Horror.EditorTools
             story.livingRoom = M2("Soggiorno", new Vector3(-4.3f, F0, 3.2f), -90f);
             story.playerKitchen = M2("Prova: cucina", new Vector3(1.4f, F0, 7.2f), 90f);
             story.playerCellarTop = M2("Prova: in cima alla cantina", new Vector3(3.6f, F0, 6.9f), -90f);
-            story.cellarScratch = M2("Graffi nel muro", new Vector3(6.6f, FB + 1.2f, 2f));
             story.basementFloorY = FB;
             story.houseBounds = new Bounds(new Vector3((X0 + X1) * 0.5f, 3f, (Z0 + Z1) * 0.5f), new Vector3(X1 - X0, 12f, Z1 - Z0));
             story.island = island;
@@ -243,6 +247,31 @@ namespace FantaLandia.Horror.EditorTools
             smokeCol.roofFireSize = new Vector2(12f, 8f);
             smokeCol.windowFires = windowFires.ToArray();
             return smokeCol;
+        }
+
+        /// <summary>Un posto a sedere: 'seatPos' è il punto a terra sotto il sedile, 'yaw' la direzione da seduti.</summary>
+        static Seat MakeSeat(Transform parent, string name, Vector3 seatPos, float yaw, Vector3 frontPos, string label)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = seatPos;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var front = new GameObject("Davanti").transform;
+            front.SetParent(go.transform, false);
+            front.position = frontPos;
+            front.rotation = go.transform.rotation;
+            // zona da guardare per sedersi: sopra il cuscino, un po' sporgente in avanti (vince sul collider del mobile)
+            var col = go.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.center = new Vector3(0f, 0.75f, 0.15f);
+            col.size = new Vector3(0.55f, 0.5f, 0.8f);
+            go.layer = HorrorTestSceneBuilder.DoorLayer; // fuori dalla NavMesh, come le porte
+            var seat = go.AddComponent<Seat>();
+            seat.front = front;
+            seat.height = 0.5f;
+            seat.label = label;
+            seat.group = "salotto";
+            return seat;
         }
 
         static Material SmokeMat(string name, bool additive, float softness, float breakup)

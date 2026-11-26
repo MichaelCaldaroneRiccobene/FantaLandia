@@ -3,6 +3,7 @@ using FantaLandia.Characters.Body;
 using FantaLandia.Core;
 using FantaLandia.Horror.Audio;
 using FantaLandia.Horror.Dialogue;
+using FantaLandia.Horror.Interaction;
 using FantaLandia.Horror.World;
 using UnityEngine;
 
@@ -39,6 +40,9 @@ namespace FantaLandia.Horror.Player
         public bool inputLocked;
 
         public bool IsCrouching { get; private set; }
+        /// <summary>Seduto su un divano o una poltrona.</summary>
+        public bool IsSeated { get; private set; }
+        public Seat CurrentSeat => seat;
         public bool IsRunning { get; private set; }
         public float Yaw => yaw;
         public float Pitch => pitch;
@@ -85,7 +89,17 @@ namespace FantaLandia.Horror.Player
         void Update()
         {
             float dt = Time.deltaTime;
-            bool locked = inputLocked || DialogueSystem.IsBlocking;
+            bool locked = inputLocked || DialogueSystem.IsBlocking || sitting;
+            // mentre si parla si può camminare e guardarsi intorno, ma non correre né abbassarsi
+            bool talking = DialogueSystem.IsTalking;
+            if (IsSeated) locked = true;
+            if (IsSeated && !sitting && !inputLocked && !DialogueSystem.IsBlocking)
+            {
+                Vector2 md = GameInput.MouseDelta * mouseSensitivity;
+                yaw = seatYaw + Mathf.Clamp(Mathf.DeltaAngle(seatYaw, yaw + md.x), -110f, 110f);
+                pitch = Mathf.Clamp(pitch - md.y, -70f, 75f);
+                if (GameInput.StandUp) StandUp();
+            }
 
             // --- guardarsi intorno
             if (!locked)
@@ -99,8 +113,8 @@ namespace FantaLandia.Horror.Player
 
             // --- movimento
             Vector2 input = locked ? Vector2.zero : GameInput.PanAxis;
-            IsCrouching = !locked && GameInput.CrouchHeld;
-            IsRunning = !locked && !IsCrouching && GameInput.RunHeld && input.y > 0.1f;
+            IsCrouching = !locked && !talking && GameInput.CrouchHeld;
+            IsRunning = !locked && !talking && !IsCrouching && GameInput.RunHeld && input.y > 0.1f;
             float speed = IsCrouching ? crouchSpeed : IsRunning ? runSpeed : walkSpeed;
             Vector3 wish = (transform.forward * input.y + transform.right * input.x);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
@@ -128,6 +142,8 @@ namespace FantaLandia.Horror.Player
             bobPhase += hs * dt * 2.2f;
             float bob = Mathf.Sin(bobPhase * Mathf.PI) * headBob * Mathf.Clamp01(hs / walkSpeed);
             float eye = Mathf.Lerp(eyeHeight, crouchEyeHeight, crouchT);
+            seatT = Mathf.MoveTowards(seatT, IsSeated ? 1f : 0f, dt * 1.4f);
+            if (seat != null || seatT > 0f) eye = Mathf.Lerp(eye, seatEyeHeight, seatT * seatT * (3f - 2f * seatT));
             // guardando in basso la camera avanza un po' (come la testa che si sporge): non entra nelle spalle e nei vestiti
             float down = Mathf.Clamp01(pitch / 70f);
             cam.transform.localPosition = new Vector3(0f, eye + bob - down * 0.05f, eyeForward + down * 0.2f);
@@ -161,6 +177,77 @@ namespace FantaLandia.Horror.Player
             float k = 1f - Mathf.Exp(-4f * dt);
             yaw = Mathf.LerpAngle(yaw, wantYaw, k);
             pitch = Mathf.Lerp(pitch, Mathf.Clamp(wantPitch, -60f, 60f), k);
+        }
+
+        // ------------------------------------------------------------------ sedersi
+
+        Seat seat;
+        float seatYaw, seatT, seatEyeHeight = 1.2f;
+        bool sitting; // in movimento verso il sedile o per alzarsi
+
+        public void SitOn(Seat s)
+        {
+            if (IsSeated || sitting || s == null || !s.Claim(this)) return;
+            StartCoroutine(SitRoutine(s));
+        }
+
+        System.Collections.IEnumerator SitRoutine(Seat s)
+        {
+            sitting = true;
+            seat = s;
+            controller.enabled = false;
+            velocity = Vector3.zero;
+            seatYaw = s.transform.eulerAngles.y;
+            seatEyeHeight = s.height + 0.72f;
+            Vector3 p0 = transform.position, p1 = s.transform.position;
+            float y0 = yaw, pi0 = pitch;
+            IsSeated = true;
+            if (animator != null) { animator.externalSeated = true; animator.externalSeatHeight = s.height; }
+            for (float t = 0f; t < 1f;)
+            {
+                t = Mathf.Min(1f, t + Time.deltaTime / 1.1f);
+                float e = t * t * (3f - 2f * t);
+                transform.position = Vector3.Lerp(p0, p1, e);
+                yaw = Mathf.LerpAngle(y0, seatYaw, e);
+                pitch = Mathf.Lerp(pi0, 8f, e);
+                yield return null;
+            }
+            sitting = false;
+        }
+
+        public void StandUp()
+        {
+            if (!IsSeated || sitting) return;
+            StartCoroutine(StandRoutine());
+        }
+
+        System.Collections.IEnumerator StandRoutine()
+        {
+            sitting = true;
+            Vector3 p0 = transform.position, p1 = seat.FrontPosition;
+            p1.y = p0.y;
+            if (animator != null) animator.externalSeated = false;
+            IsSeated = false;
+            for (float t = 0f; t < 1f;)
+            {
+                t = Mathf.Min(1f, t + Time.deltaTime / 0.7f);
+                transform.position = Vector3.Lerp(p0, p1, t * t * (3f - 2f * t));
+                yield return null;
+            }
+            controller.enabled = true;
+            Seat s = seat;
+            seat = null;
+            sitting = false;
+            s.Release(this);
+        }
+
+        void OnGUI()
+        {
+            if (!IsSeated || sitting || inputLocked || DialogueSystem.IsTalking) return;
+            var st = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
+            GUI.color = new Color(1f, 1f, 1f, 0.6f);
+            GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width, 24f), "Spazio o WASD per alzarti", st);
+            GUI.color = Color.white;
         }
 
         public void SetLook(float newYaw, float newPitch)

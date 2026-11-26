@@ -57,7 +57,7 @@ namespace FantaLandia.Horror.Dialogue
         void LateUpdate()
         {
             if (LookPoint != null) LookPoint.position = EyePoint;
-            if (releaseAt > 0f && Time.time > releaseAt && !DialogueSystem.IsBlocking)
+            if (releaseAt > 0f && Time.time > releaseAt && !DialogueSystem.IsTalking)
             {
                 releaseAt = -1f;
                 if (face != null) { face.lookTarget = null; face.SetExpression(0f); }

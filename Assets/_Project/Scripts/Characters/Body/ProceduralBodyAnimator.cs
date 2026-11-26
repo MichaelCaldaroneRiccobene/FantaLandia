@@ -48,6 +48,13 @@ namespace FantaLandia.Characters.Body
         [Tooltip("Inclinazione in avanti del busto imposta dall'esterno (gradi), es. appoggiati a una ringhiera")]
         public float externalLean;
 
+        [Tooltip("Seduto per volere esterno (il giocatore in prima persona non ha un CharacterMotor)")]
+        public bool externalSeated;
+        public float externalSeatHeight = 0.5f;
+
+        bool IsSeatedNow => (motor != null && motor.IsSeated) || externalSeated;
+        float SeatH => motor != null && motor.IsSeated ? motor.SeatHeight : externalSeatHeight;
+
         [Tooltip("Porta qualcosa nella mano sinistra (braccio teso lungo il fianco, niente oscillazione)")]
         public bool carryLeft;
 
@@ -202,7 +209,7 @@ namespace FantaLandia.Characters.Body
             }
 
             // seduto: posa seduta, niente passi
-            if (motor != null && motor.IsSeated)
+            if (IsSeatedNow)
             {
                 SeatedUpdate(dt);
                 return;
@@ -671,7 +678,7 @@ namespace FantaLandia.Characters.Body
                 if (rig.joints[i] != null) rig.joints[i].localRotation = Quaternion.Euler(pose[i]);
             }
             // il bacino appoggiato sul cuscino (anca sopra il sedile + spessore della coscia), un po' indietro
-            Vector3 seated = new Vector3(0f, motor.SeatHeight + hipDrop + 0.06f, -0.02f);
+            Vector3 seated = new Vector3(0f, SeatH + hipDrop + 0.06f, -0.02f);
             hips.localPosition = Vector3.Lerp(hips.localPosition, seated, k);
             desiredHipsLocal = seated;
             crouch = crouchVel = lastCrouch = 0f;

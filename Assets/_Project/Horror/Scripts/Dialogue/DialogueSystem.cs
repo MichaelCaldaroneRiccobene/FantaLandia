@@ -51,10 +51,16 @@ namespace FantaLandia.Horror.Dialogue
     /// Dialoghi con sottotitoli: testo che compare lettera per lettera con la voce borbottata,
     /// scelte multiple e frasi "di sottofondo" che non bloccano il gioco.
     ///
+    /// Le conversazioni normali si fanno "camminando": il giocatore può muoversi e guardarsi intorno (ma non correre
+    /// né abbassarsi), le battute vanno avanti da sole (Spazio per saltarle), le risposte si scelgono con 1/2/3.
+    /// Se ci si allontana troppo da chi parla il discorso si interrompe ("Ehi, dove vai?") e riprende al ritorno.
+    /// Le scene importanti possono essere "bloccanti" (.Blocking()): il giocatore sta fermo e guarda chi parla.
+    ///
     /// Uso:
     ///   DialogueSystem.Conversation()
+    ///       .Near(tom.transform, Speakers.Tom)
     ///       .Say(Speakers.Tom, "Ehi Muark!")
-    ///       .Choice(new[] { "Ciao!", "Ho portato la birra." }, i => ...)
+    ///       .Choice(new[] { "Ciao!", "Ho portato la birra." }, i => ..., 8f)   // 8 s per rispondere, poi Muark tace
     ///       .Do(() => ...)
     ///       .Start();
     /// </summary>
@@ -65,14 +71,21 @@ namespace FantaLandia.Horror.Dialogue
         public class Builder
         {
             internal readonly List<Step> steps = new List<Step>();
-            Action onEnd;
+            internal Action onEnd;
+            internal bool blocking;
+            internal Transform anchor;
+            internal Speaker anchorSpeaker;
+            internal float radius = 6f;
 
             public Builder Say(Speaker who, string text) { steps.Add(new Step { speaker = who, text = text }); return this; }
 
-            /// <summary>Il giocatore sceglie una risposta; la callback riceve l'indice scelto.</summary>
-            public Builder Choice(string[] options, Action<int> onChosen)
+            /// <summary>
+            /// Il giocatore sceglie una risposta (tasti 1/2/3); la callback riceve l'indice scelto.
+            /// Con 'timeout' > 0, se non risponde entro quei secondi Muark resta zitto e la callback non viene chiamata.
+            /// </summary>
+            public Builder Choice(string[] options, Action<int> onChosen, float timeout = 0f)
             {
-                steps.Add(new Step { options = options, onChosen = onChosen });
+                steps.Add(new Step { options = options, onChosen = onChosen, timeout = timeout });
                 return this;
             }
 
@@ -81,7 +94,17 @@ namespace FantaLandia.Horror.Dialogue
 
             public Builder OnEnd(Action action) { onEnd = action; return this; }
 
-            public void Start() => Instance.Begin(steps, onEnd);
+            /// <summary>Scena importante: il giocatore resta fermo e lo sguardo va su chi parla.</summary>
+            public Builder Blocking() { blocking = true; return this; }
+
+            /// <summary>Se il giocatore si allontana più di 'radius' da 'who' il discorso si ferma; 'speaker' lo richiama.</summary>
+            public Builder Near(Transform who, Speaker speaker, float radius = 6f)
+            {
+                anchor = who; anchorSpeaker = speaker; this.radius = radius;
+                return this;
+            }
+
+            public void Start() => Instance.Begin(this);
         }
 
         internal class Step
@@ -90,6 +113,7 @@ namespace FantaLandia.Horror.Dialogue
             public string text;
             public string[] options;
             public Action<int> onChosen;
+            public float timeout;
             public Action action;
         }
 
@@ -110,10 +134,13 @@ namespace FantaLandia.Horror.Dialogue
 
         /// <summary>Chi sta parlando adesso nella conversazione (null se nessuno).</summary>
         public static Speaker CurrentSpeaker =>
-            instance != null && instance.active && instance.index >= 0 && instance.index < instance.steps.Count ? instance.steps[instance.index].speaker : null;
+            instance != null && instance.active && !instance.paused && instance.index >= 0 && instance.index < instance.steps.Count ? instance.steps[instance.index].speaker : null;
 
-        /// <summary>True mentre una conversazione blocca il giocatore.</summary>
-        public static bool IsBlocking => instance != null && instance.active;
+        /// <summary>True mentre una conversazione blocca il giocatore (scene importanti).</summary>
+        public static bool IsBlocking => instance != null && instance.active && instance.blocking;
+
+        /// <summary>True durante qualsiasi conversazione (anche camminando): niente corsa, niente accovacciarsi.</summary>
+        public static bool IsTalking => instance != null && instance.active;
 
         /// <summary>
         /// Frase di sottofondo (non blocca): compare per qualche secondo nei sottotitoli.
@@ -145,21 +172,29 @@ namespace FantaLandia.Horror.Dialogue
         [Tooltip("Lettere al secondo")]
         public float typingSpeed = 38f;
         public float voiceVolume = 0.55f;
+        [Tooltip("Pausa dopo una battuta prima della successiva (secondi + per lettera)")]
+        public float holdBase = 1.1f;
+        public float holdPerChar = 0.035f;
 
         List<Step> steps = new List<Step>();
         int index = -1;
-        bool active;
+        bool active, blocking, paused;
+        Transform anchor;
+        Speaker anchorSpeaker;
+        float radius;
         Action onEnd;
         float visibleChars;
         int lastVoiceChar;
-        int hoveredChoice = -1;
         int insertCursor;
         int startFrame;
+        float lineDoneAt;   // quando la battuta è finita di scrivere
+        float choiceStart;
+        float pausedNagAt;
 
         class BarkLine { public Speaker speaker; public string text; public float until; public bool overhead; public Vector3 position; }
         readonly List<BarkLine> barks = new List<BarkLine>();
 
-        GUIStyle nameStyle, textStyle, choiceStyle, barkStyle;
+        GUIStyle nameStyle, textStyle, choiceStyle, barkStyle, hintStyle;
 
         void Awake()
         {
@@ -167,10 +202,15 @@ namespace FantaLandia.Horror.Dialogue
             instance = this;
         }
 
-        void Begin(List<Step> newSteps, Action end)
+        void Begin(Builder b)
         {
-            steps = newSteps;
-            onEnd = end;
+            steps = b.steps;
+            onEnd = b.onEnd;
+            blocking = b.blocking;
+            anchor = b.anchor;
+            anchorSpeaker = b.anchorSpeaker;
+            radius = b.radius;
+            paused = false;
             active = true;
             index = -1;
             startFrame = Time.frameCount; // il tasto che ha aperto il dialogo non deve anche farlo avanzare
@@ -185,23 +225,27 @@ namespace FantaLandia.Horror.Dialogue
                 if (index >= steps.Count) { Finish(); return; }
                 Step s = steps[index];
                 if (s.action != null) { s.action(); continue; } // azioni: subito
-                visibleChars = 0f;
-                lastVoiceChar = 0;
-                insertCursor = index + 1;
-                hoveredChoice = -1;
-                Cursor.lockState = s.options != null ? CursorLockMode.None : CursorLockMode.Locked;
-                Cursor.visible = s.options != null;
-                if (s.options == null) LineStarted?.Invoke(s.speaker, s.text);
+                StartStep(s);
                 return;
             }
+        }
+
+        void StartStep(Step s)
+        {
+            visibleChars = 0f;
+            lastVoiceChar = 0;
+            lineDoneAt = -1f;
+            insertCursor = index + 1;
+            choiceStart = Time.time;
+            if (s.options == null) LineStarted?.Invoke(s.speaker, s.text);
         }
 
         void Finish()
         {
             active = false;
+            blocking = false;
+            paused = false;
             steps = new List<Step>();
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
             Action end = onEnd;
             onEnd = null;
             ConversationEnded?.Invoke();
@@ -220,17 +264,47 @@ namespace FantaLandia.Horror.Dialogue
             Next();
         }
 
+        bool PlayerTooFar()
+        {
+            if (anchor == null || blocking) return false;
+            Camera cam = Camera.main;
+            if (cam == null) return false;
+            Vector3 d = cam.transform.position - anchor.position;
+            d.y *= 0.5f; // un piano di differenza conta, ma meno
+            return d.magnitude > radius;
+        }
+
         void Update()
         {
             barks.RemoveAll(b => Time.time > b.until);
             if (!active || index < 0 || index >= steps.Count) return;
             if (Time.frameCount == startFrame) return;
 
+            // ci si è allontanati: il discorso si ferma e chi parlava richiama Muark; si riprende dalla stessa battuta
+            if (!paused && PlayerTooFar())
+            {
+                paused = true;
+                pausedNagAt = Time.time + 0.4f;
+            }
+            if (paused)
+            {
+                if (Time.time > pausedNagAt && anchorSpeaker != null)
+                {
+                    pausedNagAt = Time.time + 12f;
+                    Bark(anchorSpeaker, Nag(), anchor != null ? anchor.position + Vector3.up * 1.6f : (Vector3?)null);
+                }
+                if (PlayerTooFar()) return;
+                paused = false;
+                StartStep(steps[index]); // ricomincia la battuta interrotta
+                return;
+            }
+
             Step s = steps[index];
             if (s.options != null)
             {
                 int digit = GameInput.DigitPressed();
-                if (digit > 0 && digit <= s.options.Length) Choose(digit - 1);
+                if (digit > 0 && digit <= s.options.Length) { Choose(digit - 1); return; }
+                if (s.timeout > 0f && Time.time - choiceStart > s.timeout) Next(); // nessuna risposta: Muark tace
                 return;
             }
 
@@ -243,13 +317,28 @@ namespace FantaLandia.Horror.Dialogue
                 for (; lastVoiceChar < shown; lastVoiceChar++)
                 {
                     char c = s.text[lastVoiceChar];
-                    if (char.IsLetter(c) && lastVoiceChar % 2 == 0) PlayVoiceSyllable(s.speaker, null);
+                    if (char.IsLetter(c) && lastVoiceChar % 2 == 0) PlayVoiceSyllable(s.speaker, SpeakerPosition(s.speaker));
                 }
-                if (GameInput.AdvanceDialogue) visibleChars = len; // completa subito
+                if (Skip()) visibleChars = len; // completa subito
                 return;
             }
 
-            if (GameInput.AdvanceDialogue) Next();
+            if (lineDoneAt < 0f) lineDoneAt = Time.time;
+            if (Skip() || Time.time - lineDoneAt > holdBase + len * holdPerChar) Next();
+        }
+
+        bool Skip() => blocking ? GameInput.AdvanceDialogue : GameInput.SkipLine;
+
+        static readonly string[] Nags = { "Ehi, Muark! Dove vai?", "Muark? Ti sto parlando!", "Ehi! Torna qui, dai." };
+        int nagIndex;
+        string Nag() => Nags[nagIndex++ % Nags.Length];
+
+        /// <summary>Le voci dei personaggi vengono da dove sono (Muark e la TV restano "in testa" se non si trovano).</summary>
+        static Vector3? SpeakerPosition(Speaker who)
+        {
+            if (who == null || who.id == Speakers.Muark.id) return null;
+            var npc = NpcSpeaker.Find(who.id);
+            return npc != null ? npc.EyePoint : (Vector3?)null;
         }
 
         System.Collections.IEnumerator BarkVoice(Speaker who, string text, Vector3? position)
@@ -267,7 +356,7 @@ namespace FantaLandia.Horror.Dialogue
             SyllableSpoken?.Invoke(who);
             var clip = ProceduralAudio.Syllable(UnityEngine.Random.Range(0, ProceduralAudio.SyllableCount));
             float pitch = who.pitch * UnityEngine.Random.Range(0.94f, 1.08f);
-            if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, voiceVolume, pitch, 15f);
+            if (position.HasValue) HorrorAudio.PlayAt(clip, position.Value, voiceVolume, pitch, 30f);
             else HorrorAudio.Play2D(clip, voiceVolume, pitch);
         }
 
@@ -278,8 +367,9 @@ namespace FantaLandia.Horror.Dialogue
             if (textStyle != null) return;
             nameStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, richText = true };
             textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, wordWrap = true, richText = true };
-            choiceStyle = new GUIStyle(GUI.skin.button) { fontSize = 20, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(16, 16, 8, 8) };
+            choiceStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleLeft, richText = true, padding = new RectOffset(16, 16, 6, 6) };
             barkStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, richText = true };
+            hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleRight, richText = true };
         }
 
         void OnGUI()
@@ -288,53 +378,64 @@ namespace FantaLandia.Horror.Dialogue
             EnsureStyles();
             float w = Mathf.Min(900f, Screen.width - 80f);
             float x = (Screen.width - w) * 0.5f;
+            bool showing = active && !paused && index >= 0 && index < steps.Count;
 
             // frasi di sottofondo
-            float by = Screen.height - (active ? 260f : 90f);
             DrawOverheadBarks();
+            float by = Screen.height - (showing ? 200f : 90f);
             for (int i = barks.Count - 1; i >= 0; i--)
             {
                 var b = barks[i];
                 if (b.overhead) continue;
-                string hex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
+                string bhex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
                 Rect r = new Rect(x, by, w, 28f);
-                DrawShadowed(r, $"<color=#{hex}>{b.speaker.name}:</color> {b.text}", barkStyle);
+                DrawShadowed(r, $"<color=#{bhex}>{b.speaker.name}:</color> {b.text}", barkStyle);
                 by -= 28f;
             }
 
-            if (!active || index < 0 || index >= steps.Count) return;
+            if (!showing) return;
             Step s = steps[index];
 
             if (s.options != null)
             {
-                float h = 48f;
-                float total = s.options.Length * (h + 8f);
-                float y = Screen.height - 40f - total;
+                float h = 40f;
+                float total = s.options.Length * (h + 6f);
+                float y = Screen.height - 36f - total;
                 GUI.color = new Color(0f, 0f, 0f, 0.6f);
-                GUI.DrawTexture(new Rect(x - 16f, y - 16f, w + 32f, total + 24f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(x - 16f, y - 14f, w + 32f, total + 22f), Texture2D.whiteTexture);
+                // tempo per rispondere: una barra che si accorcia
+                if (s.timeout > 0f)
+                {
+                    float left = 1f - Mathf.Clamp01((Time.time - choiceStart) / s.timeout);
+                    GUI.color = new Color(0.9f, 0.85f, 0.6f, 0.7f);
+                    GUI.DrawTexture(new Rect(x - 16f, y - 14f, (w + 32f) * left, 3f), Texture2D.whiteTexture);
+                }
                 GUI.color = Color.white;
                 for (int i = 0; i < s.options.Length; i++)
-                {
-                    if (GUI.Button(new Rect(x, y + i * (h + 8f), w, h), $"{i + 1}.  {s.options[i]}", choiceStyle)) Choose(i);
-                }
+                    GUI.Label(new Rect(x, y + i * (h + 6f), w, h), $"<color=#e8d8a8><b>{i + 1}</b></color>   {s.options[i]}", choiceStyle);
                 return;
             }
 
-            float boxH = 130f;
-            Rect box = new Rect(x - 20f, Screen.height - boxH - 30f, w + 40f, boxH);
-            GUI.color = new Color(0f, 0f, 0f, 0.65f);
+            float boxH = 110f;
+            Rect box = new Rect(x - 20f, Screen.height - boxH - 24f, w + 40f, boxH);
+            GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(box, Texture2D.whiteTexture);
             GUI.color = Color.white;
 
             if (s.speaker != null)
             {
                 string hex = ColorUtility.ToHtmlStringRGB(s.speaker.color);
-                GUI.Label(new Rect(x, box.y + 10f, w, 30f), $"<color=#{hex}>{s.speaker.name}</color>", nameStyle);
+                GUI.Label(new Rect(x, box.y + 8f, w, 30f), $"<color=#{hex}>{s.speaker.name}</color>", nameStyle);
             }
             string shown = s.text.Substring(0, Mathf.Clamp((int)visibleChars, 0, s.text.Length));
-            GUI.Label(new Rect(x, box.y + 42f, w, boxH - 50f), shown, textStyle);
-
-            if (visibleChars >= s.text.Length && Mathf.Repeat(Time.time, 1f) < 0.6f)
+            GUI.Label(new Rect(x, box.y + 38f, w, boxH - 44f), shown, textStyle);
+            if (!blocking)
+            {
+                GUI.color = new Color(1f, 1f, 1f, 0.45f);
+                GUI.Label(new Rect(box.x, box.yMax - 22f, box.width - 12f, 20f), "Spazio: salta", hintStyle);
+                GUI.color = Color.white;
+            }
+            else if (visibleChars >= s.text.Length && Mathf.Repeat(Time.time, 1f) < 0.6f)
                 GUI.Label(new Rect(box.xMax - 60f, box.yMax - 34f, 50f, 30f), "▼", textStyle);
         }
 
@@ -370,7 +471,7 @@ namespace FantaLandia.Horror.Dialogue
         static void DrawShadowed(Rect r, string text, GUIStyle style)
         {
             var c = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.8f);
+            GUI.color = new Color(0f, 0f, 0f, 0.8f * c.a);
             GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), StripColors(text), style);
             GUI.color = c;
             GUI.Label(r, text, style);

@@ -69,6 +69,9 @@ namespace FantaLandia.Core
         public static bool CrouchHeld => Held(Key.C) || Held(Key.LeftCtrl);
         public static bool RunHeld => Shift;
         public static bool AdvanceDialogue => Pressed(Key.E) || Pressed(Key.Space) || LeftDown;
+        /// <summary>Salta la battuta in corso nei dialoghi "camminando" (E resta per interagire).</summary>
+        public static bool SkipLine => Pressed(Key.Space);
+        public static bool StandUp => Pressed(Key.Space) || Pressed(Key.W) || Pressed(Key.S) || Pressed(Key.A) || Pressed(Key.D);
         public static bool RetroToggle => Pressed(Key.F2);
         public static bool DropDown => Pressed(Key.Q);
         public static bool DropHeld => Held(Key.Q);
@@ -126,6 +129,8 @@ namespace FantaLandia.Core
         public static bool CrouchHeld => Held(KeyCode.C) || Held(KeyCode.LeftControl);
         public static bool RunHeld => Shift;
         public static bool AdvanceDialogue => Pressed(KeyCode.E) || Pressed(KeyCode.Space) || LeftDown;
+        public static bool SkipLine => Pressed(KeyCode.Space);
+        public static bool StandUp => Pressed(KeyCode.Space) || Pressed(KeyCode.W) || Pressed(KeyCode.S) || Pressed(KeyCode.A) || Pressed(KeyCode.D);
         public static bool RetroToggle => Pressed(KeyCode.F2);
         public static bool DropDown => Pressed(KeyCode.Q);
         public static bool DropHeld => Held(KeyCode.Q);

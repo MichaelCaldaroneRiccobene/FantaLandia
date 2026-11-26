@@ -25,6 +25,8 @@ namespace FantaLandia.Horror.Interaction
 
         public override string Prompt(Interactor who) => $"Parla con {displayName}";
 
+        public override bool CanInteract(Interactor who) => enabled && !DialogueSystem.IsTalking;
+
         public override void Interact(Interactor who)
         {
             var conv = DialogueSystem.Conversation();
@@ -37,6 +39,7 @@ namespace FantaLandia.Horror.Interaction
                         DialogueSystem.Insert((Speakers.Find(replies[i].speaker), replies[i].text));
                 });
             }
+            if (lines != null && lines.Length > 0) conv.Near(transform, Speakers.Find(lines[0].speaker), 6f);
             conv.Start();
         }
     }

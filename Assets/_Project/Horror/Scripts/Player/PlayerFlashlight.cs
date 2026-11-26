@@ -42,6 +42,8 @@ namespace FantaLandia.Horror.Player
         Vector3 aim;
         float qDownTime = -1f;
         float flickerUntil;
+        /// <summary>La torcia sfarfalla per qualche istante (spaventi della storia).</summary>
+        public void Flicker(float seconds) => flickerUntil = Time.time + seconds;
         float baseIntensity = 3f;
 
         void Start()

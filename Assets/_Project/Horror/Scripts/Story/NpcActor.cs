@@ -25,6 +25,14 @@ namespace FantaLandia.Horror.Story
         public float ambientDistance = 12f;
         public Vector2 ambientInterval = new Vector2(8f, 15f);
 
+        [Header("Vita di sottofondo")]
+        [Tooltip("Da fermo, ogni tanto guarda qualcuno: il giocatore, gli altri, la TV")]
+        public bool idleLook = true;
+        [Tooltip("Se il giocatore gli sta addosso, fa un passo indietro")]
+        public bool keepPersonalSpace = true;
+        /// <summary>Qualcosa che tutti guardano volentieri (la TV del salotto).</summary>
+        public static Transform SharedLookTarget;
+
         public CharacterMotor Motor { get; private set; }
         public FaceAnimator Face { get; private set; }
         public bool IsLeaning { get; private set; }
@@ -129,11 +137,60 @@ namespace FantaLandia.Horror.Story
                 }
             }
             AmbientChatter();
+            IdleLook();
+            PersonalSpace();
+        }
+
+        float nextIdleLook;
+        bool idleLooking;
+
+        void IdleLook()
+        {
+            if (!idleLook || Face == null || DialogueSystem.IsTalking || Time.time < nextIdleLook) return;
+            if (Face.lookTarget != null && !idleLooking) return; // lo sguardo l'ha deciso qualcun altro (la storia, un dialogo)
+            nextIdleLook = Time.time + Random.Range(2.5f, 6.5f);
+            Camera cam = Camera.main;
+            var options = new System.Collections.Generic.List<Transform>();
+            if (cam != null && Vector3.Distance(cam.transform.position, transform.position) < 8f) { options.Add(cam.transform); options.Add(cam.transform); }
+            foreach (var other in FindObjectsByType<NpcSpeaker>(FindObjectsSortMode.None))
+                if (other != null && other.transform != transform && other.LookPoint != null && Vector3.Distance(other.transform.position, transform.position) < 6f)
+                    options.Add(other.LookPoint);
+            if (SharedLookTarget != null && Vector3.Distance(SharedLookTarget.position, transform.position) < 7f) { options.Add(SharedLookTarget); options.Add(SharedLookTarget); }
+            options.Add(null); // a volte lo sguardo vaga
+            Face.lookTarget = options[Random.Range(0, options.Count)];
+            idleLooking = Face.lookTarget != null;
+        }
+
+        float crowdedFor;
+        float nextComplaint;
+
+        void PersonalSpace()
+        {
+            if (!keepPersonalSpace || IsLeaning || Motor == null || Motor.IsSeated) return;
+            var ag = Motor.Agent;
+            if (ag == null || !ag.enabled || ag.pathPending || (ag.hasPath && ag.remainingDistance > 0.15f) || Motor.CurrentSpeed > 0.1f) { crowdedFor = 0f; return; }
+            Camera cam = Camera.main;
+            if (cam == null) return;
+            Vector3 d = transform.position - cam.transform.position;
+            d.y = 0f;
+            crowdedFor = d.magnitude < 0.6f ? crowdedFor + Time.deltaTime : 0f;
+            if (crowdedFor < 0.7f) return;
+            crowdedFor = 0f;
+            Vector3 away = d.sqrMagnitude > 0.001f ? d.normalized : -transform.forward;
+            Motor.SetGait(Gait.Walk);
+            Motor.MoveTo(transform.position + away * 0.8f, false);
+            if (Time.time > nextComplaint)
+            {
+                nextComplaint = Time.time + 20f;
+                var sp = GetComponent<NpcSpeaker>();
+                string[] lines = { "Ehi, spazio vitale!", "Mi stai addosso, amico.", "...Sì?" };
+                if (sp != null) DialogueSystem.Bark(Speakers.Find(sp.speakerId), lines[Random.Range(0, lines.Length)], sp.EyePoint);
+            }
         }
 
         void AmbientChatter()
         {
-            if (ambientLines == null || ambientLines.Length == 0 || Time.time < nextLine || DialogueSystem.IsBlocking) return;
+            if (ambientLines == null || ambientLines.Length == 0 || Time.time < nextLine || DialogueSystem.IsTalking) return;
             nextLine = Time.time + Random.Range(ambientInterval.x, ambientInterval.y);
             Camera cam = Camera.main;
             if (cam == null || Vector3.Distance(cam.transform.position, transform.position) > ambientDistance) return;
