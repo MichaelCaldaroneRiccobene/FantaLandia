@@ -568,8 +568,9 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Scrivania"), f, new Vector3(0.2f, F1, 10.4f), 180f);
             Place(VoxelFurniture.Get("Libreria"), f, new Vector3(4.6f, F1, 10.6f), 180f);
             Place(VoxelFurniture.Get("Armadio"), f, new Vector3(-1.6f, F1, 9.4f), 90f);
-            Place(VoxelFurniture.Get("Vasca"), f, new Vector3(5.1f, F1, 0.7f), 0f);
-            Place(VoxelFurniture.Get("WC"), f, new Vector3(6.3f, F1, 2.6f), -90f);
+            // vasca contro il muro in fondo (prima era davanti alla porta e non si entrava)
+            Place(VoxelFurniture.Get("Vasca"), f, new Vector3(6.3f, F1, 1.3f), 90f);
+            Place(VoxelFurniture.Get("WC"), f, new Vector3(6.35f, F1, 3.25f), -90f);
             Place(VoxelFurniture.Get("Lavandino"), f, new Vector3(4.4f, F1, 3.92f), 180f);
             Place(VoxelFurniture.Get("Scaffale"), f, new Vector3(6.45f, F1, 5.5f), -90f);
 

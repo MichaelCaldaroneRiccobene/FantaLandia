@@ -35,24 +35,14 @@ namespace FantaLandia.Horror.EditorTools
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             r.receiveShadows = false;
 
-            // nuvole voxel, sparse in alto attorno al quartiere
-            Shader cloudShader = Shader.Find("FantaLandia/SkyCloud");
-            Material cloudMat = AssetMat("Nuvola", cloudShader);
-            Transform clouds = Group("Nuvole", sky);
-            var shapes = new[] { Cloud("Nuvola A", 1, cloudMat), Cloud("Nuvola B", 2, cloudMat), Cloud("Nuvola C", 3, cloudMat) };
-            var rng = new Random(7);
-            for (int i = 0; i < 16; i++)
-            {
-                float a = (float)rng.NextDouble() * Mathf.PI * 2f;
-                float d = 50f + (float)rng.NextDouble() * 110f;
-                var pos = new Vector3(Mathf.Cos(a) * d, 55f + (float)rng.NextDouble() * 25f, Mathf.Sin(a) * d);
-                Place(shapes[i % shapes.Length], clouds, pos, (float)rng.NextDouble() * 360f);
-            }
+            // le nuvole sono volumetriche, calcolate nello shader del cielo
+            domeMat.SetFloat("_MoonSize", 0.024f);
+            domeMat.SetFloat("_CloudCoverage", 0.5f);
+            EditorUtility.SetDirty(domeMat);
 
             var ns = sky.gameObject.AddComponent<NightSky>();
             ns.dome = r;
             ns.moonLight = moon;
-            ns.clouds = clouds;
         }
 
         static Material AssetMat(string name, Shader shader)
@@ -64,28 +54,6 @@ namespace FantaLandia.Horror.EditorTools
             if (m == null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
             else if (m.shader != shader) m.shader = shader;
             return m;
-        }
-
-        /// <summary>Nuvola a cubetti da 3 m: una forma schiacciata e irregolare.</summary>
-        static GameObject Cloud(string name, int seed, Material mat)
-        {
-            var v = new VoxelBuilder(3f) { shadeVariation = 0f };
-            int c = v.C("#20232c");
-            var rng = new Random(seed * 101);
-            int blobs = 3 + seed;
-            for (int b = 0; b < blobs; b++)
-            {
-                int cx = rng.Next(-4, 5), cz = rng.Next(-3, 4);
-                int rx = 2 + rng.Next(3), rz = 2 + rng.Next(2), ry = 1;
-                for (int x = -rx; x <= rx; x++)
-                    for (int z = -rz; z <= rz; z++)
-                        for (int y = 0; y <= ry; y++)
-                        {
-                            float e = (x * x) / (float)(rx * rx) + (z * z) / (float)(rz * rz) + (y * y) / 2f;
-                            if (e <= 1.1f && !(y == ry && rng.NextDouble() < 0.4)) v.Set(cx + x, y, cz + z, c);
-                        }
-            }
-            return VoxelAssetLibrary.Save(name, v, Vector3.zero, false, _ => mat);
         }
 
         // ------------------------------------------------------------------ pavimenti a motivi
