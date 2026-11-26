@@ -152,6 +152,9 @@ namespace FantaLandia.Horror.Story
         {
             Goal((null, Speakers.Muark, "Dovrei bussare alla porta di Tom."),
                  (null, Speakers.Muark, "Allora, busso o resto qui al freddo?"));
+            // Tom all'inizio è in poltrona a guardare la TV (e non sbircia fuori dalla finestra)
+            SitNow(tom);
+            Actor(tom).idleLook = false;
             frontDoor.locked = true;
             frontDoor.knockable = true;
             bool knocked = false;
@@ -162,8 +165,11 @@ namespace FantaLandia.Horror.Story
             ClearGoal();
 
             yield return new WaitForSeconds(0.6f);
-            DialogueSystem.Bark(Speakers.Tom, "Arrivo, arrivo!", tom.transform.position + Vector3.up * 1.6f);
-            yield return new WaitForSeconds(0.6f);
+            DialogueSystem.Bark(Speakers.Tom, "Arrivo, arrivo!", Eye(tom));
+            yield return new WaitForSeconds(0.4f);
+            Stand(tom);
+            yield return new WaitForSeconds(0.5f);
+            Actor(tom).idleLook = true;
             yield return Actor(tom).WalkTo(tomAtDoor.position);
             yield return Actor(tom).FaceTowards(frontDoor.transform.position, 0.4f);
             frontDoor.Unlock();

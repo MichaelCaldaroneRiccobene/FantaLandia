@@ -152,10 +152,14 @@ namespace FantaLandia.Horror.Story
         {
             if (!idleLook || Face == null || DialogueSystem.IsTalking || Time.time < nextIdleLook) return;
             if (Face.lookTarget != null && !idleLooking) return; // lo sguardo l'ha deciso qualcun altro (la storia, un dialogo)
-            nextIdleLook = Time.time + Random.Range(2.5f, 6.5f);
+            nextIdleLook = Time.time + Random.Range(4f, 9f);
             Camera cam = Camera.main;
             var options = new System.Collections.Generic.List<Transform>();
-            if (cam != null && Vector3.Distance(cam.transform.position, transform.position) < 8f) { options.Add(cam.transform); options.Add(cam.transform); }
+            // il giocatore lo guardano solo ogni tanto, da vicino e se lo vedono davvero (non attraverso muri e finestre)
+            if (cam != null && Random.value < 0.2f && Vector3.Distance(cam.transform.position, transform.position) < 5f
+                && Face != null && !Physics.Linecast(Face.EyePoint, cam.transform.position, ~((1 << 2) | (1 << 7)), QueryTriggerInteraction.Ignore))
+                options.Add(cam.transform);
+            options.Add(null); // spesso lo sguardo vaga
             foreach (var other in FindObjectsByType<NpcSpeaker>(FindObjectsSortMode.None))
                 if (other != null && other.transform != transform && other.LookPoint != null && Vector3.Distance(other.transform.position, transform.position) < 6f)
                     options.Add(other.LookPoint);
