@@ -83,9 +83,9 @@ namespace FantaLandia.Horror.Dialogue
             /// Il giocatore sceglie una risposta (tasti 1/2/3); la callback riceve l'indice scelto.
             /// Con 'timeout' > 0, se non risponde entro quei secondi Muark resta zitto e la callback non viene chiamata.
             /// </summary>
-            public Builder Choice(string[] options, Action<int> onChosen, float timeout = 0f)
+            public Builder Choice(string[] options, Action<int> onChosen, float timeout = 0f, Action onSilence = null)
             {
-                steps.Add(new Step { options = options, onChosen = onChosen, timeout = timeout });
+                steps.Add(new Step { options = options, onChosen = onChosen, timeout = timeout, onSilence = onSilence });
                 return this;
             }
 
@@ -114,6 +114,7 @@ namespace FantaLandia.Horror.Dialogue
             public string[] options;
             public Action<int> onChosen;
             public float timeout;
+            public Action onSilence; // se il tempo scade: di solito qualcuno risponde al silenzio di Muark
             public Action action;
         }
 
@@ -304,7 +305,13 @@ namespace FantaLandia.Horror.Dialogue
             {
                 int digit = GameInput.DigitPressed();
                 if (digit > 0 && digit <= s.options.Length) { Choose(digit - 1); return; }
-                if (s.timeout > 0f && Time.time - choiceStart > s.timeout) Next(); // nessuna risposta: Muark tace
+                if (s.timeout > 0f && Time.time - choiceStart > s.timeout)
+                {
+                    // nessuna risposta: Muark tace (le battute inserite qui vanno subito dopo)
+                    insertCursor = index + 1;
+                    s.onSilence?.Invoke();
+                    Next();
+                }
                 return;
             }
 

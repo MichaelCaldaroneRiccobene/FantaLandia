@@ -19,6 +19,8 @@ namespace FantaLandia.Horror.World
         [Tooltip("Senza corrente la TV è spenta (blackout)")]
         public bool powered = true;
         public string newsHeadline = "EDIZIONE STRAORDINARIA";
+        [Tooltip("Il giocatore può accenderla e spegnerla con E (nella storia no: la TV la gestisce la regia)")]
+        public bool playerCanToggle;
 
         const int W = 96, H = 72;
         Texture2D tex;
@@ -48,6 +50,8 @@ namespace FantaLandia.Horror.World
             if (screenLight != null) lightIntensity = screenLight.intensity;
             sound = HorrorAudio.CreateLoop(transform, null, 0.35f, true, 12f);
         }
+
+        public override bool CanInteract(Interactor who) => enabled && playerCanToggle;
 
         public override void Interact(Interactor who)
         {

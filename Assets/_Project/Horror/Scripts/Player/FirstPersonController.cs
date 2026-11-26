@@ -109,7 +109,9 @@ namespace FantaLandia.Horror.Player
                 pitch = Mathf.Clamp(pitch - md.y, -85f, 85f);
             }
             else if (DialogueSystem.IsBlocking) LookAtSpeaker(dt);
-            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            // da seduti il corpo resta rivolto come il sedile: gira solo la testa (la camera)
+            float bodyYaw = IsSeated && !sitting ? seatYaw : yaw;
+            transform.rotation = Quaternion.Euler(0f, bodyYaw, 0f);
 
             // --- movimento
             Vector2 input = locked ? Vector2.zero : GameInput.PanAxis;
@@ -147,7 +149,7 @@ namespace FantaLandia.Horror.Player
             // guardando in basso la camera avanza un po' (come la testa che si sporge): non entra nelle spalle e nei vestiti
             float down = Mathf.Clamp01(pitch / 70f);
             cam.transform.localPosition = new Vector3(0f, eye + bob - down * 0.05f, eyeForward + down * 0.2f);
-            cam.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+            cam.transform.localRotation = Quaternion.Euler(pitch, Mathf.DeltaAngle(bodyYaw, yaw), 0f);
 
             // --- il corpo segue
             if (animator != null)
@@ -198,7 +200,7 @@ namespace FantaLandia.Horror.Player
             controller.enabled = false;
             velocity = Vector3.zero;
             seatYaw = s.transform.eulerAngles.y;
-            seatEyeHeight = s.height + 0.72f;
+            seatEyeHeight = s.height + 0.86f; // all'altezza degli occhi degli altri seduti
             Vector3 p0 = transform.position, p1 = s.transform.position;
             float y0 = yaw, pi0 = pitch;
             IsSeated = true;

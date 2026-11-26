@@ -38,7 +38,7 @@ namespace FantaLandia.Horror.EditorTools
 
         static readonly List<Light> houseLights = new List<Light>();
         static readonly List<Light> cellarBulbs = new List<Light>();
-        static HorrorDoor backDoor, bathDoor, cellarDoor;
+        static HorrorDoor backDoor, bathDoor, cellarDoor, sideDoor;
         static GeneratorStarter generator;
         static CharacterMotor royMotor, jefMotor;
         static readonly List<NpcActor> neighborActors = new List<NpcActor>();
@@ -55,7 +55,7 @@ namespace FantaLandia.Horror.EditorTools
             houseLights.Clear();
             cellarBulbs.Clear();
             neighborActors.Clear();
-            backDoor = bathDoor = cellarDoor = null;
+            backDoor = bathDoor = cellarDoor = sideDoor = null;
             generator = null;
             royMotor = jefMotor = null;
 
@@ -119,6 +119,7 @@ namespace FantaLandia.Horror.EditorTools
             story.backDoor = backDoor;
             story.bathDoor = bathDoor;
             story.cellarDoor = cellarDoor;
+            story.sideDoor = sideDoor;
             story.tom = tom;
             story.roy = royMotor;
             story.jef = jefMotor;
@@ -523,7 +524,7 @@ namespace FantaLandia.Horror.EditorTools
             front.knockLocal = new Vector3(0.45f, 1.62f, -0.055f);
             front.locked = true;
             front.knockable = true;
-            DoorAt(s, "Porta laterale", VoxelAssetLibrary.Load("Porta"), new Vector3(X1 - ET * 0.5f, F0, 8.0f), -90f);
+            sideDoor = DoorAt(s, "Porta laterale", VoxelAssetLibrary.Load("Porta"), new Vector3(X1 - ET * 0.5f, F0, 8.0f), -90f);
             // porta sul retro: dalla sala da pranzo alla pedana del giardino
             backDoor = DoorAt(s, "Porta sul retro", VoxelAssetLibrary.Load("Porta"), new Vector3(-1.05f, F0, Z1 - ET * 0.5f), 180f);
             GameObject inner = VoxelFurniture.Get("Porta interna");
@@ -803,7 +804,6 @@ namespace FantaLandia.Horror.EditorTools
             Material puddle = M("Pozza", "#15171a", 0.95f);
             Material plank = M("Asse vecchia", "#4e3a26");
             Material mattress = M("Materasso macchiato", "#8a8270");
-            Material web = EditorAssetUtil.Glass("Ragnatela", new Color(0.75f, 0.75f, 0.72f), 0.18f);
             const float ix0 = X0 + 0.3f, ix1 = X1 - 0.3f, iz0 = Z0 + 0.3f, iz1 = Z1 - 0.3f;
             float ceil = F0 - S;
             var rng = new System.Random(77);
@@ -896,21 +896,34 @@ namespace FantaLandia.Horror.EditorTools
                 Object.DestroyImmediate(Box(streak ? "Colatura" : "Muffa", b, min, max, mat).GetComponent<Collider>());
             }
 
-            // ragnatele negli angoli e tra le travi
-            for (int i = 0; i < 18; i++)
+            // ragnatele negli angoli tra muro e soffitto: fili sottili a raggiera con qualche giro (niente piani trasparenti)
+            Material silk = M("Ragnatela", "#5e5e5a");
+            var corners = new List<Vector3> { new Vector3(ix0, ceil - 0.2f, iz0), new Vector3(ix1, ceil - 0.2f, iz0), new Vector3(ix0, ceil - 0.2f, iz1), new Vector3(ix1, ceil - 0.2f, iz1) };
+            for (int i = 0; i < 6; i++) corners.Add(new Vector3(R() < 0.5f ? ix0 : ix1, ceil - 0.2f, Mathf.Lerp(iz0 + 1f, iz1 - 1f, R())));
+            foreach (Vector3 c0 in corners)
             {
-                var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                q.name = "Ragnatela";
-                Object.DestroyImmediate(q.GetComponent<Collider>());
-                q.transform.SetParent(b, false);
-                bool corner = i < 4;
-                float x = corner ? (i % 2 == 0 ? ix0 + 0.25f : ix1 - 0.25f) : Mathf.Lerp(ix0 + 0.5f, ix1 - 0.5f, R());
-                float z = corner ? (i < 2 ? iz0 + 0.25f : iz1 - 0.25f) : Mathf.Lerp(iz0 + 0.5f, iz1 - 0.5f, R());
-                q.transform.localPosition = new Vector3(x, ceil - 0.28f, z);
-                q.transform.localRotation = Quaternion.Euler(20f + R() * 40f, corner ? (x < 0 ? 45f : -45f) + (z > 5f ? 180f : 0f) : R() * 360f, 0f);
-                q.transform.localScale = Vector3.one * (0.5f + R() * 0.5f);
-                q.GetComponent<Renderer>().sharedMaterial = web;
-                q.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                Transform webT = Group("Ragnatela", b);
+                // i fili vanno dall'angolo verso il basso e verso l'interno, a ventaglio
+                float sx = c0.x < 0f ? 1f : -1f, sz = c0.z < 5f ? 1f : -1f;
+                bool onSideWall = c0.z > iz0 + 0.5f && c0.z < iz1 - 0.5f;
+                var ends = new List<Vector3>();
+                for (int k = 0; k < 6; k++)
+                {
+                    float a = k / 5f, len = 0.35f + R() * 0.3f;
+                    Vector3 dir = onSideWall
+                        ? new Vector3(sx * Mathf.Sin(a * Mathf.PI * 0.5f), -Mathf.Cos(a * Mathf.PI * 0.5f), (R() - 0.5f) * 0.6f)
+                        : new Vector3(sx * Mathf.Cos(a * Mathf.PI * 0.5f), -0.35f - R() * 0.4f, sz * Mathf.Sin(a * Mathf.PI * 0.5f));
+                    Vector3 end = c0 + dir.normalized * len;
+                    ends.Add(end);
+                    Object.DestroyImmediate(SlopedBox("Filo", webT, c0, end, 0.006f, 0.006f, silk).GetComponent<Collider>());
+                }
+                for (int ring = 1; ring <= 2; ring++)
+                    for (int k = 0; k < ends.Count - 1; k++)
+                    {
+                        float f = ring * 0.35f;
+                        Object.DestroyImmediate(SlopedBox("Filo", webT, Vector3.Lerp(c0, ends[k], f), Vector3.Lerp(c0, ends[k + 1], f), 0.005f, 0.005f, silk).GetComponent<Collider>());
+                    }
+                foreach (var r in webT.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
 
             // pozza d'acqua sotto la caldaia e assi vecchie per terra

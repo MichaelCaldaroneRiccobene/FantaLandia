@@ -84,9 +84,15 @@ namespace FantaLandia.Characters
         public float SeatHeight { get; private set; } = 0.5f;
 
         /// <summary>Si siede: si gira, scivola nel sedile e si abbassa. 'seatPosition' è il punto a terra sotto il sedile.</summary>
+        Coroutine sitRoutine;
+        /// <summary>Si sta sedendo o è seduto (l'agente è spento): per rialzarlo serve StandUp.</summary>
+        public bool IsSitting { get; private set; }
+
         public void SitDown(Vector3 seatPosition, Quaternion facing, float seatHeight)
         {
-            StartCoroutine(SitRoutine(seatPosition, facing, seatHeight));
+            if (sitRoutine != null) StopCoroutine(sitRoutine);
+            IsSitting = true;
+            sitRoutine = StartCoroutine(SitRoutine(seatPosition, facing, seatHeight));
         }
 
         System.Collections.IEnumerator SitRoutine(Vector3 seatPosition, Quaternion facing, float seatHeight)
@@ -124,6 +130,9 @@ namespace FantaLandia.Characters
         /// <summary>Si alza e torna sulla NavMesh nel punto indicato.</summary>
         public void StandUp(Vector3 standPosition)
         {
+            // anche se si stava ancora sedendo: interrompe il movimento e si rialza subito
+            if (sitRoutine != null) { StopCoroutine(sitRoutine); sitRoutine = null; }
+            IsSitting = false;
             IsSeated = false;
             transform.position = standPosition;
             agent.enabled = true;

@@ -34,6 +34,7 @@ namespace FantaLandia.Horror.Story
         public HorrorDoor backDoor;
         public HorrorDoor bathDoor;
         public HorrorDoor cellarDoor;
+        public HorrorDoor sideDoor;
 
         [Header("Personaggi")]
         public CharacterMotor tom;
@@ -170,7 +171,8 @@ namespace FantaLandia.Horror.Story
                     if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Grande! Mettila sull'isola in cucina, va."));
                     else DialogueSystem.Insert((Speakers.Tom, "Traffico? Abiti a due isolati..."),
                                                (Speakers.Tom, "Dai, entra. La birra mettila sull'isola in cucina."));
-                })
+                }, 10f, () => DialogueSystem.Insert((Speakers.Tom, "Muark? Tutto bene? Sembri congelato."),
+                                                    (Speakers.Tom, "Dai, entra. La birra mettila sull'isola in cucina.")))
                 .Say(Speakers.Tom, "Jef è in bagno. Da mezz'ora. Non chiedere."), tom);
 
             Goal((tom, Speakers.Tom, "Muark, la birra! In cucina, sull'isola."),
@@ -331,10 +333,8 @@ namespace FantaLandia.Horror.Story
                 }, 8f), tom);
 
             // un po' di cartoni; il botto arriva quando Muark è al piano terra (o dopo un po' comunque)
-            calm = true;
             yield return new WaitForSeconds(6f);
             for (float w = 0f; w < 40f && !PlayerOnGroundFloor; w += Time.deltaTime) yield return null;
-            calm = false;
         }
 
         // ================================================================== 4. l'esplosione
@@ -429,6 +429,7 @@ namespace FantaLandia.Horror.Story
         {
             while (!InBackyard) yield return null;
             ClearGoal();
+            KeepPlayerOutside(true);
             for (float w = 0f; w < 10f && (Flat(tom.transform.position, deckTom.position) > 0.8f || Flat(roy.transform.position, deckRoy.position) > 0.8f); w += Time.deltaTime)
                 yield return null;
             Vector3 smokeTop = smoke != null ? smoke.transform.position + Vector3.up * 22f : deckTom.position + Vector3.forward * 40f;
@@ -439,7 +440,7 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(1.5f);
             Lock(false);
 
-            yield return Talk(DialogueSystem.Conversation()
+            yield return Talk(DialogueSystem.Conversation().Blocking() // con i vicini la camera va su chi parla
                 .Say(Speakers.Tom, "Guardate là... quanto fumo!")
                 .Say(Speakers.Roy, "Sarà saltata una conduttura del gas. O un distributore.")
                 .Choice(new[] { "Sembra vicino... a qualche isolato da qui.", "Speriamo che non ci sia nessun ferito." }, i =>
@@ -453,6 +454,37 @@ namespace FantaLandia.Horror.Story
                 .Say(Speakers.Gary, "Non ne ho idea! Ha tremato tutta la casa!")
                 .Say(Speakers.Martha, "Frank dice che è il gas. Frank dice sempre che è il gas."), tom, 9f);
             yield return new WaitForSeconds(2f);
+        }
+
+        GameObject outsideBarrier;
+        float nextBarrierLine;
+
+        /// <summary>
+        /// Finché gli altri guardano l'incendio Muark resta in giardino con loro: una barriera invisibile sulla porta
+        /// sul retro (solo per il giocatore, i personaggi camminano sulla NavMesh) e la porta laterale chiusa.
+        /// </summary>
+        void KeepPlayerOutside(bool keep)
+        {
+            if (sideDoor != null)
+            {
+                if (keep) { if (sideDoor.IsOpen) sideDoor.Close(); sideDoor.locked = true; sideDoor.lockedText = "Meglio restare con gli altri, adesso."; }
+                else sideDoor.locked = false;
+            }
+            if (!keep) { if (outsideBarrier != null) Destroy(outsideBarrier); outsideBarrier = null; return; }
+            if (outsideBarrier != null || backDoor == null) return;
+            outsideBarrier = new GameObject("Barriera: resta in giardino");
+            outsideBarrier.transform.SetPositionAndRotation(backDoor.transform.TransformPoint(new Vector3(0.45f, 1.1f, -0.45f)), backDoor.transform.rotation);
+            var col = outsideBarrier.AddComponent<BoxCollider>();
+            col.size = new Vector3(1.3f, 2.4f, 0.3f);
+            outsideBarrier.layer = 2; // invisibile anche al raggio delle interazioni
+        }
+
+        void BarrierLine()
+        {
+            if (outsideBarrier == null || Time.time < nextBarrierLine || DialogueSystem.IsTalking) return;
+            if (Vector3.Distance(player.position, outsideBarrier.transform.position) > 1.4f) return;
+            nextBarrierLine = Time.time + 12f;
+            DialogueSystem.Bark(Speakers.Muark, "Prima vediamo cosa sta succedendo.");
         }
 
         // ================================================================== 6. Jef esce dal bagno
@@ -493,6 +525,7 @@ namespace FantaLandia.Horror.Story
             Job(tom, SitOn(tom));
             Job(roy, SitOn(roy));
             Job(jef, SitOn(jef));
+            KeepPlayerOutside(false); // gli altri rientrano: ora si può tornare dentro
             while (!PlayerInside) yield return null;
             sirenTarget = 0.18f;
             while (!PlayerInLivingRoom) yield return null;
@@ -508,10 +541,8 @@ namespace FantaLandia.Horror.Story
                 .Do(() => StartCoroutine(ChannelSurf(4)))
                 .Say(Speakers.Tom, "Niente. Sono tutti così. Nessun segnale.")
                 .Say(Speakers.Jef, "..."), tom);
-            calm = true;
             yield return new WaitForSeconds(6f);
             for (float w = 0f; w < 30f && !PlayerOnGroundFloor; w += Time.deltaTime) yield return null;
-            calm = false;
         }
 
         // ================================================================== 8. blackout, teorie e sasso-carta-forbice
@@ -552,7 +583,8 @@ namespace FantaLandia.Horror.Story
                     string[] tomPlays = { "Carta! Carta batte sasso.", "Forbice! Forbice batte carta.", "Sasso! Sasso batte forbice." };
                     DialogueSystem.Insert((Speakers.Tom, tomPlays[i] + " Ho vinto!"),
                                           (Speakers.Roy, "Muark va in cantina! Muark va in cantina!"));
-                })
+                }, 8f, () => DialogueSystem.Insert((Speakers.Tom, "Troppo lento! Hai perso a tavolino."),
+                                                   (Speakers.Roy, "Muark va in cantina! Muark va in cantina!")))
                 .Choice(new[] { "Ma dai! Al meglio di tre?", "Va bene, va bene... ci vado io." }, i =>
                 {
                     if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Niente rivincite. Le regole sono regole."));
@@ -814,7 +846,9 @@ namespace FantaLandia.Horror.Story
                 if (!calm || DialogueSystem.IsTalking || fade > 0.01f) continue;
                 var candidates = new List<CharacterMotor>();
                 foreach (var m in new[] { tom, roy, jef })
-                    if (m != null && m.gameObject.activeInHierarchy && m.IsSeated && !running.Contains(m) && (m != jef || jefOut)) candidates.Add(m);
+                    if (m != null && m.gameObject.activeInHierarchy && m.IsSeated && !running.Contains(m) && (m != jef || jefOut)
+                        && (m != tom || (house != null && !house.powered))) // Tom resta in poltrona: va al frigo solo al buio, mentre Muark è in cantina
+                        candidates.Add(m);
                 if (candidates.Count == 0) continue;
                 CharacterMotor who = candidates[Random.Range(0, candidates.Count)];
                 Job(who, Errand(who));
@@ -922,6 +956,8 @@ namespace FantaLandia.Horror.Story
         void Job(CharacterMotor m, IEnumerator routine)
         {
             if (jobs.TryGetValue(m, out Coroutine c) && c != null) StopCoroutine(c);
+            // un posto prenotato ma non ancora usato torna libero
+            if (seatOf.TryGetValue(m, out Seat st) && !m.IsSitting && !m.IsSeated) { st.Release(m); seatOf.Remove(m); }
             jobs[m] = StartCoroutine(RunJob(m, routine));
         }
 
@@ -989,7 +1025,7 @@ namespace FantaLandia.Horror.Story
 
         void Stand(CharacterMotor m)
         {
-            if (!m.IsSeated) return;
+            if (!m.IsSeated && !m.IsSitting) return;
             Seat s = seatOf.TryGetValue(m, out Seat st) ? st : null;
             m.StandUp(s != null ? s.FrontPosition : m.transform.position + m.transform.forward * 0.7f);
             if (s != null) s.Release(m);
@@ -1062,6 +1098,7 @@ namespace FantaLandia.Horror.Story
         void Update()
         {
             UpdateHints();
+            BarrierLine();
 
             // reazioni: Muark sale di sopra mentre si aspetta la pizza
             if (calm && !saidUpstairs && PlayerUpstairs && tom.IsSeated && (house == null || house.powered))
