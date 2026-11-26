@@ -66,13 +66,13 @@ namespace FantaLandia.EditorTools
             neckW = 0.09f, neckH = 0.075f,
             headW = 0.175f, headH = 0.19f, headD = 0.195f,
             skin = new Color(0.93f, 0.76f, 0.64f), hair = new Color(0.55f, 0.25f, 0.10f),
-            lips = new Color(0.72f, 0.35f, 0.35f), pupil = new Color(0.20f, 0.35f, 0.25f),
+            lips = new Color(0.78f, 0.36f, 0.40f), pupil = new Color(0.22f, 0.52f, 0.36f),
             underwear = new Color(0.55f, 0.12f, 0.18f), trim = new Color(0.25f, 0.05f, 0.08f),
         };
 
         class Mats
         {
-            public Material skin, shade, hair, lips, eyeWhite, pupil, under, trim;
+            public Material skin, shade, hair, lips, lipsLower, eyeWhite, pupil, dark, lash, brow, blush, stubble, under, trim;
         }
 
         [MenuItem("FantaLandia/Crea modelli personaggi")]
@@ -101,6 +101,12 @@ namespace FantaLandia.EditorTools
                 pupil = EditorAssetUtil.Mat($"{s.id} Iride", s.pupil, 0.6f),
                 under = EditorAssetUtil.Mat($"{s.id} Intimo", s.underwear, 0.2f),
                 trim = EditorAssetUtil.Mat($"{s.id} Intimo bordo", s.trim, 0.2f),
+                lipsLower = EditorAssetUtil.Mat($"{s.id} Labbro inferiore", Color.Lerp(s.lips, Color.white, 0.12f), 0.35f),
+                dark = EditorAssetUtil.Mat("Pupilla", new Color(0.03f, 0.03f, 0.04f), 0.8f),
+                lash = EditorAssetUtil.Mat("Ciglia", new Color(0.07f, 0.05f, 0.05f)),
+                brow = EditorAssetUtil.Mat($"{s.id} Sopracciglia", s.hair * 0.75f),
+                blush = EditorAssetUtil.Mat($"{s.id} Guance", Color.Lerp(s.skin, new Color(0.95f, 0.5f, 0.5f), 0.35f)),
+                stubble = EditorAssetUtil.Mat($"{s.id} Barba", Color.Lerp(s.hair, s.skin, 0.35f)),
             };
 
             string meshPath = $"{Folder}/{s.id}_Mesh.asset";
@@ -202,7 +208,7 @@ namespace FantaLandia.EditorTools
             under = new BoxMesh();
             float W = s.pelvisW, D = s.pelvisD, H = s.pelvisH;
 
-            skin.Add(new Vector3(0f, 0f, 0f), new Vector3(W, H, D), m.skin);
+            skin.AddRounded(new Vector3(0f, 0f, 0f), new Vector3(W, H, D), m.skin, 0.02f);
             // glutei
             skin.Add(new Vector3(-W * 0.22f, -0.03f, -D * 0.5f - 0.012f), new Vector3(W * 0.42f, H * 0.6f, 0.03f), m.skin);
             skin.Add(new Vector3(W * 0.22f, -0.03f, -D * 0.5f - 0.012f), new Vector3(W * 0.42f, H * 0.6f, 0.03f), m.skin);
@@ -243,7 +249,7 @@ namespace FantaLandia.EditorTools
             float W = s.chestW, D = s.chestD, H = s.chestH;
 
             skin.Add(new Vector3(0f, H * 0.2f, 0f), new Vector3(W * 0.85f, H * 0.4f, D * 0.95f), m.skin);  // costole
-            skin.Add(new Vector3(0f, H * 0.7f, 0f), new Vector3(W, H * 0.6f, D), m.skin);                // spalle
+            skin.AddRounded(new Vector3(0f, H * 0.7f, 0f), new Vector3(W, H * 0.6f, D), m.skin, 0.025f); // spalle
             skin.Add(new Vector3(0f, H + 0.01f, -0.01f), new Vector3(W * 0.55f, 0.04f, D * 0.6f), m.skin); // trapezio
             skin.Add(new Vector3(0f, H * 0.62f, -D * 0.5f - 0.008f), new Vector3(W * 0.7f, H * 0.5f, 0.016f), m.skin); // scapole
 
@@ -261,8 +267,8 @@ namespace FantaLandia.EditorTools
             float cupY = H * 0.5f, cupX = 0.068f;
             for (int c = -1; c <= 1; c += 2)
             {
-                skin.Add(new Vector3(c * cupX, cupY, D * 0.5f + 0.025f), new Vector3(0.115f, 0.10f, 0.06f), m.skin);
-                under.Add(new Vector3(c * cupX, cupY, D * 0.5f + 0.03f), new Vector3(0.125f, 0.11f, 0.066f), m.under);      // coppe
+                skin.AddRounded(new Vector3(c * cupX, cupY, D * 0.5f + 0.025f), new Vector3(0.115f, 0.10f, 0.06f), m.skin, 0.015f);
+                under.AddRounded(new Vector3(c * cupX, cupY, D * 0.5f + 0.03f), new Vector3(0.125f, 0.11f, 0.066f), m.under, 0.016f); // coppe
                 under.Add(new Vector3(c * 0.07f, (cupY + 0.055f + H) * 0.5f, D * 0.5f + 0.006f),
                           new Vector3(0.018f, H - cupY - 0.055f, 0.01f), m.under);                                              // spalline davanti
                 under.Add(new Vector3(c * 0.07f, H * 0.62f, -D * 0.5f - 0.02f), new Vector3(0.018f, H * 0.55f, 0.008f), m.under); // spalline dietro
@@ -284,44 +290,111 @@ namespace FantaLandia.EditorTools
 
         static BoxMesh Head(Shape s, Mats m)
         {
+            return s.female ? FemaleHead(s, m) : MaleHead(s, m);
+        }
+
+        /// <summary>Viso femminile: lineamenti morbidi, occhi grandi con ciglia, labbra piene, guance rosate.</summary>
+        static BoxMesh FemaleHead(Shape s, Mats m)
+        {
             var b = new BoxMesh();
             float W = s.headW, H = s.headH, D = s.headD;
-            float jawW = s.female ? 0.80f : 0.86f;
-            float jawFront = 0.012f + D * 0.43f;
+            float face = D * 0.5f;                     // fronte del cranio
+            float jawFront = 0.01f + D * 0.42f;        // fronte della mascella
 
-            b.Add(new Vector3(0f, H * 0.66f, 0f), new Vector3(W, H * 0.68f, D), m.skin);                       // cranio
-            b.Add(new Vector3(0f, H * 0.18f, 0.012f), new Vector3(W * jawW, H * 0.36f, D * 0.86f), m.skin);    // mascella
-            b.Add(new Vector3(0f, H * 0.06f, jawFront + 0.003f), new Vector3(W * 0.35f, 0.03f, 0.012f), m.skin); // mento
-            b.Add(new Vector3(0f, H * 0.42f, D * 0.5f + 0.012f), new Vector3(0.032f, 0.05f, 0.03f), m.skin);    // naso
-            b.Add(new Vector3(0f, H * 0.2f, jawFront + 0.002f), new Vector3(W * 0.3f, 0.014f, 0.01f), m.lips); // bocca
+            b.AddRounded(new Vector3(0f, H * 0.64f, 0f), new Vector3(W, H * 0.72f, D), m.skin, 0.024f);              // cranio
+            b.AddRounded(new Vector3(0f, H * 0.25f, 0.01f), new Vector3(W * 0.8f, H * 0.42f, D * 0.84f), m.skin, 0.022f); // guance e mascella
+            b.AddRounded(new Vector3(0f, H * 0.075f, jawFront - 0.008f), new Vector3(W * 0.32f, H * 0.12f, 0.03f), m.skin, 0.008f); // mento
+            for (int c = -1; c <= 1; c += 2)
+                b.Add(new Vector3(c * W * 0.35f, H * 0.42f, face - 0.008f), new Vector3(0.035f, 0.028f, 0.02f), m.skin); // zigomi
+
+            // naso piccolo
+            b.Add(new Vector3(0f, H * 0.5f, face + 0.005f), new Vector3(0.016f, 0.05f, 0.012f), m.skin);
+            b.AddRounded(new Vector3(0f, H * 0.405f, face + 0.012f), new Vector3(0.026f, 0.018f, 0.022f), m.skin, 0.005f);
+
+            // occhi grandi
+            float ey = H * 0.55f;
+            for (int c = -1; c <= 1; c += 2)
+            {
+                float ex = c * W * 0.23f;
+                b.Add(new Vector3(ex, ey, face + 0.001f), new Vector3(0.046f, 0.028f, 0.006f), m.eyeWhite);
+                b.Add(new Vector3(ex - c * 0.002f, ey - 0.001f, face + 0.004f), new Vector3(0.024f, 0.026f, 0.006f), m.pupil);  // iride
+                b.Add(new Vector3(ex - c * 0.002f, ey - 0.001f, face + 0.0065f), new Vector3(0.011f, 0.014f, 0.004f), m.dark); // pupilla
+                b.Add(new Vector3(ex + c * 0.004f, ey + 0.006f, face + 0.0085f), new Vector3(0.006f, 0.006f, 0.003f), m.eyeWhite); // riflesso
+                b.Add(new Vector3(ex, ey + 0.017f, face + 0.004f), new Vector3(0.052f, 0.008f, 0.01f), m.lash);            // ciglia superiori
+                b.Add(new Vector3(ex + c * 0.028f, ey + 0.021f, face + 0.003f), new Vector3(0.012f, 0.006f, 0.008f), m.lash); // codina
+                b.Add(new Vector3(ex, ey - 0.016f, face + 0.002f), new Vector3(0.04f, 0.004f, 0.006f), m.shade);          // palpebra inferiore
+                // sopracciglia sottili e arcuate
+                b.Add(new Vector3(ex - c * 0.004f, ey + 0.038f, face + 0.004f), new Vector3(0.032f, 0.007f, 0.008f), m.brow);
+                b.Add(new Vector3(ex + c * 0.024f, ey + 0.035f, face + 0.004f), new Vector3(0.018f, 0.006f, 0.008f), m.brow);
+                // guance rosate
+                b.Add(new Vector3(c * W * 0.3f, H * 0.38f, face + 0.0015f), new Vector3(0.03f, 0.016f, 0.004f), m.blush);
+                // orecchie piccole (quasi coperte dai capelli)
+                b.Add(new Vector3(c * (W * 0.5f + 0.006f), H * 0.5f, -0.01f), new Vector3(0.016f, 0.04f, 0.03f), m.skin);
+            }
+
+            // labbra piene
+            b.AddRounded(new Vector3(0f, H * 0.215f, jawFront + 0.004f), new Vector3(0.046f, 0.011f, 0.012f), m.lips, 0.003f);
+            b.AddRounded(new Vector3(0f, H * 0.19f, jawFront + 0.005f), new Vector3(0.042f, 0.014f, 0.014f), m.lipsLower, 0.004f);
+
+            // capelli lunghi, con volume e frangia laterale
+            b.AddRounded(new Vector3(0f, H + 0.01f, -0.005f), new Vector3(W + 0.03f, 0.06f, D + 0.03f), m.hair, 0.022f);
+            b.AddRounded(new Vector3(0f, H * 0.9f, -0.02f), new Vector3(W + 0.036f, H * 0.32f, D), m.hair, 0.02f);
+            b.AddRounded(new Vector3(-W * 0.12f, H * 0.86f, face + 0.004f), new Vector3(W * 0.62f, 0.035f, 0.02f), m.hair, 0.008f);
+            b.AddRounded(new Vector3(W * 0.24f, H * 0.9f, face + 0.002f), new Vector3(W * 0.4f, 0.028f, 0.018f), m.hair, 0.008f);
+            b.AddRounded(new Vector3(0f, H * 0.3f, -face - 0.012f), new Vector3(W + 0.05f, H * 1.6f, 0.055f), m.hair, 0.02f);
+            for (int c = -1; c <= 1; c += 2)
+            {
+                b.AddRounded(new Vector3(c * (W * 0.5f + 0.014f), H * 0.42f, 0f), new Vector3(0.026f, H * 1.05f, D * 0.75f), m.hair, 0.01f);
+                b.AddRounded(new Vector3(c * (W * 0.5f + 0.01f), H * 0.0f, D * 0.2f), new Vector3(0.03f, H * 0.7f, 0.04f), m.hair, 0.01f);
+            }
+            return b;
+        }
+
+        /// <summary>Viso maschile: mascella squadrata, arcata sopraccigliare, barba corta.</summary>
+        static BoxMesh MaleHead(Shape s, Mats m)
+        {
+            var b = new BoxMesh();
+            float W = s.headW, H = s.headH, D = s.headD;
+            float face = D * 0.5f;
+            float jawFront = 0.01f + D * 0.44f;
+            float beardFront = 0.012f + D * 0.445f;
+
+            b.AddRounded(new Vector3(0f, H * 0.65f, 0f), new Vector3(W, H * 0.7f, D), m.skin, 0.018f);                 // cranio
+            b.AddRounded(new Vector3(0f, H * 0.2f, 0.01f), new Vector3(W * 0.9f, H * 0.4f, D * 0.88f), m.skin, 0.012f);  // mascella
+            b.AddRounded(new Vector3(0f, H * 0.07f, jawFront - 0.012f), new Vector3(W * 0.42f, H * 0.12f, 0.03f), m.skin, 0.006f); // mento (sotto la barba)
+            float ey = H * 0.55f;
+            b.Add(new Vector3(0f, ey + 0.03f, face + 0.004f), new Vector3(W * 0.8f, 0.018f, 0.014f), m.skin);           // arcata sopraccigliare
+
+            // naso
+            b.Add(new Vector3(0f, H * 0.5f, face + 0.008f), new Vector3(0.024f, 0.06f, 0.016f), m.skin);
+            b.AddRounded(new Vector3(0f, H * 0.4f, face + 0.016f), new Vector3(0.034f, 0.024f, 0.028f), m.skin, 0.006f);
 
             for (int c = -1; c <= 1; c += 2)
             {
-                float ex = c * W * 0.24f, ey = H * 0.56f;
-                b.Add(new Vector3(ex, ey, D * 0.5f + 0.002f), new Vector3(0.042f, 0.024f, 0.01f), m.eyeWhite);
-                b.Add(new Vector3(ex, ey, D * 0.5f + 0.006f), new Vector3(0.018f, 0.02f, 0.01f), m.pupil);
-                b.Add(new Vector3(ex, H * 0.66f, D * 0.5f + 0.004f), new Vector3(0.052f, s.female ? 0.008f : 0.012f, 0.012f), m.hair); // sopracciglia
-                b.Add(new Vector3(c * (W * 0.5f + 0.008f), H * 0.5f, -0.01f), new Vector3(0.02f, 0.055f, 0.04f), m.skin);           // orecchie
+                float ex = c * W * 0.24f;
+                b.Add(new Vector3(ex, ey, face + 0.001f), new Vector3(0.04f, 0.02f, 0.006f), m.eyeWhite);
+                b.Add(new Vector3(ex - c * 0.002f, ey, face + 0.004f), new Vector3(0.019f, 0.019f, 0.006f), m.pupil);
+                b.Add(new Vector3(ex - c * 0.002f, ey, face + 0.0065f), new Vector3(0.009f, 0.011f, 0.004f), m.dark);
+                b.Add(new Vector3(ex + c * 0.003f, ey + 0.004f, face + 0.0085f), new Vector3(0.005f, 0.005f, 0.003f), m.eyeWhite);
+                b.Add(new Vector3(ex, ey + 0.012f, face + 0.004f), new Vector3(0.044f, 0.006f, 0.009f), m.shade);           // palpebra
+                b.Add(new Vector3(ex, ey + 0.031f, face + 0.012f), new Vector3(0.05f, 0.013f, 0.012f), m.brow);             // sopracciglia
+                b.Add(new Vector3(c * W * 0.36f, H * 0.42f, face - 0.008f), new Vector3(0.035f, 0.03f, 0.02f), m.skin);      // zigomi
+                b.Add(new Vector3(c * (W * 0.5f + 0.008f), H * 0.5f, -0.01f), new Vector3(0.02f, 0.055f, 0.04f), m.skin);     // orecchie
+                b.Add(new Vector3(c * (W * 0.5f + 0.004f), H * 0.55f, 0.02f), new Vector3(0.012f, H * 0.18f, 0.02f), m.hair); // basette
             }
 
-            // capelli
-            b.Add(new Vector3(0f, H + 0.012f, -0.002f), new Vector3(W + 0.02f, 0.05f, D + 0.02f), m.hair);
-            if (!s.female)
-            {
-                b.Add(new Vector3(0f, H * 0.72f, -D * 0.5f - 0.008f), new Vector3(W + 0.02f, H * 0.5f, 0.03f), m.hair);
-                for (int c = -1; c <= 1; c += 2)
-                    b.Add(new Vector3(c * (W * 0.5f + 0.006f), H * 0.82f, -0.03f), new Vector3(0.014f, H * 0.3f, D * 0.55f), m.hair);
-                b.Add(new Vector3(0f, H * 0.93f, D * 0.5f + 0.002f), new Vector3(W + 0.01f, 0.025f, 0.02f), m.hair);
-                // barba corta
-                b.Add(new Vector3(0f, H * 0.1f, jawFront + 0.004f), new Vector3(W * 0.5f, H * 0.12f, 0.008f), m.hair);
-            }
-            else
-            {
-                b.Add(new Vector3(0f, H * 0.88f, D * 0.5f + 0.006f), new Vector3(W * 0.9f, 0.04f, 0.02f), m.hair);       // frangia
-                b.Add(new Vector3(0f, H * 0.42f, -D * 0.5f - 0.015f), new Vector3(W + 0.04f, H * 1.4f, 0.05f), m.hair);   // capelli lunghi
-                for (int c = -1; c <= 1; c += 2)
-                    b.Add(new Vector3(c * (W * 0.5f + 0.012f), H * 0.5f, 0.01f), new Vector3(0.022f, H * 0.9f, 0.06f), m.hair); // ciocche laterali
-            }
+            // barba corta, baffi e bocca
+            b.AddRounded(new Vector3(0f, H * 0.14f, 0.012f), new Vector3(W * 0.91f, H * 0.24f, D * 0.89f), m.stubble, 0.01f);
+            b.Add(new Vector3(0f, H * 0.255f, beardFront + 0.003f), new Vector3(W * 0.32f, 0.012f, 0.01f), m.stubble);
+            b.Add(new Vector3(0f, H * 0.215f, beardFront + 0.004f), new Vector3(W * 0.3f, 0.011f, 0.01f), m.lips);
+            b.Add(new Vector3(0f, H * 0.2f, beardFront + 0.005f), new Vector3(W * 0.26f, 0.008f, 0.012f), m.lipsLower);
+
+            // capelli corti con ciuffo
+            b.AddRounded(new Vector3(0f, H + 0.008f, -0.004f), new Vector3(W + 0.024f, 0.055f, D + 0.024f), m.hair, 0.018f);
+            b.AddRounded(new Vector3(W * 0.08f, H + 0.03f, D * 0.3f), new Vector3(W * 0.7f, 0.04f, 0.06f), m.hair, 0.012f);
+            b.AddRounded(new Vector3(0f, H * 0.72f, -face - 0.009f), new Vector3(W + 0.024f, H * 0.55f, 0.03f), m.hair, 0.01f);
+            for (int c = -1; c <= 1; c += 2)
+                b.Add(new Vector3(c * (W * 0.5f + 0.007f), H * 0.83f, -0.025f), new Vector3(0.014f, H * 0.32f, D * 0.6f), m.hair);
             return b;
         }
 
@@ -446,6 +519,15 @@ namespace FantaLandia.EditorTools
                     t.Add(start); t.Add(start + 1); t.Add(start + 2);
                     t.Add(start); t.Add(start + 2); t.Add(start + 3);
                 }
+            }
+
+            /// <summary>Scatola con gli spigoli smussati (tre scatole incrociate): forme più morbide restando a blocchi.</summary>
+            public void AddRounded(Vector3 center, Vector3 size, Material mat, float bevel)
+            {
+                float b2 = Mathf.Min(bevel * 2f, Mathf.Min(size.x, Mathf.Min(size.y, size.z)) * 0.45f);
+                Add(center, new Vector3(size.x, size.y - b2, size.z - b2), mat);
+                Add(center, new Vector3(size.x - b2, size.y, size.z - b2), mat);
+                Add(center, new Vector3(size.x - b2, size.y - b2, size.z), mat);
             }
 
             static float Extent(Vector3 axis, Vector3 h) => Mathf.Abs(axis.x) * h.x + Mathf.Abs(axis.y) * h.y + Mathf.Abs(axis.z) * h.z;

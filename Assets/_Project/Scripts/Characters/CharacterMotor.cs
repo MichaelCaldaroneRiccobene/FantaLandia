@@ -7,6 +7,26 @@ namespace FantaLandia.Characters
 {
     public enum TraversalKind { None, Vault, Climb, ClimbHigh, ClimbUp, Drop }
 
+    /// <summary>Fasi di un attraversamento (lette dall'animatore procedurale).</summary>
+    public enum TraversalPhase { None, Approach, Vault, Jump, Scramble, PullUp, Mantle, Fall }
+
+    /// <summary>Geometria e avanzamento dell'attraversamento in corso.</summary>
+    public class TraversalState
+    {
+        public TraversalKind kind;
+        public TraversalPhase phase;
+        /// <summary>Avanzamento 0..1 della fase corrente.</summary>
+        public float phaseT;
+        public Vector3 start, end;
+        /// <summary>Direzione orizzontale dell'attraversamento e il suo lato destro.</summary>
+        public Vector3 dir, right;
+        /// <summary>Punti a terra sulla faccia del muro dal lato di partenza e di arrivo (o il bordo del salto).</summary>
+        public Vector3 nearFace, farFace;
+        /// <summary>Altezza del bordo superiore dell'ostacolo.</summary>
+        public float topY;
+        public Vector3 Edge => new Vector3(nearFace.x, topY, nearFace.z);
+    }
+
     /// <summary>Andatura. Lo scatto in città/insediamenti sarà sospetto per gli NPC (calo di reputazione).</summary>
     public enum Gait { Walk, Jog, Sprint }
 
@@ -28,8 +48,6 @@ namespace FantaLandia.Characters
 
         [Header("Scavalcare / arrampicarsi")]
         public float vaultUpSpeed = 6f;
-        public float climbUpSpeed = 2.8f;
-        public float highClimbUpSpeed = 1.4f;
         public float gravity = 20f;
         [Tooltip("Fino a questa altezza l'ostacolo si scavalca con un balzo")]
         public float lowObstacleMax = 1.0f;
@@ -229,6 +247,15 @@ namespace FantaLandia.Characters
 
         // ------------------------------------------------------------------ attraversamenti
 
+        /// <summary>Stato dell'attraversamento in corso: lo legge l'animatore per mettere mani e piedi al posto giusto.</summary>
+        public TraversalState Traversal { get; } = new TraversalState();
+
+        [Header("Tempi dell'arrampicata alta (s)")]
+        public float climbJumpTime = 0.22f;
+        public float climbScrambleTime = 0.55f;
+        public float climbPullUpTime = 0.45f;
+        public float climbMantleTime = 0.5f;
+
         IEnumerator TraverseLink()
         {
             IsTraversing = true;
@@ -250,28 +277,28 @@ namespace FantaLandia.Characters
 
             TraversalKind kind = Classify(dy, obstacle);
             CurrentTraversal = kind;
+            Measure(kind, start, end, obstacle, dy);
             TraversalStarted?.Invoke(kind);
 
-            Vector3 flat = end - start;
-            flat.y = 0f;
-            if (flat.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(flat);
+            if (Traversal.dir.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(Traversal.dir);
 
             switch (kind)
             {
                 case TraversalKind.Vault:
-                    yield return StartCoroutine(OverObstacle(start, end, start.y + obstacle + 0.25f, vaultUpSpeed, 0.35f, 0f));
+                    yield return StartCoroutine(VaultOver(false));
                     break;
                 case TraversalKind.Climb:
-                    yield return StartCoroutine(OverObstacle(start, end, start.y + obstacle + 0.15f, climbUpSpeed, 0.4f, 0.1f));
+                    yield return StartCoroutine(VaultOver(true));
                     break;
                 case TraversalKind.ClimbHigh:
-                    yield return StartCoroutine(OverObstacle(start, end, start.y + obstacle + 0.1f, highClimbUpSpeed, 0.45f, 0.25f));
+                    yield return StartCoroutine(ClimbWall(false));
                     break;
                 case TraversalKind.ClimbUp:
-                    yield return StartCoroutine(ClimbUp(start, end, dy));
+                    if (dy > 1.3f) yield return StartCoroutine(ClimbWall(true));
+                    else yield return StartCoroutine(VaultOver(false));
                     break;
                 case TraversalKind.Drop:
-                    yield return StartCoroutine(Drop(start, end, start.y + Mathf.Max(obstacle + 0.2f, 0.35f)));
+                    yield return StartCoroutine(DropDown(obstacle));
                     break;
             }
 
@@ -279,6 +306,7 @@ namespace FantaLandia.Characters
             agent.CompleteOffMeshLink();
             if (lane != null && lane.Occupant == this) lane.Occupant = null;
             CurrentTraversal = TraversalKind.None;
+            Traversal.phase = TraversalPhase.None;
 
             if (kind == TraversalKind.Drop)
             {
@@ -314,59 +342,178 @@ namespace FantaLandia.Characters
             return TraversalKind.ClimbHigh;
         }
 
-        /// <summary>Su, sopra l'ostacolo, poi giù con la gravità dall'altra parte.</summary>
-        IEnumerator OverObstacle(Vector3 start, Vector3 end, float peakY, float upSpeed, float upFraction, float hangTime)
+        /// <summary>Misura l'ostacolo reale con dei raggi: facce del muro, altezza del bordo, punto di salto.</summary>
+        void Measure(TraversalKind kind, Vector3 start, Vector3 end, float obstacle, float dy)
         {
-            Vector3 top = Vector3.Lerp(start, end, upFraction);
-            top.y = peakY;
-            float upTime = Mathf.Max(0.1f, (peakY - start.y) / upSpeed);
-            yield return StartCoroutine(MoveLinear(start, top, upTime, true));
-            if (hangTime > 0f) yield return new WaitForSeconds(hangTime);
-            float fallTime = Mathf.Sqrt(2f * Mathf.Max(0.05f, peakY - end.y) / gravity);
-            yield return StartCoroutine(Fall(top, end, fallTime));
+            var t = Traversal;
+            t.kind = kind;
+            t.phase = TraversalPhase.None;
+            t.phaseT = 0f;
+            t.start = start;
+            t.end = end;
+
+            Vector3 flat = end - start;
+            flat.y = 0f;
+            float dist = flat.magnitude;
+            t.dir = dist > 0.001f ? flat / dist : transform.forward;
+            t.right = Vector3.Cross(Vector3.up, t.dir);
+            t.topY = dy > 0.5f ? end.y : (dy < -0.5f ? start.y + obstacle : start.y + obstacle);
+
+            Vector3 mid = Vector3.Lerp(start, end, 0.5f);
+            if (kind == TraversalKind.Drop)
+            {
+                // Il bordo: primo punto lungo il percorso dove il pavimento sparisce sotto i piedi.
+                t.nearFace = mid;
+                t.nearFace.y = start.y;
+                for (float s = 0.05f; s < dist; s += 0.05f)
+                {
+                    Vector3 p = start + t.dir * s + Vector3.up * 0.4f;
+                    if (!Physics.Raycast(p, Vector3.down, 0.8f, ~0, QueryTriggerInteraction.Ignore))
+                    {
+                        t.nearFace = start + t.dir * s;
+                        break;
+                    }
+                }
+                t.farFace = t.nearFace;
+                return;
+            }
+
+            float baseY = Mathf.Min(start.y, end.y);
+            float probeY = baseY + Mathf.Clamp((t.topY - baseY) * 0.5f, 0.15f, 1.0f);
+            Vector3 o = new Vector3(start.x, probeY, start.z);
+            t.nearFace = Physics.Raycast(o, t.dir, out RaycastHit hit, dist + 0.5f, ~0, QueryTriggerInteraction.Ignore)
+                ? new Vector3(hit.point.x, start.y, hit.point.z)
+                : new Vector3(mid.x, start.y, mid.z);
+            Vector3 o2 = new Vector3(end.x, probeY, end.z);
+            t.farFace = dy <= 0.5f && Physics.Raycast(o2, -t.dir, out hit, dist + 0.5f, ~0, QueryTriggerInteraction.Ignore)
+                ? new Vector3(hit.point.x, end.y, hit.point.z)
+                : t.nearFace;
         }
 
-        /// <summary>Mani sul bordo, tirarsi su, poi un passo avanti.</summary>
-        IEnumerator ClimbUp(Vector3 start, Vector3 end, float dy)
+        /// <summary>Muretto basso (balzo con una mano) o muro medio (volteggio laterale stile parkour).</summary>
+        IEnumerator VaultOver(bool parkour)
         {
-            Vector3 ledge = Vector3.Lerp(start, end, 0.15f);
-            ledge.y = end.y + 0.3f;
-            float speed = dy > mediumObstacleMax ? highClimbUpSpeed : climbUpSpeed;
-            yield return StartCoroutine(MoveLinear(start, ledge, Mathf.Max(0.2f, (ledge.y - start.y) / speed), false));
-            yield return StartCoroutine(MoveLinear(ledge, end, 0.35f, true));
+            var t = Traversal;
+            float takeoffDist = parkour ? 0.7f : 0.45f;
+            Vector3 takeoff = transform.position;
+            if (FlatDistance(takeoff, t.nearFace) > takeoffDist + 0.05f)
+            {
+                takeoff = t.nearFace - t.dir * takeoffDist;
+                takeoff.y = t.start.y;
+            }
+            float approachSpeed = Mathf.Max(3f, agent.speed);
+            yield return StartCoroutine(MovePhase(transform.position, takeoff, FlatDistance(transform.position, takeoff) / approachSpeed,
+                                                  TraversalPhase.Approach, Ease.None));
+
+            // Radice (= piedi a gambe tese): le gambe raccolte passano sopra il bordo.
+            float peak = Mathf.Max(t.topY - (parkour ? 0.35f : 0.45f), Mathf.Max(t.start.y, t.end.y) + 0.05f);
+            float duration = parkour ? 0.6f : 0.45f;
+            Vector3 a = takeoff, b = t.end;
+            float h = peak - (a.y + b.y) * 0.5f;
+            t.phase = TraversalPhase.Vault;
+            float time = 0f;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float u = Mathf.Clamp01(time / duration);
+                t.phaseT = u;
+                Vector3 p = Vector3.Lerp(a, b, u);
+                p.y = Mathf.Lerp(a.y, b.y, u) + 4f * h * u * (1f - u);
+                transform.position = p;
+                yield return null;
+            }
         }
 
-        /// <summary>Piccolo balzo oltre il bordo (o la ringhiera), poi caduta libera.</summary>
-        IEnumerator Drop(Vector3 start, Vector3 end, float peakY)
+        /// <summary>Muro alto: salto, mani sul bordo, piedi che spingono sul muro, trazione, scavalco.</summary>
+        IEnumerator ClimbWall(bool endsOnTop)
         {
-            Vector3 edge = Vector3.Lerp(start, end, 0.3f);
-            edge.y = peakY;
-            yield return StartCoroutine(MoveLinear(start, edge, Mathf.Max(0.12f, (peakY - start.y) / vaultUpSpeed), true));
-            float fallTime = Mathf.Sqrt(2f * Mathf.Max(0.05f, peakY - end.y) / gravity);
-            yield return StartCoroutine(Fall(edge, end, fallTime));
+            var t = Traversal;
+            Vector3 wallBase = t.nearFace - t.dir * 0.32f;
+            wallBase.y = t.start.y;
+            float approachSpeed = Mathf.Max(3f, agent.speed);
+            yield return StartCoroutine(MovePhase(transform.position, wallBase, FlatDistance(transform.position, wallBase) / approachSpeed,
+                                                  TraversalPhase.Approach, Ease.None));
+
+            Vector3 hang = wallBase;
+            hang.y = Mathf.Max(t.start.y, t.topY - 2.0f);
+            yield return StartCoroutine(MovePhase(wallBase, hang, climbJumpTime, TraversalPhase.Jump, Ease.Out));
+
+            Vector3 scramble = wallBase;
+            scramble.y = Mathf.Max(hang.y, t.topY - 1.45f);
+            yield return StartCoroutine(MovePhase(hang, scramble, climbScrambleTime, TraversalPhase.Scramble, Ease.None));
+
+            Vector3 pull = t.nearFace - t.dir * 0.18f;
+            pull.y = t.topY - 0.95f;
+            yield return StartCoroutine(MovePhase(scramble, pull, climbPullUpTime, TraversalPhase.PullUp, Ease.InOut));
+
+            Vector3 onTop = endsOnTop ? t.nearFace + t.dir * 0.45f : Vector3.Lerp(t.nearFace, t.farFace, 0.5f);
+            onTop.y = t.topY;
+            yield return StartCoroutine(MovePhase(pull, onTop, climbMantleTime, TraversalPhase.Mantle, Ease.InOut));
+
+            if (endsOnTop)
+            {
+                yield return StartCoroutine(MovePhase(onTop, t.end, Mathf.Max(0.1f, FlatDistance(onTop, t.end) / 2.5f),
+                                                      TraversalPhase.Approach, Ease.None));
+            }
+            else
+            {
+                // Giù dall'altra parte: piccolo slancio, poi caduta.
+                Vector3 edge = t.farFace + t.dir * 0.1f;
+                edge.y = t.topY + 0.15f;
+                yield return StartCoroutine(MovePhase(onTop, edge, 0.15f, TraversalPhase.Jump, Ease.Out));
+                yield return StartCoroutine(FallPhase(edge, t.end));
+            }
         }
 
-        IEnumerator MoveLinear(Vector3 from, Vector3 to, float duration, bool easeOut)
+        /// <summary>Salto giù da un bordo (o oltre una ringhiera), poi caduta libera.</summary>
+        IEnumerator DropDown(float railingHeight)
         {
+            var t = Traversal;
+            Vector3 edgeApproach = t.nearFace - t.dir * 0.2f;
+            edgeApproach.y = t.start.y;
+            if (Vector3.Dot(edgeApproach - transform.position, t.dir) > 0.05f)
+            {
+                yield return StartCoroutine(MovePhase(transform.position, edgeApproach,
+                    FlatDistance(transform.position, edgeApproach) / Mathf.Max(3f, agent.speed), TraversalPhase.Approach, Ease.None));
+            }
+            float peakY = t.start.y + Mathf.Max(railingHeight + 0.2f, 0.35f);
+            Vector3 over = t.nearFace + t.dir * 0.25f;
+            over.y = peakY;
+            yield return StartCoroutine(MovePhase(transform.position, over, Mathf.Max(0.12f, (peakY - t.start.y) / vaultUpSpeed),
+                                                  TraversalPhase.Jump, Ease.Out));
+            yield return StartCoroutine(FallPhase(over, t.end));
+        }
+
+        enum Ease { None, Out, InOut }
+
+        IEnumerator MovePhase(Vector3 from, Vector3 to, float duration, TraversalPhase phase, Ease ease)
+        {
+            Traversal.phase = phase;
+            Traversal.phaseT = 0f;
+            if (duration <= 0.0001f) { transform.position = to; Traversal.phaseT = 1f; yield break; }
             float t = 0f;
             while (t < duration)
             {
                 t += Time.deltaTime;
                 float u = Mathf.Clamp01(t / duration);
-                if (easeOut) u = 1f - (1f - u) * (1f - u);
-                transform.position = Vector3.Lerp(from, to, u);
+                Traversal.phaseT = u;
+                float e = ease == Ease.Out ? 1f - (1f - u) * (1f - u) : ease == Ease.InOut ? u * u * (3f - 2f * u) : u;
+                transform.position = Vector3.Lerp(from, to, e);
                 yield return null;
             }
         }
 
         /// <summary>Orizzontale lineare, verticale accelerato (gravità).</summary>
-        IEnumerator Fall(Vector3 from, Vector3 to, float duration)
+        IEnumerator FallPhase(Vector3 from, Vector3 to)
         {
+            Traversal.phase = TraversalPhase.Fall;
+            float duration = Mathf.Sqrt(2f * Mathf.Max(0.05f, from.y - to.y) / gravity);
             float t = 0f;
             while (t < duration)
             {
                 t += Time.deltaTime;
                 float u = Mathf.Clamp01(t / duration);
+                Traversal.phaseT = u;
                 Vector3 p = Vector3.Lerp(from, to, u);
                 p.y = from.y + (to.y - from.y) * u * u;
                 transform.position = p;

@@ -3,254 +3,724 @@ using UnityEngine;
 namespace FantaLandia.Characters.Body
 {
     /// <summary>
-    /// Animazione procedurale del corpo a segmenti, guidata dal CharacterMotor:
-    /// fermo (respiro), camminata / corsa leggera / scatto, scavalcare, arrampicarsi, salto, atterraggio.
+    /// Animazione procedurale "fisica" del corpo a segmenti.
     ///
-    /// Convenzioni di rotazione (asse X locale dei giunti):
-    ///  - coscia e braccio: X negativo = in avanti
-    ///  - ginocchio: X positivo = piega (stinco indietro); gomito: X negativo = piega (avambraccio avanti)
-    ///  - schiena e testa: X positivo = in avanti / guarda giù
-    ///  - braccio sinistro: Z negativo = verso l'esterno; destro: Z positivo
+    /// A terra: i piedi si appoggiano davvero (raggi verso il suolo), restano fermi mentre il corpo avanza
+    /// e fanno un passo quando restano indietro: niente scivolamento, e sulle scale si appoggiano sui gradini.
+    /// Il bacino si abbassa sulla gamba più bassa, le gambe si piegano con l'IK, braccia e busto
+    /// controbilanciano i passi. Atterraggi su una molla: più si cade veloci, più il corpo affonda.
+    ///
+    /// Attraversamenti: legge le fasi e la geometria misurata dal CharacterMotor e mette mani e piedi
+    /// sul bordo / sulla faccia del muro con l'IK.
+    ///
+    /// Convenzioni FK (asse X locale dei giunti): coscia/braccio X- = avanti; ginocchio X+ = piega;
+    /// gomito X- = piega; schiena/testa X+ = avanti/giù; braccio sinistro Z- = fuori, destro Z+.
     /// </summary>
     [RequireComponent(typeof(BodyRig))]
     public class ProceduralBodyAnimator : MonoBehaviour
     {
-        [Header("Lunghezza del passo (m) per un personaggio alto 1.8 m")]
-        public float walkStride = 0.75f;
-        public float jogStride = 1.15f;
-        public float sprintStride = 1.6f;
+        [Header("Respiro")]
+        public float breathRate = 0.28f;      // respiri al secondo, a riposo
+        public float breathAmplitude = 2.6f;  // gradi di torace
 
-        [Header("Fluidità")]
-        public float gaitBlendSharpness = 6f;
-        public float actionInSharpness = 18f;
-        public float actionOutSharpness = 8f;
-        public float landingDuration = 0.3f;
+        [Header("Atterraggio (molla del bacino)")]
+        public float crouchStiffness = 110f;
+        public float crouchDamping = 13f;
+        public float landingImpulse = 0.25f;
+
+        [Header("Pose")]
+        public float poseSharpness = 14f;
+        public float hipsSharpness = 14f;
 
         struct GaitParams
         {
-            public float thigh, knee, kneeBase, arm, elbow, lean, bob, stride;
+            public float swing, thr, overlap, stepHeight, arm, elbow, lean, bob, stance;
 
             public static GaitParams Lerp(GaitParams a, GaitParams b, float t) => new GaitParams
             {
-                thigh = Mathf.Lerp(a.thigh, b.thigh, t),
-                knee = Mathf.Lerp(a.knee, b.knee, t),
-                kneeBase = Mathf.Lerp(a.kneeBase, b.kneeBase, t),
-                arm = Mathf.Lerp(a.arm, b.arm, t),
-                elbow = Mathf.Lerp(a.elbow, b.elbow, t),
-                lean = Mathf.Lerp(a.lean, b.lean, t),
-                bob = Mathf.Lerp(a.bob, b.bob, t),
-                stride = Mathf.Lerp(a.stride, b.stride, t),
+                swing = Mathf.Lerp(a.swing, b.swing, t), thr = Mathf.Lerp(a.thr, b.thr, t),
+                overlap = Mathf.Lerp(a.overlap, b.overlap, t), stepHeight = Mathf.Lerp(a.stepHeight, b.stepHeight, t),
+                arm = Mathf.Lerp(a.arm, b.arm, t), elbow = Mathf.Lerp(a.elbow, b.elbow, t),
+                lean = Mathf.Lerp(a.lean, b.lean, t), bob = Mathf.Lerp(a.bob, b.bob, t), stance = Mathf.Lerp(a.stance, b.stance, t),
             };
+        }
+
+        static GaitParams ParamsFor(Gait g)
+        {
+            switch (g)
+            {
+                case Gait.Walk:
+                    return new GaitParams { swing = 0.38f, thr = 0.30f, overlap = 1.01f, stepHeight = 0.07f, arm = 22f, elbow = -15f, lean = 3f, bob = 0.02f, stance = 0.10f };
+                case Gait.Sprint:
+                    return new GaitParams { swing = 0.24f, thr = 0.12f, overlap = 0.45f, stepHeight = 0.20f, arm = 55f, elbow = -95f, lean = 15f, bob = 0.035f, stance = 0.075f };
+                default:
+                    return new GaitParams { swing = 0.30f, thr = 0.17f, overlap = 0.65f, stepHeight = 0.13f, arm = 35f, elbow = -75f, lean = 8f, bob = 0.03f, stance = 0.085f };
+            }
+        }
+
+        class Foot
+        {
+            public int side;                       // -1 sinistra, +1 destra
+            public Vector3 plant, from, to, pos;
+            public Vector3 normal = Vector3.up, toNormal = Vector3.up;
+            public bool stepping;
+            public float t, duration, lift;
+            public float GroundY => stepping ? to.y : plant.y;
         }
 
         const int N = BodyRig.PartCount;
 
         BodyRig rig;
         CharacterMotor motor;
-        Transform hips;
-        Vector3 hipsRest;
+        Transform hips, thighL, shinL, footL, thighR, shinR, footR, armL, foreL, handL, armR, foreR, handR;
+        Vector3 hipsRest, armLRest, armRRest;
+        float ankleH, legLen, hipDrop, hipHalfWidth;
 
-        readonly Vector3[] loco = new Vector3[N];
-        readonly Vector3[] action = new Vector3[N];
-        float locoHipsDrop, actionHipsDrop;
+        readonly Vector3[] target = new Vector3[N];
+        readonly Vector3[] pose = new Vector3[N];
+        readonly Foot[] feet = { new Foot { side = -1 }, new Foot { side = 1 } };
+        int lastStepped = 1;
+        bool feetInitialized;
 
-        GaitParams gait;
-        float phase, smoothSpeed, verticalSpeed, actionWeight;
-        Vector3 lastPos;
+        GaitParams gait = ParamsFor(Gait.Walk);
+        Vector3 lastPos, flatVel, prevFlatVel, accel;
+        float vy, airVy, exertion, breathPhase;
+        float crouch, crouchVel;
         bool wasTraversing;
-        float traversalEndTime = -10f;
+        float settleTimer;
+
+        // limbi IK: 0 = gamba sx, 1 = gamba dx, 2 = braccio sx, 3 = braccio dx
+        readonly float[] ikWeight = new float[4];
+        readonly float[] ikTargetWeight = new float[4];
+        readonly Vector3[] ikTarget = new Vector3[4];
+        readonly Vector3[] ikPole = new Vector3[4];
+        readonly Quaternion[] endRotation = new Quaternion[4];
+        readonly bool[] hasEndRotation = new bool[4];
+
+        Vector3 desiredHipsLocal;
+
+        // posa idle
+        int supportSide = 1;
+        float idleSwapTimer = 9f;
 
         void Awake()
         {
             rig = GetComponent<BodyRig>();
             motor = GetComponentInParent<CharacterMotor>();
-            hips = rig.Joint(BodyPart.Pelvis);
-            if (hips != null) hipsRest = hips.localPosition;
-            lastPos = transform.position;
-            gait = ParamsFor(Gait.Jog);
-        }
 
-        GaitParams ParamsFor(Gait g)
-        {
-            switch (g)
-            {
-                case Gait.Walk:
-                    return new GaitParams { thigh = 24f, knee = 35f, kneeBase = 4f, arm = 16f, elbow = -12f, lean = 2f, bob = 0.025f, stride = walkStride };
-                case Gait.Sprint:
-                    return new GaitParams { thigh = 55f, knee = 105f, kneeBase = 18f, arm = 55f, elbow = -95f, lean = 16f, bob = 0.05f, stride = sprintStride };
-                default:
-                    return new GaitParams { thigh = 38f, knee = 70f, kneeBase = 12f, arm = 30f, elbow = -75f, lean = 8f, bob = 0.04f, stride = jogStride };
-            }
+            hips = rig.Joint(BodyPart.Pelvis);
+            thighL = rig.Joint(BodyPart.ThighL); shinL = rig.Joint(BodyPart.ShinL); footL = rig.Joint(BodyPart.FootL);
+            thighR = rig.Joint(BodyPart.ThighR); shinR = rig.Joint(BodyPart.ShinR); footR = rig.Joint(BodyPart.FootR);
+            armL = rig.Joint(BodyPart.UpperArmL); foreL = rig.Joint(BodyPart.ForearmL); handL = rig.Joint(BodyPart.HandL);
+            armR = rig.Joint(BodyPart.UpperArmR); foreR = rig.Joint(BodyPart.ForearmR); handR = rig.Joint(BodyPart.HandR);
+
+            hipsRest = hips.localPosition;
+            armLRest = armL.localPosition;
+            armRRest = armR.localPosition;
+            // Misure dalla posa di riposo del prefab.
+            legLen = shinL.localPosition.magnitude + footL.localPosition.magnitude;
+            hipDrop = -thighL.localPosition.y;
+            hipHalfWidth = Mathf.Abs(thighL.localPosition.x);
+            ankleH = Mathf.Max(0.03f, hipsRest.y - hipDrop - legLen);
+
+            desiredHipsLocal = hipsRest;
+            lastPos = transform.position;
+            breathPhase = Random.value * 10f;
+            idleSwapTimer = Random.Range(6f, 12f);
+            supportSide = Random.value < 0.5f ? -1 : 1;
         }
 
         void LateUpdate()
         {
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
-            float scale = rig.height / 1.8f;
 
-            // Velocità reale misurata dallo spostamento (vale anche durante salti e arrampicate).
-            Vector3 pos = transform.position;
-            Vector3 d = pos - lastPos;
-            lastPos = pos;
-            float horizontal = new Vector2(d.x, d.z).magnitude / dt;
-            verticalSpeed = Mathf.Lerp(verticalSpeed, d.y / dt, 1f - Mathf.Exp(-20f * dt));
+            UpdateKinematics(dt);
 
-            bool traversing = motor != null && motor.IsTraversing;
-            if (wasTraversing && !traversing) traversalEndTime = Time.time;
+            bool traversing = motor != null && motor.IsTraversing && !motor.IsStunned;
+            if (wasTraversing && !traversing) OnTraversalEnded();
+            if (traversing) airVy = vy;
             wasTraversing = traversing;
-            smoothSpeed = Mathf.Lerp(smoothSpeed, traversing ? 0f : horizontal, 1f - Mathf.Exp(-10f * dt));
 
-            Gait g = motor != null ? motor.CurrentGait : Gait.Walk;
-            gait = GaitParams.Lerp(gait, ParamsFor(g), 1f - Mathf.Exp(-gaitBlendSharpness * dt));
-            float refSpeed = motor != null ? motor.SpeedFor(g) : 2f;
-            float move = Mathf.Clamp01(smoothSpeed / Mathf.Max(0.5f, refSpeed * 0.5f));
-            phase = Mathf.Repeat(phase + smoothSpeed * Mathf.PI / Mathf.Max(0.1f, gait.stride * scale) * dt, Mathf.PI * 2f);
+            // respiro: più veloce e profondo dopo uno sforzo
+            breathPhase += dt * Mathf.PI * 2f * (breathRate + exertion * 0.55f);
+            float breath = Mathf.Sin(breathPhase);
 
-            BuildLocomotion(move);
-            bool acting = BuildAction();
-            float sharp = acting ? actionInSharpness : actionOutSharpness;
-            actionWeight = Mathf.Lerp(actionWeight, acting ? 1f : 0f, 1f - Mathf.Exp(-sharp * dt));
+            System.Array.Clear(target, 0, N);
+            for (int i = 0; i < 4; i++) { ikTargetWeight[i] = 0f; hasEndRotation[i] = false; }
 
+            if (traversing) BuildTraversal(motor.Traversal, breath);
+            else BuildGround(dt, breath);
+
+            // FK con transizioni morbide
+            float k = 1f - Mathf.Exp(-poseSharpness * dt);
             for (int i = 0; i < N; i++)
             {
+                pose[i] = Vector3.Lerp(pose[i], target[i], k);
                 Transform j = rig.joints[i];
-                if (j != null) j.localRotation = Quaternion.Euler(Vector3.Lerp(loco[i], action[i], actionWeight));
+                if (j != null) j.localRotation = Quaternion.Euler(pose[i]);
             }
-            if (hips != null)
-                hips.localPosition = hipsRest + Vector3.down * (Mathf.Lerp(locoHipsDrop, actionHipsDrop, actionWeight) * scale);
+
+            // bacino + molla dell'atterraggio
+            float crouchTarget = motor != null && motor.IsStunned ? 0.42f : 0f;
+            crouchVel += (-crouchStiffness * (crouch - crouchTarget) - crouchDamping * crouchVel) * dt;
+            crouch = Mathf.Clamp(crouch + crouchVel * dt, -0.05f, 0.5f);
+            float hk = 1f - Mathf.Exp(-(traversing ? 30f : hipsSharpness) * dt);
+            Vector3 hp = Vector3.Lerp(hips.localPosition + Vector3.up * lastCrouch, desiredHipsLocal, hk);
+            hips.localPosition = hp + Vector3.down * crouch;
+            lastCrouch = crouch;
+
+            // spalle che salgono con il respiro
+            float lift = breath * 0.005f * (1f + exertion);
+            armL.localPosition = armLRest + Vector3.up * lift;
+            armR.localPosition = armRRest + Vector3.up * lift;
+
+            SolveIK(dt);
         }
 
-        // ------------------------------------------------------------------ locomozione
+        float lastCrouch;
 
-        void BuildLocomotion(float move)
+        // ------------------------------------------------------------------ movimento misurato
+
+        void UpdateKinematics(float dt)
         {
-            System.Array.Clear(loco, 0, N);
-            float s = Mathf.Sin(phase), c = Mathf.Cos(phase);
-            float idle = 1f - move;
-            float t = Time.time;
+            Vector3 pos = transform.position;
+            Vector3 v = (pos - lastPos) / dt;
+            lastPos = pos;
+            vy = v.y;
+            Vector3 vf = new Vector3(v.x, 0f, v.z);
+            if (vf.sqrMagnitude > 400f) vf = Vector3.zero; // teletrasporti
+            flatVel = Vector3.Lerp(flatVel, vf, 1f - Mathf.Exp(-12f * dt));
+            accel = Vector3.Lerp(accel, (flatVel - prevFlatVel) / dt, 1f - Mathf.Exp(-6f * dt));
+            prevFlatVel = flatVel;
 
-            Set(loco, BodyPart.ThighL, -gait.thigh * s * move - idle * 1.5f);
-            Set(loco, BodyPart.ThighR, gait.thigh * s * move - idle * 1.5f);
-            Set(loco, BodyPart.ShinL, (gait.kneeBase + gait.knee * Mathf.Max(0f, c)) * move + idle * 3f);
-            Set(loco, BodyPart.ShinR, (gait.kneeBase + gait.knee * Mathf.Max(0f, -c)) * move + idle * 3f);
-            // Il piede resta circa parallelo al terreno.
-            Set(loco, BodyPart.FootL, -(X(loco, BodyPart.ThighL) + X(loco, BodyPart.ShinL)) * 0.8f);
-            Set(loco, BodyPart.FootR, -(X(loco, BodyPart.ThighR) + X(loco, BodyPart.ShinR)) * 0.8f);
-
-            loco[(int)BodyPart.UpperArmL] = new Vector3(gait.arm * s * move, 0f, -4f - 2f * move);
-            loco[(int)BodyPart.UpperArmR] = new Vector3(-gait.arm * s * move, 0f, 4f + 2f * move);
-            Set(loco, BodyPart.ForearmL, gait.elbow * move - idle * 10f);
-            Set(loco, BodyPart.ForearmR, gait.elbow * move - idle * 10f);
-
-            float breath = Mathf.Sin(t * 1.7f);
-            float twist = gait.arm * s * move;
-            loco[(int)BodyPart.Pelvis] = new Vector3(0f, -twist * 0.12f, 0f);
-            loco[(int)BodyPart.Abdomen] = new Vector3(gait.lean * move * 0.5f, twist * 0.12f, 0f);
-            loco[(int)BodyPart.Chest] = new Vector3(gait.lean * move * 0.5f + breath * 1.2f * idle, twist * 0.18f, 0f);
-            loco[(int)BodyPart.Head] = new Vector3(-gait.lean * move * 0.7f, -twist * 0.18f + Mathf.Sin(t * 0.37f) * 6f * idle, 0f);
-
-            locoHipsDrop = gait.bob * Mathf.Abs(s) * move + idle * 0.01f;
+            float rate;
+            float speed = flatVel.magnitude;
+            Gait g = motor != null ? motor.CurrentGait : Gait.Walk;
+            if (speed < 0.3f) rate = -0.08f;
+            else if (g == Gait.Sprint) rate = 0.12f;
+            else if (g == Gait.Jog) rate = 0.03f;
+            else rate = -0.05f;
+            exertion = Mathf.Clamp01(exertion + rate * dt);
         }
 
-        // ------------------------------------------------------------------ azioni
-
-        bool BuildAction()
+        void OnTraversalEnded()
         {
-            System.Array.Clear(action, 0, N);
-            actionHipsDrop = 0f;
-            if (motor == null) return false;
+            // I piedi ripartono da dove sono, appoggiati al suolo.
+            PlantFootAt(feet[0], footL.position);
+            PlantFootAt(feet[1], footR.position);
+            crouchVel += Mathf.Max(0f, -airVy) * landingImpulse;
+        }
 
-            if (motor.IsStunned) { HardLandingPose(); return true; }
+        void PlantFootAt(Foot f, Vector3 p)
+        {
+            Ground(p, out Vector3 g, out Vector3 n);
+            f.plant = f.pos = f.to = g;
+            f.normal = f.toNormal = n;
+            f.stepping = false;
+        }
 
-            switch (motor.CurrentTraversal)
+        bool Ground(Vector3 p, out Vector3 point, out Vector3 normal)
+        {
+            Vector3 origin = new Vector3(p.x, p.y + 0.8f, p.z);
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 1.8f, ~0, QueryTriggerInteraction.Ignore))
             {
-                case TraversalKind.Vault:
-                    VaultPose();
-                    return true;
-                case TraversalKind.Climb:
-                case TraversalKind.ClimbHigh:
-                case TraversalKind.ClimbUp:
-                    if (verticalSpeed > 0.3f) ClimbPose(Time.time); else VaultPose();
-                    return true;
-                case TraversalKind.Drop:
-                    if (verticalSpeed > 0.2f) TakeOffPose(); else FallPose();
-                    return true;
+                point = hit.point;
+                normal = Vector3.Angle(hit.normal, Vector3.up) < 40f ? hit.normal : Vector3.up;
+                return true;
             }
-
-            float since = Time.time - Mathf.Max(motor.LastLandingTime, traversalEndTime);
-            if (since < landingDuration) { SoftLandingPose(); return true; }
+            point = new Vector3(p.x, transform.position.y, p.z);
+            normal = Vector3.up;
             return false;
         }
 
-        void VaultPose()
+        // ------------------------------------------------------------------ a terra
+
+        void BuildGround(float dt, float breath)
         {
-            Set(action, BodyPart.ThighL, -95f); Set(action, BodyPart.ShinL, 110f); Set(action, BodyPart.FootL, -20f);
-            Set(action, BodyPart.ThighR, -40f); Set(action, BodyPart.ShinR, 80f); Set(action, BodyPart.FootR, -30f);
-            Set(action, BodyPart.Abdomen, 25f); Set(action, BodyPart.Chest, 10f); Set(action, BodyPart.Head, -25f);
-            action[(int)BodyPart.UpperArmL] = new Vector3(-75f, 0f, -10f); Set(action, BodyPart.ForearmL, -5f);
-            action[(int)BodyPart.UpperArmR] = new Vector3(-45f, 0f, 35f); Set(action, BodyPart.ForearmR, -30f);
-            actionHipsDrop = -0.03f;
+            Gait g = motor != null ? motor.CurrentGait : Gait.Walk;
+            gait = GaitParams.Lerp(gait, ParamsFor(g), 1f - Mathf.Exp(-6f * dt));
+
+            Vector3 fwd = transform.forward, right = transform.right, root = transform.position;
+            float speed = flatVel.magnitude;
+            Vector3 velDir = speed > 0.05f ? flatVel / speed : fwd;
+            float gaitSpeed = motor != null ? motor.SpeedFor(g) : 2f;
+            float sf = Mathf.Clamp01(speed / Mathf.Max(0.5f, gaitSpeed * 0.7f));
+            bool moving = speed > 0.15f;
+            float idle = 1f - Mathf.Clamp01(speed / 0.6f);
+            bool stunned = motor != null && motor.IsStunned;
+            bool female = rig.female;
+
+            // posa idle: la donna alterna la gamba d'appoggio (contrapposto)
+            if (idle > 0.9f)
+            {
+                idleSwapTimer -= dt;
+                if (idleSwapTimer <= 0f) { supportSide = -supportSide; idleSwapTimer = Random.Range(7f, 13f); }
+            }
+
+            if (!feetInitialized)
+            {
+                PlantFootAt(feet[0], root - right * 0.1f);
+                PlantFootAt(feet[1], root + right * 0.1f);
+                feetInitialized = true;
+            }
+
+            // --- piedi
+            Vector3[] home = new Vector3[2];
+            float[] footYaw = new float[2];
+            for (int i = 0; i < 2; i++)
+            {
+                Foot f = feet[i];
+                float idleHalf = female ? 0.075f : 0.13f;
+                Vector3 idleOffset = Vector3.zero;
+                footYaw[i] = female ? 6f : 9f;
+                if (female && f.side != supportSide)
+                {
+                    idleOffset = fwd * 0.08f + right * (f.side * 0.03f); // gamba libera avanti e un po' fuori
+                    footYaw[i] = 22f;
+                }
+                else if (female)
+                {
+                    idleOffset = right * (-f.side * 0.02f); // gamba d'appoggio sotto al corpo
+                }
+                float half = Mathf.Lerp(idleHalf, gait.stance, 1f - idle);
+                home[i] = root + right * (f.side * half) + idleOffset * idle;
+                footYaw[i] *= idle;
+            }
+            UpdateFeet(dt, home, velDir, speed, sf, moving);
+
+            // --- bacino: si abbassa sul piede più basso, sobbalza a ogni passo
+            float yLow = Mathf.Min(feet[0].GroundY, feet[1].GroundY);
+            float reach = yLow + ankleH + legLen * 0.975f + hipDrop;
+            float restY = root.y + hipsRest.y;
+            float stepLift = 0f;
+            foreach (Foot f in feet) if (f.stepping) stepLift = Mathf.Max(stepLift, Mathf.Sin(Mathf.PI * Mathf.Clamp01(f.t)));
+            float hipY = Mathf.Min(restY, reach) + gait.bob * sf * stepLift;
+            float hipsX = 0f;
+            if (female) { hipsX = 0.035f * supportSide * idle; hipY -= 0.012f * idle; }
+            else hipsX = Mathf.Sin(Time.time * 0.4f) * 0.01f * idle;
+            desiredHipsLocal = new Vector3(hipsX, hipY - root.y, 0f);
+
+            // --- busto e braccia che controbilanciano i passi
+            Vector3 hipsW = hips.position;
+            float swingNorm = 0.3f + 0.3f * sf;
+            float zL = Vector3.Dot(feet[0].pos - hipsW, fwd) / swingNorm;
+            float zR = Vector3.Dot(feet[1].pos - hipsW, fwd) / swingNorm;
+            zL = Mathf.Clamp(zL, -1f, 1f) * sf;
+            zR = Mathf.Clamp(zR, -1f, 1f) * sf;
+            float twist = zL - zR;
+
+            float accelF = Mathf.Clamp(Vector3.Dot(accel, fwd) * 1.5f, -8f, 10f);
+            float lean = gait.lean * sf + accelF * (1f - idle);
+            float amp = breathAmplitude * (1f + exertion * 1.5f);
+
+            Rot(BodyPart.Pelvis, 0f, -twist * 8f, 0f);
+            Rot(BodyPart.Abdomen, lean * 0.5f + breath * amp * 0.35f, twist * 5f, 0f);
+            Rot(BodyPart.Chest, lean * 0.5f - breath * amp, twist * 7f, 0f);
+            Rot(BodyPart.Head, -lean * 0.8f + breath * amp * 0.3f, -twist * 6f, 0f);
+            Rot(BodyPart.UpperArmL, -zR * gait.arm, 0f, -4f - 3f * sf);
+            Rot(BodyPart.UpperArmR, -zL * gait.arm, 0f, 4f + 3f * sf);
+            Rot(BodyPart.ForearmL, gait.elbow * sf - 12f * idle, 0f, 0f);
+            Rot(BodyPart.ForearmR, gait.elbow * sf - 12f * idle, 0f, 0f);
+            Rot(BodyPart.HandL, 0f, 0f, 4f * idle);
+            Rot(BodyPart.HandR, 0f, 0f, -4f * idle);
+
+            // --- pose idle caratteristiche
+            float t = Time.time;
+            if (female)
+            {
+                int s = supportSide;
+                Add(BodyPart.Pelvis, 0f, 0f, 5f * s * idle);
+                Add(BodyPart.Abdomen, 0f, 0f, -2f * s * idle);
+                Add(BodyPart.Chest, -1.5f * idle, 0f, -3.5f * s * idle);
+                Add(BodyPart.Head, 0f, Mathf.Sin(t * 0.21f) * 12f * idle, 5f * s * idle);
+                // mano sul fianco dal lato d'appoggio, l'altra rilassata
+                int arm = s < 0 ? 2 : 3;
+                Vector3 hipSide = hipsW + right * (s * (hipHalfWidth * 1.9f + 0.05f)) + Vector3.up * 0.06f - fwd * 0.01f;
+                SetIK(arm, hipSide, right * s - fwd * 0.4f + Vector3.down * 0.2f, idle * idle);
+                Add(s < 0 ? BodyPart.UpperArmR : BodyPart.UpperArmL, -3f * idle, 0f, 0f);
+            }
+            else
+            {
+                Add(BodyPart.Chest, -3f * idle, 0f, 0f); // petto in fuori
+                Add(BodyPart.Head, -1f * idle, Mathf.Sin(t * 0.23f) * 10f * idle + Mathf.Sin(t * 0.61f) * 3f * idle, 0f);
+                Add(BodyPart.UpperArmL, 0f, 0f, -5f * idle);
+                Add(BodyPart.UpperArmR, 0f, 0f, 5f * idle);
+                Add(BodyPart.Pelvis, 0f, Mathf.Sin(t * 0.4f) * 2f * idle, Mathf.Sin(t * 0.4f) * 1.5f * idle);
+            }
+
+            if (stunned)
+            {
+                // atterraggio duro: busto giù, una mano a terra
+                Add(BodyPart.Abdomen, 35f, 0f, 0f);
+                Add(BodyPart.Chest, 12f, 0f, 0f);
+                Add(BodyPart.Head, -30f, 0f, 0f);
+                Ground(root + fwd * 0.4f + right * 0.18f, out Vector3 handGround, out _);
+                SetIK(3, handGround + Vector3.up * 0.05f, -fwd + right, 1f);
+                SetEnd(3, PalmDown(1, fwd));
+                SetIK(2, root + fwd * 0.15f - right * 0.25f + Vector3.up * 0.55f, -fwd - right, 0.6f);
+            }
+
+            // --- gambe sui piedi
+            for (int i = 0; i < 2; i++)
+            {
+                Foot f = feet[i];
+                Vector3 kneePole = fwd + right * (f.side * 0.15f);
+                SetIK(i, f.pos + f.normal * ankleH, kneePole, 1f);
+                SetEnd(i, FootRotation(f, fwd, footYaw[i]));
+            }
         }
 
-        void ClimbPose(float t)
+        void UpdateFeet(float dt, Vector3[] home, Vector3 velDir, float speed, float sf, bool moving)
         {
-            float w = Mathf.Sin(t * 9f);
-            action[(int)BodyPart.UpperArmL] = new Vector3(-165f + 18f * w, 0f, -8f);
-            action[(int)BodyPart.UpperArmR] = new Vector3(-165f - 18f * w, 0f, 8f);
-            Set(action, BodyPart.ForearmL, -30f + 20f * w);
-            Set(action, BodyPart.ForearmR, -30f - 20f * w);
-            Set(action, BodyPart.ThighL, -55f + 30f * w); Set(action, BodyPart.ShinL, 75f - 30f * w);
-            Set(action, BodyPart.ThighR, -55f - 30f * w); Set(action, BodyPart.ShinR, 75f + 30f * w);
-            Set(action, BodyPart.FootL, -10f); Set(action, BodyPart.FootR, -10f);
-            Set(action, BodyPart.Abdomen, 8f); Set(action, BodyPart.Head, -25f);
+            // passi in corso
+            foreach (Foot f in feet)
+            {
+                if (!f.stepping) { f.pos = f.plant; continue; }
+                f.t += dt / f.duration;
+                float u = Mathf.Clamp01(f.t);
+                float h = u * u * (3f - 2f * u);
+                Vector3 p = Vector3.Lerp(f.from, f.to, h);
+                float dy = f.to.y - f.from.y;
+                float yu = dy > 0.02f ? Smooth01(u / 0.6f) : dy < -0.02f ? Smooth01((u - 0.4f) / 0.6f) : h;
+                p.y = f.from.y + dy * yu + f.lift * Mathf.Sin(Mathf.PI * u);
+                f.pos = p;
+                if (u >= 1f)
+                {
+                    f.stepping = false;
+                    f.plant = f.pos = f.to;
+                    f.normal = f.toNormal;
+                }
+            }
+
+            // nuovo passo? al massimo uno per frame, alternando i piedi
+            if (moving) settleTimer = 0f; else settleTimer += dt;
+            float thr = Mathf.Max(0.07f, speed * gait.thr);
+            int best = -1;
+            float bestErr = 0f;
+            for (int i = 0; i < 2; i++)
+            {
+                Foot f = feet[i], other = feet[1 - i];
+                if (f.stepping) continue;
+                if (other.stepping && other.t < gait.overlap) continue;
+                Vector3 off = home[i] - f.plant;
+                off.y = 0f;
+                float err;
+                bool want;
+                if (moving)
+                {
+                    float behind = -Vector3.Dot(f.plant - home[i], velDir);
+                    want = behind > thr || off.magnitude > thr * 1.6f + 0.1f;
+                    err = Mathf.Max(behind, off.magnitude);
+                }
+                else
+                {
+                    want = settleTimer > 0.1f && off.magnitude > 0.06f;
+                    err = off.magnitude;
+                }
+                if (!want) continue;
+                if (i == lastStepped) err *= 0.7f; // preferisci l'altro piede
+                if (err > bestErr) { bestErr = err; best = i; }
+            }
+            if (best < 0) return;
+
+            Foot s = feet[best];
+            float duration = moving ? gait.swing * Mathf.Lerp(1.25f, 1f, sf) : 0.28f;
+            Vector3 aim = moving ? home[best] + flatVel * duration + velDir * (thr * 0.8f) : home[best];
+            Ground(aim, out Vector3 to, out Vector3 n);
+            s.from = s.plant;
+            s.to = to;
+            s.toNormal = n;
+            s.duration = duration;
+            s.lift = (moving ? gait.stepHeight * Mathf.Lerp(0.6f, 1f, sf) : 0.05f) + (Mathf.Abs(to.y - s.from.y) > 0.05f ? 0.06f : 0f);
+            s.t = 0f;
+            s.stepping = true;
+            lastStepped = best;
+        }
+
+        Quaternion FootRotation(Foot f, Vector3 fwd, float yawOut)
+        {
+            float u = Mathf.Clamp01(f.t);
+            Vector3 n = f.stepping ? Vector3.Slerp(f.normal, f.toNormal, u) : f.normal;
+            Vector3 dir = Quaternion.AngleAxis(yawOut * f.side, Vector3.up) * fwd;
+            dir = Vector3.ProjectOnPlane(dir, n);
+            if (dir.sqrMagnitude < 1e-6f) dir = fwd;
+            Quaternion r = Quaternion.LookRotation(dir.normalized, n);
+            if (f.stepping) r *= Quaternion.Euler(Mathf.Sin(Mathf.PI * u) * Mathf.Lerp(25f, -20f, u), 0f, 0f); // punta giù allo stacco, su all'appoggio
+            return r;
+        }
+
+        // ------------------------------------------------------------------ attraversamenti
+
+        void BuildTraversal(TraversalState t, float breath)
+        {
+            Vector3 dir = t.dir, right = t.right, root = transform.position;
+            Vector3 edge = t.Edge;
+            float u = t.phaseT;
+            float time = Time.time;
+            desiredHipsLocal = hipsRest;
+
+            Rot(BodyPart.Chest, -breath * breathAmplitude * 0.5f, 0f, 0f);
+
+            switch (t.phase)
+            {
+                case TraversalPhase.Approach:
+                {
+                    // corsetta verso l'ostacolo (gambe FK)
+                    float w = time * 13f;
+                    Rot(BodyPart.ThighL, -35f * Mathf.Sin(w), 0f, 0f);
+                    Rot(BodyPart.ThighR, 35f * Mathf.Sin(w), 0f, 0f);
+                    Rot(BodyPart.ShinL, 20f + 45f * Mathf.Max(0f, Mathf.Cos(w)), 0f, 0f);
+                    Rot(BodyPart.ShinR, 20f + 45f * Mathf.Max(0f, -Mathf.Cos(w)), 0f, 0f);
+                    Rot(BodyPart.UpperArmL, 30f * Mathf.Sin(w), 0f, -6f);
+                    Rot(BodyPart.UpperArmR, -30f * Mathf.Sin(w), 0f, 6f);
+                    Rot(BodyPart.ForearmL, -70f, 0f, 0f);
+                    Rot(BodyPart.ForearmR, -70f, 0f, 0f);
+                    Rot(BodyPart.Abdomen, 8f, 0f, 0f);
+                    break;
+                }
+
+                case TraversalPhase.Vault when t.kind == TraversalKind.Climb:
+                {
+                    // Volteggio laterale (parkour): mano destra sul bordo, gambe insieme di lato a sinistra.
+                    float bell = Mathf.Sin(Mathf.PI * u);
+                    Rot(BodyPart.Pelvis, 0f, -45f * bell, 18f * bell);
+                    Rot(BodyPart.Abdomen, 15f, 0f, -8f * bell);
+                    Rot(BodyPart.Chest, 12f, 20f * bell, -6f * bell);
+                    Rot(BodyPart.Head, -10f, 25f * bell, 0f);
+                    Rot(BodyPart.UpperArmL, -25f, 0f, -85f * bell - 10f); // braccio libero aperto per l'equilibrio
+                    Rot(BodyPart.ForearmL, -15f, 0f, 0f);
+                    Rot(BodyPart.ThighL, -75f, 0f, 0f); Rot(BodyPart.ShinL, 95f, 0f, 0f);
+                    Rot(BodyPart.ThighR, -70f, 0f, 0f); Rot(BodyPart.ShinR, 85f, 0f, 0f);
+
+                    Vector3 hand = edge + dir * 0.1f + right * 0.05f;
+                    float handW = Ramp(u, 0f, 0.12f) * (1f - Ramp(u, 0.6f, 0.8f));
+                    SetIK(3, hand + Vector3.up * 0.03f - dir * 0.04f, -dir + right, handW);
+                    SetEnd(3, PalmDown(1, dir));
+
+                    Vector3 hipsW = hips.position;
+                    float legW = Ramp(u, 0.1f, 0.3f) * (1f - Ramp(u, 0.78f, 0.95f));
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Vector3 p = hipsW - right * (0.38f + 0.06f * i) + Vector3.down * 0.3f + dir * (0.08f * (1 - i));
+                        p.y = Mathf.Max(p.y, t.topY + 0.08f + ankleH);
+                        SetIK(i, p, dir - right * 0.5f, legW);
+                    }
+                    break;
+                }
+
+                case TraversalPhase.Vault:
+                {
+                    // Balzo sul muretto: mano destra sul bordo, gambe raccolte che passano sopra.
+                    Rot(BodyPart.Abdomen, 18f, 0f, 0f);
+                    Rot(BodyPart.Chest, 10f, 0f, 0f);
+                    Rot(BodyPart.Head, -15f, 0f, 0f);
+                    Rot(BodyPart.UpperArmL, -60f, 0f, -35f);
+                    Rot(BodyPart.ForearmL, -20f, 0f, 0f);
+                    Rot(BodyPart.ThighL, -85f, 0f, 0f); Rot(BodyPart.ShinL, 105f, 0f, 0f);
+                    Rot(BodyPart.ThighR, -80f, 0f, 0f); Rot(BodyPart.ShinR, 100f, 0f, 0f);
+
+                    Vector3 hand = edge + dir * 0.08f + right * 0.14f;
+                    float handW = Ramp(u, 0f, 0.15f) * (1f - Ramp(u, 0.55f, 0.75f));
+                    SetIK(3, hand + Vector3.up * 0.03f - dir * 0.04f, -dir + right, handW);
+                    SetEnd(3, PalmDown(1, dir));
+
+                    Vector3 hipsW = hips.position;
+                    float legW = Ramp(u, 0.1f, 0.3f) * (1f - Ramp(u, 0.8f, 1f));
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Vector3 p = hipsW + Vector3.down * 0.42f + dir * 0.12f + right * (feet[i].side * 0.1f);
+                        p.y = Mathf.Max(p.y, t.topY + 0.06f + ankleH);
+                        SetIK(i, p, dir, legW);
+                    }
+                    break;
+                }
+
+                case TraversalPhase.Jump when t.kind == TraversalKind.Drop:
+                    TakeOffPose();
+                    break;
+
+                case TraversalPhase.Jump when t.kind == TraversalKind.ClimbHigh && t.topY < root.y + 0.5f:
+                    // slancio dalla cima del muro alto verso il basso
+                    TakeOffPose();
+                    break;
+
+                case TraversalPhase.Jump:
+                case TraversalPhase.Scramble:
+                case TraversalPhase.PullUp:
+                case TraversalPhase.Mantle:
+                    ClimbPose(t, u, time);
+                    break;
+
+                case TraversalPhase.Fall:
+                    FallPose();
+                    break;
+            }
+        }
+
+        /// <summary>Arrampicata sul muro alto: mani sul bordo, piedi che cercano appoggio sulla parete, trazione, scavalco.</summary>
+        void ClimbPose(TraversalState t, float u, float time)
+        {
+            Vector3 dir = t.dir, right = t.right, root = transform.position;
+            Vector3 edge = t.Edge;
+            Vector3 wall = t.nearFace - dir * 0.03f; // faccia del muro, a terra
+
+            // mani sul bordo
+            float handW = 1f;
+            if (t.phase == TraversalPhase.Jump) handW = Ramp(u, 0f, 0.8f);
+            if (t.phase == TraversalPhase.Mantle) handW = 1f - Ramp(u, 0.65f, 0.9f);
+            for (int i = 0; i < 2; i++)
+            {
+                int side = i == 0 ? -1 : 1;
+                Vector3 h = edge + right * (side * 0.22f) - dir * 0.05f + Vector3.up * 0.03f;
+                SetIK(2 + i, h, -dir * 0.6f + right * side + Vector3.down * 0.3f, handW);
+                SetEnd(2 + i, PalmDown(side, dir));
+            }
+            Rot(BodyPart.UpperArmL, -165f, 0f, -10f);
+            Rot(BodyPart.UpperArmR, -165f, 0f, 10f);
+            Rot(BodyPart.ForearmL, -20f, 0f, 0f);
+            Rot(BodyPart.ForearmR, -20f, 0f, 0f);
+
+            switch (t.phase)
+            {
+                case TraversalPhase.Jump:
+                    Rot(BodyPart.Abdomen, 8f, 0f, 0f);
+                    Rot(BodyPart.Head, -25f, 0f, 0f);
+                    Rot(BodyPart.ThighL, -30f, 0f, 0f); Rot(BodyPart.ShinL, 50f, 0f, 0f);
+                    Rot(BodyPart.ThighR, -15f, 0f, 0f); Rot(BodyPart.ShinR, 30f, 0f, 0f);
+                    break;
+
+                case TraversalPhase.Scramble:
+                {
+                    // i piedi spingono a turno contro la parete cercando appoggio
+                    Rot(BodyPart.Abdomen, 10f, 0f, 0f);
+                    Rot(BodyPart.Chest, 6f, 0f, 0f);
+                    Rot(BodyPart.Head, -20f, 0f, 0f);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        int side = i == 0 ? -1 : 1;
+                        float push = Mathf.Max(0f, Mathf.Sin(time * 14f + i * Mathf.PI));
+                        Vector3 p = wall + right * (side * 0.12f);
+                        p.y = root.y + 0.3f + 0.35f * push;
+                        SetIK(i, p - dir * 0.06f * (1f - push), dir + Vector3.down * 0.2f, 1f);
+                        SetEnd(i, Quaternion.LookRotation(Vector3.up, -dir)); // pianta del piede contro il muro
+                    }
+                    break;
+                }
+
+                case TraversalPhase.PullUp:
+                {
+                    Rot(BodyPart.Abdomen, 15f, 0f, 0f);
+                    Rot(BodyPart.Chest, 25f, 0f, 0f);
+                    Rot(BodyPart.Head, -10f, 0f, 0f);
+                    Vector3 pl = wall - right * 0.12f; pl.y = root.y + 0.55f;
+                    Vector3 pr = wall + right * 0.12f; pr.y = root.y + 0.2f;
+                    SetIK(0, pl, dir + Vector3.down * 0.2f, 1f);
+                    SetEnd(0, Quaternion.LookRotation(Vector3.up, -dir));
+                    SetIK(1, pr, dir, 0.5f);
+                    Rot(BodyPart.ThighR, -20f, 0f, 0f); Rot(BodyPart.ShinR, 40f, 0f, 0f);
+                    break;
+                }
+
+                case TraversalPhase.Mantle:
+                {
+                    // una gamba sale sul bordo, poi l'altra; il corpo si piega sopra il muro
+                    float crouchM = Mathf.Sin(Mathf.PI * u);
+                    Rot(BodyPart.Abdomen, Mathf.Lerp(40f, 10f, u), 0f, 0f);
+                    Rot(BodyPart.Chest, Mathf.Lerp(20f, 5f, u), 0f, 0f);
+                    Rot(BodyPart.Head, -10f, 0f, 0f);
+                    desiredHipsLocal = hipsRest + Vector3.down * (0.32f * crouchM);
+
+                    Vector3 onEdgeL = edge + dir * 0.12f - right * 0.1f + Vector3.up * ankleH;
+                    Vector3 onEdgeR = edge + dir * 0.12f + right * 0.1f + Vector3.up * ankleH;
+                    Vector3 faceL = wall - right * 0.12f; faceL.y = Mathf.Min(root.y + 0.6f, t.topY);
+                    Vector3 faceR = wall + right * 0.12f; faceR.y = Mathf.Min(root.y + 0.25f, t.topY);
+                    SetIK(0, Vector3.Lerp(faceL, onEdgeL, Ramp(u, 0f, 0.35f)) + Vector3.up * 0.15f * Mathf.Sin(Mathf.PI * Ramp(u, 0f, 0.35f)),
+                          dir, 1f);
+                    SetIK(1, Vector3.Lerp(faceR, onEdgeR, Ramp(u, 0.45f, 0.85f)) + Vector3.up * 0.2f * Mathf.Sin(Mathf.PI * Ramp(u, 0.45f, 0.85f)),
+                          dir, 1f);
+                    break;
+                }
+            }
         }
 
         void TakeOffPose()
         {
-            action[(int)BodyPart.UpperArmL] = new Vector3(-120f, 0f, -30f);
-            action[(int)BodyPart.UpperArmR] = new Vector3(-120f, 0f, 30f);
-            Set(action, BodyPart.ForearmL, -15f); Set(action, BodyPart.ForearmR, -15f);
-            Set(action, BodyPart.ThighL, -40f); Set(action, BodyPart.ShinL, 60f);
-            Set(action, BodyPart.ThighR, -10f); Set(action, BodyPart.ShinR, 25f);
-            Set(action, BodyPart.Abdomen, -5f); Set(action, BodyPart.Head, -10f);
+            Rot(BodyPart.UpperArmL, -120f, 0f, -30f);
+            Rot(BodyPart.UpperArmR, -120f, 0f, 30f);
+            Rot(BodyPart.ForearmL, -15f, 0f, 0f); Rot(BodyPart.ForearmR, -15f, 0f, 0f);
+            Rot(BodyPart.ThighL, -40f, 0f, 0f); Rot(BodyPart.ShinL, 60f, 0f, 0f);
+            Rot(BodyPart.ThighR, -10f, 0f, 0f); Rot(BodyPart.ShinR, 25f, 0f, 0f);
+            Rot(BodyPart.Abdomen, -5f, 0f, 0f);
+            Rot(BodyPart.Head, -10f, 0f, 0f);
         }
 
         void FallPose()
         {
-            action[(int)BodyPart.UpperArmL] = new Vector3(-100f, 0f, -60f);
-            action[(int)BodyPart.UpperArmR] = new Vector3(-100f, 0f, 60f);
-            Set(action, BodyPart.ForearmL, -20f); Set(action, BodyPart.ForearmR, -20f);
-            Set(action, BodyPart.ThighL, -35f); Set(action, BodyPart.ShinL, 55f);
-            Set(action, BodyPart.ThighR, -20f); Set(action, BodyPart.ShinR, 40f);
-            Set(action, BodyPart.FootL, -15f); Set(action, BodyPart.FootR, -15f);
-            Set(action, BodyPart.Abdomen, 5f); Set(action, BodyPart.Head, 15f);
+            float flail = Mathf.Sin(Time.time * 9f);
+            Rot(BodyPart.UpperArmL, -100f + 10f * flail, 0f, -60f);
+            Rot(BodyPart.UpperArmR, -100f - 10f * flail, 0f, 60f);
+            Rot(BodyPart.ForearmL, -20f, 0f, 0f); Rot(BodyPart.ForearmR, -20f, 0f, 0f);
+            Rot(BodyPart.ThighL, -35f, 0f, 0f); Rot(BodyPart.ShinL, 55f, 0f, 0f);
+            Rot(BodyPart.ThighR, -20f, 0f, 0f); Rot(BodyPart.ShinR, 40f, 0f, 0f);
+            Rot(BodyPart.FootL, -15f, 0f, 0f); Rot(BodyPart.FootR, -15f, 0f, 0f);
+            Rot(BodyPart.Abdomen, 5f, 0f, 0f);
+            Rot(BodyPart.Head, 15f, 0f, 0f); // guarda dove atterra
         }
 
-        void SoftLandingPose()
+        // ------------------------------------------------------------------ IK
+
+        void SolveIK(float dt)
         {
-            Set(action, BodyPart.ThighL, -65f); Set(action, BodyPart.ThighR, -65f);
-            Set(action, BodyPart.ShinL, 100f); Set(action, BodyPart.ShinR, 100f);
-            Set(action, BodyPart.FootL, -35f); Set(action, BodyPart.FootR, -35f);
-            Set(action, BodyPart.Abdomen, 25f); Set(action, BodyPart.Chest, 8f); Set(action, BodyPart.Head, -15f);
-            action[(int)BodyPart.UpperArmL] = new Vector3(-35f, 0f, -15f);
-            action[(int)BodyPart.UpperArmR] = new Vector3(-35f, 0f, 15f);
-            Set(action, BodyPart.ForearmL, -30f); Set(action, BodyPart.ForearmR, -30f);
-            actionHipsDrop = 0.28f;
+            float k = 1f - Mathf.Exp(-20f * dt);
+            for (int i = 0; i < 4; i++)
+            {
+                ikWeight[i] = Mathf.Lerp(ikWeight[i], ikTargetWeight[i], k);
+                float w = ikWeight[i];
+                if (w <= 0.001f) continue;
+                switch (i)
+                {
+                    case 0: TwoBoneIK.Solve(thighL, shinL, footL, ikTarget[i], ikPole[i], w, false); break;
+                    case 1: TwoBoneIK.Solve(thighR, shinR, footR, ikTarget[i], ikPole[i], w, false); break;
+                    case 2: TwoBoneIK.Solve(armL, foreL, handL, ikTarget[i], ikPole[i], w, true); break;
+                    case 3: TwoBoneIK.Solve(armR, foreR, handR, ikTarget[i], ikPole[i], w, true); break;
+                }
+                if (hasEndRotation[i])
+                {
+                    Transform end = i == 0 ? footL : i == 1 ? footR : i == 2 ? handL : handR;
+                    end.rotation = Quaternion.Slerp(end.rotation, endRotation[i], w);
+                }
+            }
         }
 
-        void HardLandingPose()
+        void SetIK(int limb, Vector3 targetPos, Vector3 pole, float weight)
         {
-            Set(action, BodyPart.ThighL, -95f); Set(action, BodyPart.ThighR, -80f);
-            Set(action, BodyPart.ShinL, 130f); Set(action, BodyPart.ShinR, 115f);
-            Set(action, BodyPart.FootL, -35f); Set(action, BodyPart.FootR, -35f);
-            Set(action, BodyPart.Abdomen, 40f); Set(action, BodyPart.Chest, 15f); Set(action, BodyPart.Head, -35f);
-            action[(int)BodyPart.UpperArmR] = new Vector3(-75f, 0f, 10f); Set(action, BodyPart.ForearmR, -5f);   // mano a terra
-            action[(int)BodyPart.UpperArmL] = new Vector3(-40f, 0f, -20f); Set(action, BodyPart.ForearmL, -40f);
-            actionHipsDrop = 0.45f;
+            ikTarget[limb] = targetPos;
+            ikPole[limb] = pole;
+            ikTargetWeight[limb] = Mathf.Clamp01(weight);
         }
 
-        static void Set(Vector3[] pose, BodyPart part, float x) => pose[(int)part].x = x;
-        static float X(Vector3[] pose, BodyPart part) => pose[(int)part].x;
+        void SetEnd(int limb, Quaternion rotation)
+        {
+            endRotation[limb] = rotation;
+            hasEndRotation[limb] = true;
+        }
+
+        /// <summary>Mano appoggiata: palmo verso il basso, dita in avanti.</summary>
+        static Quaternion PalmDown(int side, Vector3 dir)
+        {
+            Vector3 y = -dir;                                   // le dita puntano lungo il -Y locale
+            Vector3 x = side < 0 ? Vector3.down : Vector3.up;   // il palmo è sul lato interno della mano
+            Vector3 z = Vector3.Cross(x, y);
+            return Quaternion.LookRotation(z, y);
+        }
+
+        // ------------------------------------------------------------------ utilità
+
+        void Rot(BodyPart p, float x, float y, float z) => target[(int)p] = new Vector3(x, y, z);
+        void Add(BodyPart p, float x, float y, float z) => target[(int)p] += new Vector3(x, y, z);
+
+        static float Ramp(float u, float a, float b) => Mathf.Clamp01((u - a) / (b - a));
+        static float Smooth01(float u) { u = Mathf.Clamp01(u); return u * u * (3f - 2f * u); }
     }
 }
