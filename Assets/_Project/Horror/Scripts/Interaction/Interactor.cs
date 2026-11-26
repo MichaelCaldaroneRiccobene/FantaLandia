@@ -44,7 +44,12 @@ namespace FantaLandia.Horror.Interaction
                 if (it != null && it.CanInteract(this)) Target = it;
             }
 
-            if (Target != null && GameInput.Interact) Target.Interact(this);
+            if (Target != null && GameInput.Interact)
+            {
+                Interactable used = Target;
+                Target = null; // lo stato cambia: il bersaglio si ricalcola al prossimo frame
+                used.Interact(this);
+            }
         }
 
         public void Hold(PickupItem item, bool instant = false)
@@ -74,7 +79,7 @@ namespace FantaLandia.Horror.Interaction
             GUI.DrawTexture(new Rect((Screen.width - size) * 0.5f, (Screen.height - size) * 0.5f, size, size), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            if (Target == null) return;
+            if (Target == null || !Target.CanInteract(this)) return;
             string text = $"<b>E</b>  {Target.Prompt(this)}";
             Rect r = new Rect(0f, Screen.height * 0.5f + 24f, Screen.width, 30f);
             GUI.color = new Color(0f, 0f, 0f, 0.8f);

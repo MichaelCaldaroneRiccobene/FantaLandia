@@ -19,7 +19,7 @@ namespace FantaLandia.Horror.Interaction
         public PickupItem Placed { get; private set; }
         public event Action<PickupItem> ItemPlaced;
 
-        public override string Prompt(Interactor who) => $"{verb} {who.Held.displayName} {where}";
+        public override string Prompt(Interactor who) => $"{verb} {(who.Held != null ? who.Held.displayName : "")} {where}";
 
         public override bool CanInteract(Interactor who) =>
             enabled && Placed == null && who.Held != null && who.Held.itemId == acceptsItemId;
