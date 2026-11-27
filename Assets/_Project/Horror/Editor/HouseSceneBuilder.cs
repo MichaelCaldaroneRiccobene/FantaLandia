@@ -214,8 +214,14 @@ namespace FantaLandia.Horror.EditorTools
             Step("menu, intro e impostazioni", () =>
             {
                 var fpcPlayer = Object.FindFirstObjectByType<FantaLandia.Horror.Player.FirstPersonController>();
-                if (fpcPlayer != null) fpcPlayer.gameObject.AddComponent<FantaLandia.Horror.UI.NotebookMenu>().notebookPrefab = VoxelAssetLibrary.Load("Taccuino");
-                new GameObject("Intro (logo 641)").AddComponent<FantaLandia.Horror.UI.IntroSequence>();
+                if (fpcPlayer != null)
+                {
+                    var menu = fpcPlayer.gameObject.AddComponent<FantaLandia.Horror.UI.NotebookMenu>();
+                    menu.notebookPrefab = VoxelAssetLibrary.Load("Taccuino");
+                    menu.handFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/_Project/Horror/UI/Fonts/Kalam-Regular.ttf");
+                }
+                var intro = new GameObject("Intro (logo 641)").AddComponent<FantaLandia.Horror.UI.IntroSequence>();
+                intro.logo = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Horror/UI/Logo641.png");
                 new GameObject("Impostazioni").AddComponent<FantaLandia.Horror.UI.SettingsApplier>();
             });
             Step("suoni della casa", () =>

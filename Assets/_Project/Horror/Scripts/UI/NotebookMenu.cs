@@ -8,7 +8,7 @@ using FantaLandia.Horror.Interaction;
 using FantaLandia.Horror.Player;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using TMPro;
 
 namespace FantaLandia.Horror.UI
 {
@@ -16,11 +16,16 @@ namespace FantaLandia.Horror.UI
     /// Il menu è il taccuino di Muark: con Esc (o Tab) lo tira fuori con la mano destra, la visuale si abbassa e lo segue,
     /// e sulle pagine scritte a mano ci sono le voci del menu e le impostazioni. Il mondo intanto va avanti (niente pausa).
     /// W/S scegli · A/D cambia un valore · E conferma · Esc chiude (o torna indietro).
+    /// Anche col mouse: passandoci sopra si sceglie, clic conferma, [-] [+] o la rotellina cambiano i valori.
+    /// Le pagine sono scritte con TextMeshPro e un font a mano (Kalam, licenza OFL).
     /// </summary>
     public class NotebookMenu : MonoBehaviour
     {
         [Tooltip("Il modello del taccuino aperto (le pagine guardano +Y, il lato lontano è +Z)")]
         public GameObject notebookPrefab;
+        [Tooltip("Font scritto a mano per le pagine (TextMeshPro ne crea il font asset all'avvio)")]
+        public Font handFont;
+        TMP_FontAsset handFontAsset;
 
         public static bool IsOpen { get; private set; }
 
@@ -28,7 +33,8 @@ namespace FantaLandia.Horror.UI
         Interactor interactor;
         ProceduralBodyAnimator anim;
         Transform notebook;
-        Text leftText, rightText;
+        TextMeshProUGUI leftText, rightText;
+        Vector2 lastMouse;
         float openT;            // 0 chiuso .. 1 aperto
         bool wantOpen;
         float savedPitch, menuYaw;
@@ -86,9 +92,10 @@ namespace FantaLandia.Horror.UI
             notebook.gameObject.SetActive(false);
         }
 
-        /// <summary>Una pagina scritta: canvas nel mondo appoggiato sulla carta (12 x 18 cm).</summary>
-        Text PageText(Vector3 localPos)
+        /// <summary>Una pagina scritta: canvas nel mondo appoggiato sulla carta (12 x 18 cm), testo TextMeshPro a mano.</summary>
+        TextMeshProUGUI PageText(Vector3 localPos)
         {
+            if (handFontAsset == null && handFont != null) handFontAsset = TMP_FontAsset.CreateFontAsset(handFont);
             var go = new GameObject("Pagina");
             go.layer = 2;
             go.transform.SetParent(notebook, false);
@@ -106,16 +113,17 @@ namespace FantaLandia.Horror.UI
             var trt = textGo.AddComponent<RectTransform>();
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = new Vector2(8f, 6f); trt.offsetMax = new Vector2(-6f, -8f);
-            var text = textGo.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 9;
-            text.fontStyle = FontStyle.Italic;      // "scritto a mano"
-            text.lineSpacing = 1.12f;
+            var text = textGo.AddComponent<TextMeshProUGUI>();
+            if (handFontAsset != null) text.font = handFontAsset;
+            else text.fontStyle = FontStyles.Italic;
+            text.fontSize = 10;
+            text.lineSpacing = -8f;
             text.color = Ink;
-            text.supportRichText = true;
-            text.alignment = TextAnchor.UpperLeft;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.richText = true;
+            text.alignment = TextAlignmentOptions.TopLeft;
+            text.enableWordWrapping = true;
+            text.overflowMode = TextOverflowModes.Overflow;
+            text.raycastTarget = false;
             return text;
         }
 
@@ -134,6 +142,9 @@ namespace FantaLandia.Horror.UI
             menuYaw = fpc.Yaw; // il taccuino resta davanti a dove si guardava: la visuale lo raggiunge senza inseguirlo
             fpc.inputLocked = true;
             if (interactor != null) interactor.interactionEnabled = false;
+            Cursor.lockState = CursorLockMode.None; // si può usare il mouse sulle pagine
+            Cursor.visible = true;
+            lastMouse = GameInput.MousePosition;
             notebook.gameObject.SetActive(true);
             HorrorAudio.Play2D(ProceduralAudio.PickUp(), 0.5f, 1.2f);
             Redraw();
@@ -169,6 +180,8 @@ namespace FantaLandia.Horror.UI
             {
                 IsOpen = false;
                 notebook.gameObject.SetActive(false);
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
                 fpc.inputLocked = false;
                 if (interactor != null) interactor.interactionEnabled = true;
                 return;
@@ -264,10 +277,29 @@ namespace FantaLandia.Horror.UI
             if (GameInput.MenuDown) cursor = (cursor + 1) % items.Count;
             if (cursor != before) { confirmIndex = -1; Scribble(); }
 
+            // mouse: quale voce (o [-] / [+]) c'è sotto il puntatore
+            int mouseItem = -1, mouseStep = 0;
+            Vector2 mp = GameInput.MousePosition;
+            int link = TMP_TextUtilities.FindIntersectingLink(rightText, mp, fpc.cam);
+            if (link >= 0 && link < rightText.textInfo.linkCount)
+            {
+                string id = rightText.textInfo.linkInfo[link].GetLinkID();
+                mouseStep = id.EndsWith("-") ? -1 : id.EndsWith("+") ? 1 : 0;
+                int.TryParse(id.TrimEnd('-', '+'), out mouseItem);
+                if ((mp - lastMouse).sqrMagnitude > 1f && mouseItem != cursor && mouseItem < items.Count)
+                {
+                    cursor = mouseItem; confirmIndex = -1; Scribble();
+                }
+            }
+            lastMouse = mp;
+
             Item it = items[Mathf.Clamp(cursor, 0, items.Count - 1)];
             int delta = GameInput.MenuLeft ? -1 : GameInput.MenuRight ? 1 : 0;
+            if (mouseItem == cursor && it.change != null && Mathf.Abs(GameInput.Scroll) > 0.01f) delta = GameInput.Scroll > 0f ? 1 : -1;
+            bool click = GameInput.LeftDown && mouseItem == cursor;
+            if (click && mouseStep != 0 && it.change != null) { delta = mouseStep; click = false; }
             if (delta != 0 && it.change != null) { it.change(delta); GameSettings.Save(); Scribble(); }
-            if (GameInput.MenuConfirm)
+            if (GameInput.MenuConfirm || click)
             {
                 if (it.change != null && it.confirm == null) { it.change(1); GameSettings.Save(); Scribble(); }
                 else if (it.ask && confirmIndex != cursor) { confirmIndex = cursor; Scribble(); }
@@ -284,29 +316,31 @@ namespace FantaLandia.Horror.UI
         {
             if (leftText == null) return;
             leftText.text =
-                $"<size=13><b>Taccuino di Muark</b></size>\n" +
+                $"<size=15><b>Taccuino di Muark</b></size>\n" +
                 $"<color=#{ColorUtility.ToHtmlStringRGB(Pencil)}>venerdì sera</color>\n\n" +
                 "- portare la birra da Tom\n" +
                 "- <color=#" + ColorUtility.ToHtmlStringRGB(RedInk) + ">NON</color> farsi fregare da Roy\n" +
                 "- chiedere a Jef se sta bene\n\n" +
-                (page == Page.Settings ? "<size=11><b>Impostazioni</b></size>\n" : "") +
-                $"\n\n\n\n<size=7><color=#{ColorUtility.ToHtmlStringRGB(Pencil)}>W/S scegli · A/D cambia\nE conferma · Esc chiudi</color></size>";
+                $"\n\n\n\n<size=7><color=#{ColorUtility.ToHtmlStringRGB(Pencil)}>W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi</color></size>";
 
             var items = Items();
             var sb = new System.Text.StringBuilder();
-            sb.Append(page == Page.Main ? "<size=12><b>Menu</b></size>\n\n" : "<size=12><b>Impostazioni</b></size>\n\n");
+            sb.Append(page == Page.Main ? "<size=14><b>Menu</b></size>\n\n" : "<size=14><b>Impostazioni</b></size>\n");
+            string red = ColorUtility.ToHtmlStringRGB(RedInk);
             for (int i = 0; i < items.Count; i++)
             {
                 bool sel = i == cursor;
-                string label = items[i].label;
-                if (items[i].value != null) label += ":  <b>" + items[i].value() + "</b>";
-                if (sel && confirmIndex == i) label += "  <color=#" + ColorUtility.ToHtmlStringRGB(RedInk) + ">sicuro? E di nuovo</color>";
-                if (sel) sb.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(RedInk)).Append(">» </color>").Append("<b>").Append(label).Append("</b>");
-                else sb.Append("   ").Append(label);
+                // ogni voce è un link (per il mouse); i valori hanno anche [-] e [+]
+                sb.Append(sel ? $"<color=#{red}>» </color>" : "   ");
+                sb.Append($"<link=\"{i}\">").Append(sel ? "<b>" + items[i].label + "</b>" : items[i].label).Append("</link>");
+                if (items[i].value != null)
+                    sb.Append($":  <link=\"{i}-\">[-]</link> <b>").Append(items[i].value()).Append($"</b> <link=\"{i}+\">[+]</link>");
+                if (sel && confirmIndex == i) sb.Append($"\n      <color=#{red}>sicuro? conferma di nuovo</color>");
                 sb.Append(page == Page.Main ? "\n\n" : "\n");
             }
             rightText.text = sb.ToString();
-            rightText.fontSize = page == Page.Main ? 10 : 8;
+            rightText.fontSize = page == Page.Main ? 11 : 8.5f;
+            rightText.ForceMeshUpdate();
         }
 
         // ------------------------------------------------------------------ ricominciare e uscire
