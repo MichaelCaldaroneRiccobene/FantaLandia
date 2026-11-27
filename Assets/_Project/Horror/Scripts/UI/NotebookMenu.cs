@@ -240,6 +240,7 @@ namespace FantaLandia.Horror.UI
             {
                 list.Add(new Item { label = "Lingua", value = () => GameSettings.Language == "en" ? "English" : "Italiano",
                                     change = d => GameSettings.Language = GameSettings.Language == "en" ? "it" : "en" });
+                list.Add(new Item { label = "Voci parlate", value = () => GameSettings.SpokenVoices ? "sì" : "no", change = d => GameSettings.SpokenVoices = !GameSettings.SpokenVoices });
                 list.Add(Percent("Volume generale", () => GameSettings.Master, v => GameSettings.Master = v));
                 list.Add(Percent("Voci", () => GameSettings.Voices, v => GameSettings.Voices = v));
                 list.Add(Percent("Musica e TV", () => GameSettings.Music, v => GameSettings.Music = v));

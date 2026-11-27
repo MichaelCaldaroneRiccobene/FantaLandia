@@ -277,6 +277,7 @@ Esci dal gioco	Quit game
 Indietro	Back
 sicuro? conferma di nuovo	sure? confirm again
 Lingua	Language
+Voci parlate	Spoken voices
 Volume generale	Master volume
 Voci	Voices
 Musica e TV	Music and TV

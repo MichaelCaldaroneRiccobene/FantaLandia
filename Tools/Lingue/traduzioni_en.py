@@ -267,7 +267,7 @@ UI = {
 "W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi": "W/S or mouse: choose\nA/D, [-] [+], wheel: change\nE or click: confirm · Esc: close",
 "Menu": "Menu", "Impostazioni": "Settings", "Gioca": "Play", "Riprendi": "Resume", "Ricomincia dall'ultimo punto": "Restart from checkpoint",
 "Ricomincia dall'inizio": "Restart from the beginning", "Esci dal gioco": "Quit game", "Indietro": "Back", "sicuro? conferma di nuovo": "sure? confirm again",
-"Lingua": "Language", "Volume generale": "Master volume", "Voci": "Voices", "Musica e TV": "Music and TV", "Effetti": "Effects",
+"Lingua": "Language", "Voci parlate": "Spoken voices", "Volume generale": "Master volume", "Voci": "Voices", "Musica e TV": "Music and TV", "Effetti": "Effects",
 "Sensibilità mouse": "Mouse sensitivity", "Luminosità": "Brightness", "Qualità grafica": "Graphics quality", "Sottotitoli": "Subtitles", "Testo": "Text",
 "bassa": "low", "media": "medium", "alta": "high", "sì": "yes", "no": "no", "piccolo": "small", "medio": "medium", "grande": "large",
 "Andare ad aprire la porta": "Go answer the door",

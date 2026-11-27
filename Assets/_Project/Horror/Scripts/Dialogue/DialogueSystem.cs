@@ -195,6 +195,7 @@ namespace FantaLandia.Horror.Dialogue
         public static AudioClip VoiceFor(Speaker who, string text)
         {
             if (who == null || string.IsNullOrEmpty(text)) return null;
+            if (!FantaLandia.Horror.UI.GameSettings.SpokenVoices) return null; // voci spente: borbottio
             string key;
             string folder = FantaLandia.Horror.UI.Loc.VoiceFolder;
             using (var md5 = System.Security.Cryptography.MD5.Create())
