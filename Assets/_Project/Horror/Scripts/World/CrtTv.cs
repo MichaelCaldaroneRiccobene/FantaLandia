@@ -153,7 +153,7 @@ namespace FantaLandia.Horror.World
                 int bar = b.IndexOf('|');
                 if (bar <= 0) continue;
                 speaker = b.Substring(0, bar);
-                string text = b.Substring(bar + 1);
+                string text = FantaLandia.Horror.UI.Loc.T(b.Substring(bar + 1));
                 AudioClip clip = FantaLandia.Horror.Dialogue.DialogueSystem.VoiceFor(FantaLandia.Horror.Dialogue.Speakers.Find(speaker), text);
                 float len = clip != null ? clip.length : 1.5f + text.Length * 0.06f;
                 if (clip != null && cartoonVoice != null)

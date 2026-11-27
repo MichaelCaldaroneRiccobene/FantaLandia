@@ -93,7 +93,7 @@ namespace FantaLandia.Horror.Interaction
             if (Target == null || !Target.CanInteract(this)) return;
             // scritta: tasto E disegnato + azione, a mano, con l'ombra
             var st = FantaLandia.Horror.UI.UiStyle.Text(22, TextAnchor.MiddleLeft, false);
-            string label = Target.Prompt(this);
+            string label = FantaLandia.Horror.UI.Loc.T(Target.Prompt(this));
             float tw = st.CalcSize(new GUIContent(label)).x;
             float total = 30f + 10f + tw;
             float x = center.x - total * 0.5f, y = center.y + 26f;

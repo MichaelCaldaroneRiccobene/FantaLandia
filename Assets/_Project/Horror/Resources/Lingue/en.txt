@@ -1,0 +1,303 @@
+# italiano<TAB>inglese  (generato da Tools/Lingue/crea_inglese.py)
+Bussare alla porta di Tom (Muoviti si gela coglione)	Knock on Tom's door (Move it, it's freezing, dumbass)
+Dovrei bussare alla porta di Tom.	I should knock on Tom's door.
+Allora, busso o resto qui al freddo?	So, do I knock or do I freeze out here?
+Arrivo, arrivo cazzo!	Coming, coming, dammit!
+Muark! Finalmente, pensavo ti fossi perso.	Muark! Finally, I thought you got lost.
+Ho portato la birra cazzo.	I brought the damn beer.
+Scusa, c'era un traffico assurdo.	Sorry, traffic was insane.
+Grande! Mettila sull'isola in cucina, dai.	Sweet! Put it on the kitchen island, go.
+Traffico? Abiti a due isolati frocio...	Traffic? You live two blocks away, dickhead...
+Dai, entra. La birra mettila sull'isola in cucina.	Come on, get in. Put the beer on the kitchen island.
+Muark? Tutto bene? Sembri una fighetta congelata.	Muark? You okay? You look like a frozen little wuss.
+Jef è in bagno. Da mezz'ora. Che rincoglionito.	Jef's in the bathroom. For half an hour. What a moron.
+Posare la birra in cucina (Deficiente)	Put the beer in the kitchen (Idiot)
+Muark, la birra! In cucina, sull'isola. Dai cazzo!	Muark, the beer! Kitchen, on the island. Come on, dammit!
+Prima mollo la birra in cucina.	First I'll drop the beer in the kitchen.
+Muark, vai a vedere tu? Io non c'ho cazzi.	Muark, can you go check? I can't be bothered.
+Andare ad aprire la porta (Ma va)	Go answer the door (Duh)
+Muark! La porta! Cazzo!	Muark! The door! Dammit!
+Stanno ancora bussando... Coglione...	They're still knocking... Dumbass...
+...C'è qualcuno?	...Anybody there?
+Raga, non c'è nessuno!	Guys, there's nobody here!
+Saranno i ragazzini dei Kowalski. Chiudi, dai, che entra il freddo.	Must be the Kowalski kids. Close it, come on, you're letting the cold in.
+BUUU!!	BOOO!!
+AH AH AH! Dovevi vedere la tua faccia, testa di cazzo!	HA HA HA! You should've seen your face, dickhead!
+Roy! Mi hai fatto prendere un colpo!	Roy! You almost gave me a heart attack!
+Sei un cazzone. Entra, dai.	You're such a dick. Get in, come on.
+Lo so, lo so. Sono un fottuto GENIO.	I know, I know. I'm a fucking GENIUS.
+Vaffanculo anche a te.	Fuck you too.
+Allora? Ho sentito che c'è la pizza. Dov'è la pizza?	So? I heard there's pizza. Where's the pizza?
+Stare con gli altri in salotto (Stramboide)	Hang out with the others in the living room (Weirdo)
+Muark! Vieni in salotto, dai!	Muark! Come to the living room, come on!
+Muark, dove sei finito? Vieni qua!	Muark, where the hell are you? Get over here!
+Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno a cagare.	Here we are. Well, almost: Jef's still in the bathroom taking a dump.
+Ancora?	Still?
+Ho ordinato due pizze.	I ordered two pizzas.
+Che pizze hai preso?	What pizzas did you get?
+Speriamo che arrivi presto, ho una fame...	Hope it gets here soon, I'm starving...
+Una salame piccante e una con l'ananas. Quella è per Jef.	One pepperoni and one with pineapple. That one's for Jef.
+Che merda.	That's disgusting.
+Anch'io. Mi mangerei il pianeta Terra.	Me too. I could eat the whole planet.
+Cazzo è stato?!	What the fuck was that?!
+Veniva da dietro! Dal giardino!	It came from out back! The yard!
+Andiamo a vedere, presto!	Let's go see, quick!
+Vedere cos'è successo, in giardino (Oh, la trama si infittisce)	See what happened, in the yard (Oh, the plot thickens)
+Muark! Qui fuori, in fondo al giardino!	Muark! Out here, at the back of the yard!
+Muark, vieni a vedere! Presto!	Muark, come look! Quick!
+Oh santo cielo, Frank, guarda quel fumo...	Oh good heavens, Frank, look at that smoke...
+Torna dentro, Martha! Potrebbe esplodere ancora!	Get back inside, Martha! It could blow again!
+E se è la fabbrica? Ci abita la figlia dei Parker là vicino!	What if it's the factory? The Parkers' daughter lives near there!
+Chiamo lo sceriffo. Dov'è il telefono?	I'm calling the sheriff. Where's the phone?
+Linda! Prendi la videocamera!	Linda! Get the camcorder!
+Gary, non è il momento!	Gary, this is not the time!
+Ehi Tom! Avete sentito anche voi?	Hey Tom! You guys heard it too?
+Sento le sirene... stanno arrivando.	I can hear sirens... they're coming.
+Guardate là... quanto fumo cazzo!	Look over there... so much fucking smoke!
+Sarà saltata una conduttura del gas.	Must've been a gas line.
+Sembra vicino...	Looks close...
+Speriamo che non ci rovini la festa.	Hope it doesn't ruin the party.
+Verso la vecchia centrale, dietro Elm Street.	Toward the old power plant, behind Elm Street.
+Muark, un po' di empatia... cazzo!	Muark, a little empathy... dammit!
+Ehi, Tom! L'avete sentita anche voi?!	Hey, Tom! Did you guys hear that?!
+Sì, Gary! Sai cos'è successo?	Yeah, Gary! Do you know what happened?
+Non ne ho idea! Ha tremato tutta la casa!	No idea! The whole house shook!
+Frank dice che è il gas. Frank dice sempre che è il gas.	Frank says it's the gas. Frank always says it's the gas.
+Prima vediamo cosa sta succedendo.	Let's see what's going on first.
+Che succede? Ho sentito un botto.	What's going on? I heard a bang.
+Non lo so. C'è stata un'esplosione.	I don't know. There was an explosion.
+Jef! Sei vivo! Pensavamo fossi caduto nel water.	Jef! You're alive! We thought you fell in the toilet.
+...Un'esplosione.	...An explosion.
+Molto divertente.	Very funny.
+Ti sei perso Muark che se la faceva addosso, amico.	You missed Muark pissing his pants, man.
+Torniamo dentro. Magari in TV dicono qualcosa.	Let's go back in. Maybe the TV says something.
+Tornare dentro con gli altri (Fighette)	Go back inside with the others (Pussies)
+Muark, rientra! Dai.	Muark, get back in! Come on.
+Muark, non restare lì fuori da solo!	Muark, don't stay out there alone!
+Ma che... c'è solo statica.	What the... it's just static.
+Cambia canale, dai!	Change the channel, come on!
+Ci sto provando! Canale 4... canale 7...	I'm trying! Channel 4... channel 7...
+Niente. Sono tutti così. Nessun segnale.	Nothing. They're all like this. No signal.
+...	...
+Raggiungere gli altri in salotto (Vai vicino ai tuoi amici frocione)	Join the others in the living room (Go be with your buddies, wuss)
+Muark?! Dove sei? Vieni qui, in salotto!	Muark?! Where are you? Come here, living room!
+Muark! Non si vede niente, torna qui!	Muark! You can't see a thing, come back!
+Merda, un blackout?	Shit, a blackout?
+È saltata la corrente... Guardate fuori: è buio tutto il quartiere.	The power's out... Look outside: the whole neighborhood's dark.
+Ve lo dico io: sono i terroristi. Prima l'esplosione, adesso questo.	I'm telling you: it's terrorists. First the explosion, now this.
+Terroristi? Sono gli alieni, amico. Fidati.	Terrorists? It's aliens, man. Trust me.
+Siete rincoglioniti.	You guys are idiots.
+Jef, tu che ne pensi?	Jef, what do you think?
+Cazzo, può essere.	Shit, could be.
+Jef?	Jef?
+Aspettate! In cantina c'è il generatore d'emergenza.	Wait! There's an emergency generator in the basement.
+Grande! Vai.	Great! Go.
+Io? Neanche morto. Facciamo così: sasso, carta, forbice. Chi perde va giù.	Me? No way in hell. Let's do this: rock, paper, scissors. Loser goes down.
+Muark, tu contro di me. Pronto? Sasso... carta... forbice!	Muark, you against me. Ready? Rock... paper... scissors!
+Sasso!	Rock!
+Carta!	Paper!
+Fottiti!	Screw you!
+Carta! Carta batte sasso.	Paper! Paper beats rock.
+Forbice! Forbice batte carta.	Scissors! Scissors beat paper.
+Gli scorbutici vanno in cantina, sono le regole della casa.	Grumpy assholes go to the basement, house rules.
+Muark va in cantina! Muark va in cantina!	Muark goes to the basement! Muark goes to the basement!
+Troppo lento! Hai perso a tavolino.	Too slow! You lose by default.
+Cazzo!	Dammit!
+Va bene, va bene... ci vado io.	Fine, fine... I'll go.
+Le regole sono regole.	Rules are rules.
+Bravo. Così si fa.	Good boy. That's the spirit.
+C'è una torcia sul bancone della cucina. La porta della cantina è quella accanto all'isola.	There's a flashlight on the kitchen counter. The basement door is the one by the island.
+Stai attento, laggiù, non cadere e non fartela addosso.	Be careful down there, don't fall and don't shit yourself.
+Prendere la torcia in cucina (Si inizia)	Grab the flashlight in the kitchen (Here we go)
+La torcia è sul bancone in cucina, Muark.	The flashlight's on the kitchen counter, Muark.
+Che c'è, Muark? Hai paura del buio?	What's wrong, Muark? Scared of the dark?
+Scendere in cantina (Allora...)	Go down to the basement (Well then...)
+Muark? La cantina è da quella parte, accanto all'isola.	Muark? The basement's that way, by the island.
+Ehi, il generatore non si accende da solo!	Hey, the generator won't start itself!
+Accendere il generatore (...)	Start the generator (...)
+Il generatore... cerca quella lucina rossa.	The generator... look for that little red light.
+Tira la corda e torna su, Muark. Facile.	Pull the cord and go back up, Muark. Easy.
+Sì! Ce l'ho fatta.	Yes! I did it.
+Tornare di sopra dagli altri (Beh, non è successo niente)	Go back upstairs to the others (Well, nothing happened)
+Muark! Sali, presto!	Muark! Get up here, quick!
+Devo tornare di sopra.	I have to go back upstairs.
+Muark! Vieni, presto! C'è il notiziario!	Muark! Come quick! The news is on!
+...Ragazzi? Siete voi?	...Guys? Is that you?
+Topi. Sono solo topi. Grossi topi.	Rats. Just rats. Big rats.
+Chi c'è?!	Who's there?!
+...La radio? Ma è staccata.	...The radio? But it's unplugged.
+No, no, no... non adesso.	No, no, no... not now.
+Guardare il notiziario con gli altri (Oh... Lore)	Watch the news with the others (Oh... Lore)
+Muark! Il notiziario! Sbrigati!	Muark! The news! Hurry up!
+Muark, vieni qui! Subito!	Muark, get over here! Now!
+Shh! Guarda...	Shh! Look...
+Interrompiamo le trasmissioni per un'edizione straordinaria.	We interrupt this program for a special report.
+Questa sera, poco dopo le nove, una forte esplosione ha colpito la zona est di Maple Grove.	Tonight, shortly after nine, a powerful explosion struck the east side of Maple Grove.
+Le cause non sono ancora note. Le linee elettriche e telefoniche di tutta la contea sono fuori uso.	The cause is still unknown. Power and phone lines across the entire county are down.
+Le autorità raccomandano ai residenti di restare in casa, di chiudere porte e finestre e di non uscire per nessun motivo fino a domattina.	Authorities urge residents to stay indoors, lock their doors and windows, and not go outside for any reason until morning.
+Ripetiamo: non uscite di casa. Non aprite a nessuno.	We repeat: do not leave your homes. Do not open the door to anyone.
+Ok... ok. Adesso ho paura sul serio.	Okay... okay. Now I'm actually scared.
+Non aprite a nessuno?! Che vuol dire "non aprite a nessuno"?!	Don't open the door to anyone?! What does "don't open the door to anyone" mean?!
+E adesso che facciamo?!	So what do we do now?!
+Chiudiamo tutto. Porte, finestre, tutto. E aspettiamo domattina.	We lock everything. Doors, windows, everything. And we wait for morning.
+Non è stata un'esplosione.	That wasn't an explosion.
+Cosa? Jef... che stai dicendo?	What? Jef... what are you saying?
+Sopravvivere fino a domattina (Non credo che ce la farai bro)	Survive until morning (Don't think you'll make it, bro)
+Sta arrivando questa pizza o no?	Is this pizza coming or not?
+Questo cartone lo guardavo da piccolo.	I used to watch this cartoon when I was a kid.
+Ricordatemi di comprare altre birre.	Remind me to buy more beer.
+Ehi Tom, hai ancora quel videogioco dei ninja?	Hey Tom, you still got that ninja video game?
+Scommetto che il fattorino si è perso.	Bet the delivery guy got lost.
+Jef è ancora in bagno? Chiamate un idraulico.	Jef's still in the bathroom? Call a plumber.
+Hmm.	Hmm.
+Forse.	Maybe.
+Muark? Tutto bene là sotto?	Muark? Everything okay down there?
+Che silenzio... non mi piace.	It's so quiet... I don't like it.
+Il frigo si sta scaldando. Meglio finire le birre.	The fridge is warming up. Better finish the beers.
+Qualcuno ha delle candele?	Anybody got candles?
+Ragazzi, avete sentito anche voi?	Guys, did you hear that too?
+Non vedo niente là fuori. Niente di niente.	I can't see anything out there. Nothing at all.
+...Sentite?	...Do you hear that?
+Non è normale.	This isn't normal.
+Ehi, quella è la mia poltrona! ...Vabbè, per stasera.	Hey, that's my armchair! ...Whatever, just tonight.
+Mi hai rubato il posto, eh?	You stole my seat, huh?
+Muark? Che ci fai di sopra? La festa è qui sotto!	Muark? What are you doing upstairs? The party's down here!
+Lucia e il buio.	Lucia and the Dark.
+C'era una volta, in un prato vicino al bosco, una piccola lucciola di nome Lucia.	Once upon a time, in a meadow near the woods, there was a little firefly named Lucia.
+Che bel tramonto! Peccato che dopo arrivi la notte...	What a beautiful sunset! Too bad the night comes after...
+Ciao Lucia! Perché quella faccia triste?	Hi Lucia! Why the sad face?
+Ciao Tasso. Io ho paura del buio. Quando il sole va giù, mi nascondo sotto una foglia.	Hi Badger. I'm afraid of the dark. When the sun goes down, I hide under a leaf.
+Ma tu sei una lucciola! Tu fai luce!	But you're a firefly! You make light!
+Guarda le altre lucciole: ogni sera accendono il prato come un albero di Natale!	Look at the other fireflies: every night they light up the meadow like a Christmas tree!
+Loro sono grandi e coraggiose. Io sono piccola e fifona.	They're big and brave. I'm small and a scaredy-cat.
+Una lucina così piccola? Non serve a niente.	A tiny little light like mine? It's no use at all.
+Quella sera, ai margini del bosco, qualcuno piangeva.	That evening, at the edge of the woods, someone was crying.
+Aiuto! Mi sono persa! Non trovo più lo stagno!	Help! I'm lost! I can't find the pond!
+Stavo inseguendo una farfalla... e adesso è tutto uguale. Alberi, alberi e ancora alberi!	I was chasing a butterfly... and now everything looks the same. Trees, trees and more trees!
+È la piccola Rana! Si è persa nel bosco!	It's little Froggy! She's lost in the woods!
+Nel bosco? Ma tra poco sarà buio pesto...	In the woods? But soon it'll be pitch dark...
+Io ho il naso buono, ma al buio non vedo niente. Vieni con me?	I've got a good nose, but in the dark I can't see a thing. Will you come with me?
+Io... io ho paura.	I... I'm scared.
+Anch'io ho un po' paura. Ma se andiamo insieme, la paura diventa più piccola.	I'm a little scared too. But if we go together, the fear gets smaller.
+Il sole se ne andò, e il bosco diventò nero come l'inchiostro.	The sun went away, and the woods turned black as ink.
+Tasso? Dove sei? Non ti vedo!	Badger? Where are you? I can't see you!
+Ahia! Ho sbattuto il naso contro un albero!	Ouch! I bumped my nose on a tree!
+Sono qui! Lucia, accendi la tua luce!	I'm here! Lucia, turn on your light!
+Va bene... ci provo.	Okay... I'll try.
+Lucia tremava come una foglia. Ma pensò alla piccola Rana, sola nel bosco.	Lucia was shaking like a leaf. But she thought of little Froggy, all alone in the woods.
+E la codina di Lucia si accese. Piccola piccola, ma calda.	And Lucia's little tail lit up. Tiny, tiny, but warm.
+Ti vedo! E vedo anche il sentiero!	I can see you! And I can see the path too!
+Davvero? La mia lucina basta?	Really? My little light is enough?
+Uhu! Chi va là, a quest'ora?	Hoo! Who goes there, at this hour?
+Signor Gufo! Cerchiamo la piccola Rana, si è persa.	Mister Owl! We're looking for little Froggy, she's lost.
+L'ho sentita vicino ai giunchi, oltre il grande sasso. Seguite il ruscello.	I heard her near the reeds, past the big rock. Follow the stream.
+Grande sasso, ruscello, giunchi. Ricordatevelo, eh!	Big rock, stream, reeds. Remember that, okay!
+Io me lo ricordo! Andiamo!	I remember! Let's go!
+Grazie, signor Gufo!	Thank you, Mister Owl!
+E tu, piccola luce, non spegnerti. Al buio, anche una scintilla è una stella.	And you, little light, don't go out. In the dark, even a spark is a star.
+C'è qualcuno? Ho tanta paura...	Is anyone there? I'm so scared...
+Rana! Siamo noi! Guarda la mia luce!	Froggy! It's us! Look at my light!
+Sono qui! Sopra la ninfea!	I'm here! On the lily pad!
+Una stella che vola! Allora non sono sola!	A flying star! So I'm not alone!
+Vieni, piccola. Ti riportiamo a casa.	Come on, little one. We'll take you home.
+Ma il bosco è così buio...	But the woods are so dark...
+Stammi vicina. Io faccio luce, tu segui me.	Stay close to me. I'll make the light, you follow me.
+E così, in fila, attraversarono il bosco. Lucia davanti, Rana in mezzo e Tasso dietro.	And so, in a line, they crossed the woods. Lucia in front, Froggy in the middle and Badger in the back.
+Lucia, tu non hai paura del buio?	Lucia, aren't you afraid of the dark?
+Un po' sì. Ma adesso ho una cosa più importante da fare.	A little, yes. But now I've got something more important to do.
+Questo si chiama coraggio.	That's called courage.
+Il grande sasso! Ecco il ruscello!	The big rock! There's the stream!
+E sento già l'odore dello stagno. Ci siamo quasi!	And I can already smell the pond. We're almost there!
+Mamma! Papà! Sono a casa!	Mom! Dad! I'm home!
+Lei è Lucia, e mi ha fatto luce per tutto il bosco!	This is Lucia, and she lit the way through the whole forest!
+Quella notte, tutte le lucciole del prato vennero a vedere la piccola luce che aveva salvato la Rana.	That night, all the fireflies of the meadow came to see the little light that had saved Froggy.
+Sapete una cosa? Il buio non mi fa più così paura.	You know what? The dark doesn't scare me so much anymore.
+E perché?	Why not?
+Perché ho capito che anche la luce più piccola può aiutare qualcuno a tornare a casa.	Because I learned that even the smallest light can help someone find their way home.
+Anche la luce più piccola può aiutare chi si è perso nel buio. Fine.	Even the smallest light can help those who are lost in the dark. The End.
+Martha, hai chiuso il gas?	Martha, did you turn off the gas?
+Sì Frank, come ogni sera.	Yes Frank, like every night.
+Questi ragazzi di Tom fanno sempre tardi.	Tom's boys are always up late.
+Linda, la partita è finita?	Linda, is the game over?
+Ma ti pare l'ora, Gary?	Do you know what time it is, Gary?
+Bella serata, comunque.	Nice evening, though.
+Ehi Muark!	Hey Muark!
+Ciao!	Hi!
+Ho portato la birra.	I brought the beer.
+Ehi, Muark! Dove vai?	Hey, Muark! Where are you going?
+Muark? Ti sto parlando!	Muark? I'm talking to you!
+Ehi! Torna qui, dai.	Hey! Come back here, come on.
+Ehi, spazio vitale!	Hey, personal space!
+Mi stai addosso, amico.	You're all over me, man.
+...Sì?	...Yes?
+Dai...	Come on...
+Avanti, parti!	Come on, start!
+Ti prego, ti prego...	Please, please...
+Carta! Carta batte sasso. Ho vinto!	Paper! Paper beats rock. I win!
+Forbice! Forbice batte carta. Ho vinto!	Scissors! Scissors beat paper. I win!
+Vicino	Neighbor
+Vicina	Neighbor
+salta	skip
+Spazio	Space
+per alzarti	to stand up
+Bussa	Knock
+Apri la porta	Open the door
+Chiudi la porta	Close the door
+È chiusa a chiave	It's locked
+È occupato...	It's occupied...
+Meglio restare con gli altri, adesso.	Better stay with the others, for now.
+Prendi la torcia	Take the flashlight
+Prendi la birra	Take the beer
+Posa la birra sull'isola della cucina	Put the beer on the kitchen island
+Posa la birra sul bancone	Put the beer on the counter
+Siediti in poltrona	Sit in the armchair
+Siediti sul divano	Sit on the couch
+Siediti	Sit down
+Tira la corda d'avviamento	Pull the starter cord
+Riprova a tirare la corda	Pull the cord again
+Accendi la TV	Turn on the TV
+Spegni la TV	Turn off the TV
+Accendi la luce	Turn on the light
+Spegni la luce	Turn off the light
+Torcia	Flashlight
+<b>F</b>  accendi / spegni\n<b>Q</b>  lasciala cadere\n<b>Q</b> tenuto premuto  lanciala	<b>F</b>  turn on / off\n<b>Q</b>  drop it\n<b>Q</b> hold  throw it
+Comandi	Controls
+<b>WASD</b>  muoviti   <b>Shift</b>  corri   <b>C</b>  abbassati\n<b>E</b>  interagisci   <b>Spazio</b>  salta una battuta\n<b>Esc</b>  il taccuino (menu e impostazioni)	<b>WASD</b>  move   <b>Shift</b>  run   <b>C</b>  crouch\n<b>E</b>  interact   <b>Space</b>  skip a line\n<b>Esc</b>  the notebook (menu and settings)
+Taccuino di Muark	Muark's Notebook
+venerdì sera	Friday night
+da fare:	to do:
+W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi	W/S or mouse: choose\nA/D, [-] [+], wheel: change\nE or click: confirm · Esc: close
+Menu	Menu
+Impostazioni	Settings
+Gioca	Play
+Riprendi	Resume
+Ricomincia dall'ultimo punto	Restart from checkpoint
+Ricomincia dall'inizio	Restart from the beginning
+Esci dal gioco	Quit game
+Indietro	Back
+sicuro? conferma di nuovo	sure? confirm again
+Lingua	Language
+Volume generale	Master volume
+Voci	Voices
+Musica e TV	Music and TV
+Effetti	Effects
+Sensibilità mouse	Mouse sensitivity
+Luminosità	Brightness
+Qualità grafica	Graphics quality
+Sottotitoli	Subtitles
+Testo	Text
+bassa	low
+media	medium
+alta	high
+sì	yes
+no	no
+piccolo	small
+medio	medium
+grande	large
+Andare ad aprire la porta	Go answer the door
+Fine del capitolo 1\n\n<size=22>Continua...</size>	End of chapter 1\n\n<size=22>To be continued...</size>
+<size=26>641</size>\n\n<size=18>presenta</size>	<size=26>641</size>\n\n<size=18>presents</size>
+<size=46><b>FantaLandia</b></size>\n\n<size=22>Capitolo 1 — La sera dell'esplosione</size>	<size=46><b>FantaLandia</b></size>\n\n<size=22>Chapter 1 — The Night of the Explosion</size>
+<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank e Martha Miller · Gary e Linda Kowalski</size>	<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank and Martha Miller · Gary and Linda Kowalski</size>
+<size=18>Nel prossimo capitolo...</size>\n\n<size=26>Non aprite a nessuno.</size>	<size=18>In the next chapter...</size>\n\n<size=26>Don't open the door to anyone.</size>
+<size=22>Grazie per aver giocato</size>	<size=22>Thanks for playing</size>

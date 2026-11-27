@@ -15,6 +15,7 @@ namespace FantaLandia.Horror.UI
         public static int Quality = 2;             // 0 bassa, 1 media, 2 alta
         public static bool Subtitles = true;
         public static int TextSize = 1;            // 0 piccolo, 1 medio, 2 grande
+        public static string Language = "en";      // "en" inglese (predefinita), "it" italiano
 
         public static event Action Changed;
 
@@ -35,6 +36,7 @@ namespace FantaLandia.Horror.UI
             Quality = PlayerPrefs.GetInt("fl_quality", 2);
             Subtitles = PlayerPrefs.GetInt("fl_subs", 1) == 1;
             TextSize = PlayerPrefs.GetInt("fl_text", 1);
+            Language = PlayerPrefs.GetString("fl_lang", "en");
         }
 
         public static void Save()
@@ -48,6 +50,7 @@ namespace FantaLandia.Horror.UI
             PlayerPrefs.SetInt("fl_quality", Quality);
             PlayerPrefs.SetInt("fl_subs", Subtitles ? 1 : 0);
             PlayerPrefs.SetInt("fl_text", TextSize);
+            PlayerPrefs.SetString("fl_lang", Language);
             PlayerPrefs.Save();
             Changed?.Invoke();
         }

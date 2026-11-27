@@ -238,6 +238,8 @@ namespace FantaLandia.Horror.UI
             }
             else
             {
+                list.Add(new Item { label = "Lingua", value = () => GameSettings.Language == "en" ? "English" : "Italiano",
+                                    change = d => GameSettings.Language = GameSettings.Language == "en" ? "it" : "en" });
                 list.Add(Percent("Volume generale", () => GameSettings.Master, v => GameSettings.Master = v));
                 list.Add(Percent("Voci", () => GameSettings.Voices, v => GameSettings.Voices = v));
                 list.Add(Percent("Musica e TV", () => GameSettings.Music, v => GameSettings.Music = v));
@@ -318,25 +320,26 @@ namespace FantaLandia.Horror.UI
             string pencil = ColorUtility.ToHtmlStringRGB(Pencil);
             string objective = FantaLandia.Horror.Story.StoryDirector.Objective;
             leftText.text =
-                "<size=15><b>Taccuino di Muark</b></size>\n" +
-                $"<color=#{pencil}>venerdì sera</color>\n\n" +
-                (string.IsNullOrEmpty(objective) ? "" : "<size=8><color=#" + pencil + ">da fare:</color></size>\n- " + objective + "\n") +
-                $"\n\n\n\n\n<size=6><color=#{pencil}>W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi</color></size>";
+                "<size=15><b>" + Loc.T("Taccuino di Muark") + "</b></size>\n" +
+                $"<color=#{pencil}>" + Loc.T("venerdì sera") + "</color>\n\n" +
+                (string.IsNullOrEmpty(objective) ? "" : "<size=8><color=#" + pencil + ">" + Loc.T("da fare:") + "</color></size>\n- " + Loc.T(objective) + "\n") +
+                $"\n\n\n\n\n<size=6><color=#{pencil}>" + Loc.T("W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi") + "</color></size>";
 
             var items = Items();
             var sb = new System.Text.StringBuilder();
             bool main = page == Page.Main;
-            sb.Append(main ? "<size=14><b>Menu</b></size>\n\n" : "<size=12><b>Impostazioni</b></size>\n");
+            sb.Append(main ? "<size=14><b>" + Loc.T("Menu") + "</b></size>\n\n" : "<size=12><b>" + Loc.T("Impostazioni") + "</b></size>\n");
             string red = ColorUtility.ToHtmlStringRGB(RedInk);
             for (int i = 0; i < items.Count; i++)
             {
                 bool sel = i == cursor;
                 // ogni voce è un link (per il mouse); le impostazioni su una riga sola, valore incolonnato a destra
                 sb.Append(sel ? $"<color=#{red}>»</color> " : "  ");
-                sb.Append($"<link=\"{i}\">").Append(sel ? "<b>" + items[i].label + "</b>" : items[i].label).Append("</link>");
+                string lab = Loc.T(items[i].label);
+                sb.Append($"<link=\"{i}\">").Append(sel ? "<b>" + lab + "</b>" : lab).Append("</link>");
                 if (items[i].value != null)
-                    sb.Append($"<pos=60%><link=\"{i}-\">[-]</link> <b>").Append(items[i].value()).Append($"</b> <link=\"{i}+\">[+]</link>");
-                if (sel && confirmIndex == i) sb.Append($"\n    <color=#{red}>sicuro? conferma di nuovo</color>");
+                    sb.Append($"<pos=60%><link=\"{i}-\">[-]</link> <b>").Append(Loc.T(items[i].value())).Append($"</b> <link=\"{i}+\">[+]</link>");
+                if (sel && confirmIndex == i) sb.Append($"\n    <color=#{red}>" + Loc.T("sicuro? conferma di nuovo") + "</color>");
                 sb.Append(main ? "\n\n" : "\n");
             }
             rightText.text = sb.ToString();

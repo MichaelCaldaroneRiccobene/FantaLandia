@@ -880,7 +880,7 @@ namespace FantaLandia.Horror.Story
             HorrorAudio.Play2D(ProceduralAudio.Whisper(), 0.25f, 0.7f);
             yield return new WaitForSeconds(2.5f);
             Lock(true);
-            endTitle = "Fine del capitolo 1\n\n<size=22>Continua...</size>";
+            endTitle = FantaLandia.Horror.UI.Loc.T("Fine del capitolo 1\n\n<size=22>Continua...</size>");
             for (float t = 0f; t < 1f; t += Time.deltaTime / 3f) { fade = t; yield return null; }
             fade = 1f;
         }
@@ -987,7 +987,7 @@ namespace FantaLandia.Horror.Story
             foreach (var card in cards)
             {
                 for (float t = 0f; t < 1f; t += Time.deltaTime / 0.6f) { creditAlpha = 1f - t; yield return null; }
-                endTitle = card;
+                endTitle = FantaLandia.Horror.UI.Loc.T(card);
                 for (float t = 0f; t < 1f; t += Time.deltaTime / 0.8f) { creditAlpha = t; yield return null; }
                 creditAlpha = 1f;
                 yield return new WaitForSeconds(3.5f);

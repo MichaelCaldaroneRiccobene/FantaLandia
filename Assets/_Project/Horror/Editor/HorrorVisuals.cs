@@ -292,6 +292,65 @@ namespace FantaLandia.Horror.EditorTools
             return m;
         }
 
+        // ------------------------------------------------------------------ pozzanghere
+
+        /// <summary>
+        /// Una pozzanghera dalla forma irregolare (un "blob" a bordi morbidi), piatta sul pavimento: dentro l'acqua scura e
+        /// lucida, intorno un alone un po' più grande di cemento bagnato. Senza collider.
+        /// </summary>
+        public static void Puddle(Transform parent, Vector3 center, float radius, int seed, Material water, Material wet)
+        {
+            var go = new GameObject("Pozza");
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = center;
+            go.transform.localRotation = Quaternion.Euler(0f, seed * 37f, 0f);
+            Add(go.transform, "Alone bagnato", BlobMesh(seed, radius * 1.25f, 0.35f, "Pozza alone " + seed), wet, -0.0015f);
+            Add(go.transform, "Acqua", BlobMesh(seed, radius, 0.3f, "Pozza " + seed), water, 0f);
+
+            static void Add(Transform p, string n, Mesh m, Material mat, float y)
+            {
+                var g = new GameObject(n);
+                g.transform.SetParent(p, false);
+                g.transform.localPosition = new Vector3(0f, y, 0f);
+                g.AddComponent<MeshFilter>().sharedMesh = m;
+                var r = g.AddComponent<MeshRenderer>();
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = ShadowCastingMode.Off;
+            }
+        }
+
+        /// <summary>Disco irregolare (raggio che varia con alcune onde), salvato come asset.</summary>
+        static Mesh BlobMesh(int seed, float radius, float wobble, string name)
+        {
+            string path = $"{Folder}/{name}.asset";
+            EditorAssetUtil.EnsureFolder(Folder);
+            var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            var m = existing != null ? existing : new Mesh();
+            m.Clear();
+            m.name = name;
+            const int seg = 40;
+            var rng = new System.Random(seed);
+            float p1 = (float)rng.NextDouble() * 6f, p2 = (float)rng.NextDouble() * 6f, p3 = (float)rng.NextDouble() * 6f;
+            var verts = new List<Vector3> { Vector3.zero };
+            for (int i = 0; i < seg; i++)
+            {
+                float a = i / (float)seg * Mathf.PI * 2f;
+                float r = radius * (1f + wobble * (0.5f * Mathf.Sin(a * 2f + p1) + 0.3f * Mathf.Sin(a * 3f + p2) + 0.2f * Mathf.Sin(a * 5f + p3)));
+                verts.Add(new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r));
+            }
+            var tris = new List<int>();
+            for (int i = 0; i < seg; i++) { tris.Add(0); tris.Add(1 + (i + 1) % seg); tris.Add(1 + i); }
+            var norms = new List<Vector3>();
+            foreach (var _ in verts) norms.Add(Vector3.up);
+            m.SetVertices(verts);
+            m.SetNormals(norms);
+            m.SetTriangles(tris, 0);
+            m.RecalculateBounds();
+            if (existing == null) AssetDatabase.CreateAsset(m, path);
+            else EditorUtility.SetDirty(m);
+            return m;
+        }
+
         // ------------------------------------------------------------------ polvere
 
         static Material dustMat;

@@ -899,7 +899,7 @@ namespace FantaLandia.Horror.EditorTools
             Material damp = M("Macchia umido", "#4c4a44");
             Material beam = M("Trave", "#3a2a1c");
             Material pipe = M("Tubo", "#5a5650", 0.5f);
-            Material puddle = M("Pozza", "#15171a", 0.95f);
+            Material puddle = M("Pozza", "#0b0d10", 0.97f);
             Material plank = M("Asse vecchia", "#4e3a26");
             Material mattress = M("Materasso macchiato", "#8a8270");
             const float ix0 = X0 + 0.3f, ix1 = X1 - 0.3f, iz0 = Z0 + 0.3f, iz1 = Z1 - 0.3f;
@@ -1028,8 +1028,9 @@ namespace FantaLandia.Horror.EditorTools
             }
 
             // pozza d'acqua sotto la caldaia e assi vecchie per terra
-            Object.DestroyImmediate(Box("Pozza", b, new Vector3(4.4f, FB + 0.001f, 8.9f), new Vector3(5.4f, FB + 0.006f, 9.6f), puddle).GetComponent<Collider>());
-            Object.DestroyImmediate(Box("Pozza", b, new Vector3(5.0f, FB + 0.001f, 9.5f), new Vector3(5.6f, FB + 0.006f, 9.9f), puddle).GetComponent<Collider>());
+            // pozza d'acqua sotto la caldaia: forma irregolare, lucida (riflette le lampadine), con un alone di cemento bagnato
+            HorrorVisuals.Puddle(b, new Vector3(4.95f, FB + 0.0065f, 9.25f), 0.62f, 3, puddle, M("Cemento bagnato", "#3a3936", 0.55f));
+            HorrorVisuals.Puddle(b, new Vector3(3.95f, FB + 0.0065f, 8.75f), 0.25f, 7, puddle, M("Cemento bagnato", "#3a3936", 0.55f));
             for (int i = 0; i < 7; i++)
             {
                 var p = new Vector2(Mathf.Lerp(ix0 + 0.5f, ix1 - 0.5f, R()), Mathf.Lerp(iz0 + 0.5f, iz1 - 0.5f, R()));

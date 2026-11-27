@@ -254,7 +254,7 @@ namespace FantaLandia.Horror.Player
             var st = FantaLandia.Horror.UI.UiStyle.Text(18, TextAnchor.MiddleLeft, false);
             float x = Screen.width * 0.5f - 90f, y = Screen.height - 46f;
             float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(x, y, "WASD", 24f, 0.7f);
-            FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(x + kw + 8f, y - 2f, 160f, 26f), "per alzarti", st, new Color(1f, 1f, 1f, 0.7f));
+            FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(x + kw + 8f, y - 2f, 160f, 26f), FantaLandia.Horror.UI.Loc.T("per alzarti"), st, new Color(1f, 1f, 1f, 0.7f));
         }
 
         public void SetLook(float newYaw, float newPitch)

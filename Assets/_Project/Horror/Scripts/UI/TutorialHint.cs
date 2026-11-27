@@ -16,8 +16,8 @@ namespace FantaLandia.Horror.UI
         public static void Show(string title, string body, float seconds = 9f)
         {
             if (instance == null) instance = new GameObject("Tutorial").AddComponent<TutorialHint>();
-            instance.title = title;
-            instance.body = body;
+            instance.title = Loc.T(title);
+            instance.body = Loc.T(body);
             instance.duration = seconds;
             instance.shownAt = Time.time;
         }

@@ -52,8 +52,9 @@ namespace FantaLandia.Horror.World
         {
             Sky(new Color32(10, 14, 40, 255), new Color32(30, 30, 80, 255));
             Stars(t, 40);
+            bool en = FantaLandia.Horror.UI.Loc.English;
             Text("LUCIA", 48, 50, 2, new Color32(255, 230, 120, 255));
-            Text("E IL BUIO", 48, 34, 2, new Color32(200, 210, 255, 255));
+            Text(en ? "AND THE DARK" : "E IL BUIO", 48, 34, 2, new Color32(200, 210, 255, 255));
             Lucia(48 + Mathf.Sin(t * 1.3f) * 30f, 20 + Mathf.Sin(t * 2.1f) * 4f, t, false, true, false);
         }
 
@@ -168,11 +169,12 @@ namespace FantaLandia.Horror.World
             Sky(new Color32(8, 10, 30, 255), new Color32(4, 5, 15, 255));
             Stars(t, 25);
             Color32 c = new Color32(255, 235, 150, 255);
-            Text("ANCHE LA LUCE", 48, 58, 1, c);
-            Text("PIU PICCOLA", 48, 50, 1, c);
-            Text("AIUTA CHI SI E", 48, 42, 1, c);
-            Text("PERSO NEL BUIO", 48, 34, 1, c);
-            Text("FINE", 48, 14, 2, new Color32(255, 255, 255, 255));
+            bool en = FantaLandia.Horror.UI.Loc.English;
+            Text(en ? "EVEN THE" : "ANCHE LA LUCE", 48, 58, 1, c);
+            Text(en ? "SMALLEST LIGHT" : "PIU PICCOLA", 48, 50, 1, c);
+            Text(en ? "HELPS THOSE" : "AIUTA CHI SI E", 48, 42, 1, c);
+            Text(en ? "LOST IN THE DARK" : "PERSO NEL BUIO", 48, 34, 1, c);
+            Text(en ? "THE END" : "FINE", 48, 14, 2, new Color32(255, 255, 255, 255));
             Lucia(48 + Mathf.Sin(t) * 36f, 26, t, false, true, false);
         }
 
@@ -370,12 +372,13 @@ namespace FantaLandia.Horror.World
 
         // ------------------------------------------------------------------ scritte (font 3x5)
 
-        static readonly string Letters = "ABCEFHILNOPRSTU";
+        static readonly string Letters = "ABCEFHILNOPRSTUDGKMV";
         static readonly string[] Glyphs =
         {
             "010101111101101", "110101110101110", "011100100100011", "111100110100111", "111100110100100",
             "101101111101101", "111010010010111", "100100100100111", "110101101101101", "010101101101010",
             "110101110100100", "110101110101101", "011100010001110", "111010010010010", "101101101101111",
+            "110101101101110", "011100101101011", "101101110101101", "101111111101101", "101101101101010",
         };
 
         static void Text(string s, int centerX, int y, int scale, Color32 c)

@@ -54,6 +54,37 @@ VOICES = {
 }
 IDS = "|".join(VOICES.keys())
 
+# voci inglesi: modello VCTK (109 voci; scelte quelle americane/neutre, maschili e femminili misurando il tono)
+# personaggio: (voce VCTK, tono, velocità, filtro extra)
+EN_VOICES = {
+    "muark":  ("p299", 1.00, 1.05, ""),
+    "tom":    ("p330", 0.97, 1.05, ""),
+    "jef":    ("p317", 0.95, 0.92, ""),
+    "roy":    ("p301", 1.06, 1.12, ""),
+    "frank":  ("p254", 1.00, 0.95, ""),
+    "gary":   ("p287", 1.00, 1.02, ""),
+    "vicino": ("p272", 1.00, 1.00, ""),
+    "tv":     ("p232", 1.00, 1.05, "highpass=f=320,lowpass=f=3400,acompressor=threshold=0.1:ratio=4,volume=-7dB"),
+    "martha": ("p306", 0.97, 0.95, ""),
+    "linda":  ("p294", 1.04, 1.05, ""),
+    "vicina": ("p297", 1.00, 1.00, ""),
+    "lucia":  ("p345", 1.15, 1.0, "highpass=f=250,lowpass=f=4000"),
+    "rana":   ("p341", 1.12, 1.05, "highpass=f=250,lowpass=f=4000"),
+    "tasso":  ("p258", 0.95, 1.0, "highpass=f=250,lowpass=f=4000"),
+    "gufo":   ("p285", 0.92, 0.92, "highpass=f=250,lowpass=f=4000"),
+}
+
+def english_table():
+    """La tabella italiano -> inglese del gioco (Resources/Lingue/en.txt)."""
+    t = {}
+    p = os.path.join(ROOT, "Assets/_Project/Horror/Resources/Lingue/en.txt")
+    for line in open(p, encoding="utf-8"):
+        line = line.rstrip("\n")
+        if not line or line.startswith("#") or "\t" not in line: continue
+        it, en = line.split("\t", 1)
+        t[it.replace("\\n", "\n")] = en.replace("\\n", "\n")
+    return t
+
 STR = r'"((?:[^"\\]|\\.)*)"'
 
 def unescape(s):
@@ -105,7 +136,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", required=True)
     ap.add_argument("--force", action="store_true", help="rigenera anche le voci già presenti")
+    ap.add_argument("--lang", default="it", help="it (voci italiane) o en (voci inglesi, modello VCTK in <models>/en_vctk)")
     args = ap.parse_args()
+    if args.lang == "en": return main_en(args)
     from TTS.api import TTS
     os.makedirs(OUT, exist_ok=True)
     engines = {}
@@ -142,6 +175,39 @@ def main():
             if os.path.exists(os.path.join(OUT, f + ".meta")): os.remove(os.path.join(OUT, f + ".meta"))
             print("rimossa", f)
     print(f"Fatto: {made} voci nuove, {len(wanted)} battute in tutto.")
+
+def main_en(args):
+    import glob
+    from TTS.api import TTS
+    out = os.path.join(ROOT, "Assets/_Project/Horror/Resources/Voci_en")
+    os.makedirs(out, exist_ok=True)
+    d = os.path.dirname(glob.glob(os.path.join(args.models, "en_vctk", "**", "model_file.pth"), recursive=True)[0])
+    tts = TTS(model_path=os.path.join(d, "model_file.pth"), config_path=os.path.join(d, "config.json"), progress_bar=False)
+    table = english_table()
+    wanted, made = set(), 0
+    for speaker, text in collect():
+        en = table.get(text)
+        if not en or not re.search(r"[A-Za-z]", en): continue
+        k = key(speaker, en)
+        wanted.add(k + ".ogg")
+        dst = os.path.join(out, k + ".ogg")
+        if os.path.exists(dst) and not args.force: continue
+        vid, pitch, speed, extra = EN_VOICES.get(speaker, EN_VOICES["vicino"])
+        spoken = re.sub(r"\.{3,}", ", ", en.replace('"', "")).strip(" ,")
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = os.path.join(tmp, "v.wav")
+            tts.tts_to_file(text=spoken, speaker=vid, file_path=wav)
+            tempo = (speed / pitch) ** 0.5
+            filters = [f"asetrate={int(22050 * pitch)}", "aresample=22050", f"atempo={tempo:.4f},atempo={tempo:.4f}", "adelay=40", "loudnorm=I=-18:TP=-2"]
+            if extra: filters.append(extra)
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav, "-af", ",".join(filters), "-ac", "1", "-c:a", "libvorbis", "-q:a", "4", dst], check=True)
+        made += 1
+        print(f"[{made}] {speaker}: {en}")
+    for f in os.listdir(out):
+        if f.endswith(".ogg") and f not in wanted:
+            os.remove(os.path.join(out, f))
+            if os.path.exists(os.path.join(out, f + ".meta")): os.remove(os.path.join(out, f + ".meta"))
+    print(f"Fatto: {made} voci inglesi nuove, {len(wanted)} in tutto.")
 
 if __name__ == "__main__":
     main()

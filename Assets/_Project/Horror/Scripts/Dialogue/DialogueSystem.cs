@@ -77,7 +77,7 @@ namespace FantaLandia.Horror.Dialogue
             internal Speaker anchorSpeaker;
             internal float radius = 6f;
 
-            public Builder Say(Speaker who, string text) { steps.Add(new Step { speaker = who, text = text }); return this; }
+            public Builder Say(Speaker who, string text) { steps.Add(new Step { speaker = who, text = FantaLandia.Horror.UI.Loc.T(text) }); return this; }
 
             /// <summary>
             /// Il giocatore sceglie una risposta (tasti 1/2/3); la callback riceve l'indice scelto.
@@ -85,7 +85,7 @@ namespace FantaLandia.Horror.Dialogue
             /// </summary>
             public Builder Choice(string[] options, Action<int> onChosen, float timeout = 0f, Action onSilence = null)
             {
-                steps.Add(new Step { options = options, onChosen = onChosen, timeout = timeout, onSilence = onSilence });
+                steps.Add(new Step { options = System.Array.ConvertAll(options, FantaLandia.Horror.UI.Loc.T), onChosen = onChosen, timeout = timeout, onSilence = onSilence });
                 return this;
             }
 
@@ -124,7 +124,7 @@ namespace FantaLandia.Horror.Dialogue
         public static void Insert(params (Speaker who, string text)[] lines)
         {
             var self = Instance;
-            foreach (var l in lines) self.steps.Insert(self.insertCursor++, new Step { speaker = l.who, text = l.text });
+            foreach (var l in lines) self.steps.Insert(self.insertCursor++, new Step { speaker = l.who, text = FantaLandia.Horror.UI.Loc.T(l.text) });
         }
 
         /// <summary>Una sillaba della voce di qualcuno (per muovere la bocca).</summary>
@@ -150,6 +150,7 @@ namespace FantaLandia.Horror.Dialogue
         /// </summary>
         public static void Bark(Speaker who, string text, Vector3? position = null, bool overhead = false)
         {
+            text = FantaLandia.Horror.UI.Loc.T(text);
             var self = Instance;
             AudioClip voice = self.realVoices ? VoiceFor(who, text) : null;
             float shownFor = Mathf.Max(2.5f + text.Length * 0.05f, voice != null ? voice.length + 1f : 0f);
@@ -195,6 +196,7 @@ namespace FantaLandia.Horror.Dialogue
         {
             if (who == null || string.IsNullOrEmpty(text)) return null;
             string key;
+            string folder = FantaLandia.Horror.UI.Loc.VoiceFolder;
             using (var md5 = System.Security.Cryptography.MD5.Create())
             {
                 byte[] h = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(text));
@@ -202,9 +204,9 @@ namespace FantaLandia.Horror.Dialogue
                 for (int i = 0; i < 5; i++) sb.Append(h[i].ToString("x2"));
                 key = sb.ToString();
             }
-            if (voiceCache.TryGetValue(key, out AudioClip c)) return c;
-            c = Resources.Load<AudioClip>("Voci/" + key);
-            voiceCache[key] = c;
+            if (voiceCache.TryGetValue(folder + key, out AudioClip c)) return c;
+            c = Resources.Load<AudioClip>(folder + key);
+            voiceCache[folder + key] = c;
             return c;
         }
 
@@ -507,7 +509,7 @@ namespace FantaLandia.Horror.Dialogue
                 float a = Mathf.Clamp01((b.until - Time.time) * 1.5f);
                 string bhex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
                 Rect r = new Rect(x, by, w, 30f * sc);
-                FantaLandia.Horror.UI.UiStyle.Shadowed(r, $"<color=#{bhex}>{b.speaker.name}</color>  {b.text}", barkStyle, new Color(1f, 1f, 1f, a));
+                FantaLandia.Horror.UI.UiStyle.Shadowed(r, $"<color=#{bhex}>{FantaLandia.Horror.UI.Loc.T(b.speaker.name)}</color>  {b.text}", barkStyle, new Color(1f, 1f, 1f, a));
                 by -= 30f * sc;
             }
 
@@ -546,16 +548,16 @@ namespace FantaLandia.Horror.Dialogue
             Color sp = s.speaker != null ? s.speaker.color : Color.white;
             FantaLandia.Horror.UI.UiStyle.Panel(new Rect(box.x + 12f, box.y + 14f, 4f, box.height - 28f), new Color(sp.r, sp.g, sp.b, 0.9f), 2);
             if (s.speaker != null)
-                FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(box.x + 28f, box.y + 8f, w, 32f * sc), $"<color=#{ColorUtility.ToHtmlStringRGB(sp)}>{s.speaker.name}</color>", nameStyle, Color.white);
+                FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(box.x + 28f, box.y + 8f, w, 32f * sc), $"<color=#{ColorUtility.ToHtmlStringRGB(sp)}>{FantaLandia.Horror.UI.Loc.T(s.speaker.name)}</color>", nameStyle, Color.white);
             string shown = s.text.Substring(0, Mathf.Clamp((int)visibleChars, 0, s.text.Length));
             FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(box.x + 28f, box.y + 8f + 30f * sc, w - 20f, boxH - 40f * sc), shown, textStyle, new Color(0.97f, 0.95f, 0.9f));
             if (!blocking)
             {
                 float kx = box.xMax - 112f, ky = box.yMax - 30f;
-                float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(kx, ky, "Spazio", 20f, 0.55f);
+                float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(kx, ky, FantaLandia.Horror.UI.Loc.T("Spazio"), 20f, 0.55f);
                 var c = GUI.color;
                 GUI.color = new Color(1f, 1f, 1f, 0.5f);
-                GUI.Label(new Rect(kx + kw + 6f, ky - 1f, 60f, 22f), "salta", hintStyle);
+                GUI.Label(new Rect(kx + kw + 6f, ky - 1f, 60f, 22f), FantaLandia.Horror.UI.Loc.T("salta"), hintStyle);
                 GUI.color = c;
             }
             else if (visibleChars >= s.text.Length && Mathf.Repeat(Time.time, 1f) < 0.6f)
@@ -583,7 +585,7 @@ namespace FantaLandia.Horror.Dialogue
                 if (Physics.Linecast(cam.transform.position, b.position, ~((1 << 2) | (1 << 7)), QueryTriggerInteraction.Ignore)) continue;
                 float alpha = Mathf.Clamp01((MaxOverheadDistance - dist) / 5f) * Mathf.Clamp01((b.until - Time.time) * 2f);
                 string hex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
-                string line = $"<color=#{hex}>{b.speaker.name}</color>  {b.text}";
+                string line = $"<color=#{hex}>{FantaLandia.Horror.UI.Loc.T(b.speaker.name)}</color>  {b.text}";
                 Vector2 size = overheadStyle.CalcSize(new GUIContent(System.Text.RegularExpressions.Regex.Replace(line, "<.*?>", "")));
                 float bw = Mathf.Min(size.x + 24f, 340f);
                 float bh = overheadStyle.CalcHeight(new GUIContent(b.text), bw - 24f) + 10f;
