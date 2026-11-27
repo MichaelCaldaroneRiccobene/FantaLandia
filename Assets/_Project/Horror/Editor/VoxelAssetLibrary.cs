@@ -309,7 +309,7 @@ namespace FantaLandia.Horror.EditorTools
             v.Fill(24, 6, 15, 27, 8, 18, clip);
             v.Fill(24, 5, 16, 27, 6, 17, bulb);
             return Save("Taccuino", v, new Vector3(14f * v.size, 0f, 10f * v.size), false,
-                c => c.r > 0.95f && c.g > 0.9f && c.b > 0.7f ? EditorAssetUtil.Emissive("Lucina taccuino", c, 3f) : null);
+                c => c.r > 0.95f && c.g > 0.9f && c.b > 0.7f ? EditorAssetUtil.Emissive("Lucina taccuino", c, 0.8f) : null);
         }
 
         /// <summary>Lampione di periferia (cubetti da 15 cm).</summary>
