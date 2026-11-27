@@ -27,21 +27,23 @@ namespace FantaLandia.Horror.UI
             float t = Time.time - shownAt;
             if (t > duration || string.IsNullOrEmpty(body)) return;
             float a = Mathf.Clamp01(t / 0.4f) * Mathf.Clamp01((duration - t) / 0.8f);
-            if (titleStyle == null)
-            {
-                titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 17, fontStyle = FontStyle.Bold, richText = true };
-                bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, richText = true, wordWrap = true };
-            }
-            int lines = body.Split('\n').Length;
-            var box = new Rect(20f, 20f, 470f, 40f + lines * 22f);
-            GUI.color = new Color(0f, 0f, 0f, 0.6f * a);
-            GUI.DrawTexture(box, Texture2D.whiteTexture);
-            GUI.color = new Color(0.91f, 0.85f, 0.66f, a);
-            GUI.DrawTexture(new Rect(box.x, box.y, 3f, box.height), Texture2D.whiteTexture);
-            GUI.color = new Color(1f, 1f, 1f, a);
-            GUI.Label(new Rect(box.x + 14f, box.y + 8f, box.width - 20f, 24f), title, titleStyle);
-            GUI.Label(new Rect(box.x + 14f, box.y + 32f, box.width - 20f, lines * 22f + 4f), body, bodyStyle);
+            GUI.depth = -20;
+            // un post-it giallo appiccicato in alto a sinistra, un po' storto, scritto a penna
+            var titleSt = UiStyle.Text(24, TextAnchor.UpperLeft, false);
+            var bodySt = UiStyle.Text(19, TextAnchor.UpperLeft, true);
+            float w = 430f;
+            float bh = bodySt.CalcHeight(new GUIContent(body), w - 40f);
+            var box = new Rect(26f, 24f - (1f - a) * 20f, w, 58f + bh);
+            Matrix4x4 old = GUI.matrix;
+            GUIUtility.RotateAroundPivot(-1.5f, box.center);
+            UiStyle.PanelWithShadow(box, new Color(0.98f, 0.92f, 0.6f, a), 6);
+            UiStyle.Panel(new Rect(box.x, box.y, box.width, 14f), new Color(0.93f, 0.86f, 0.5f, a), 6);     // striscia adesiva
+            var ink = new Color(UiStyle.Ink.r, UiStyle.Ink.g, UiStyle.Ink.b, a);
+            GUI.color = ink;
+            GUI.Label(new Rect(box.x + 20f, box.y + 16f, box.width - 40f, 30f), title, titleSt);
+            GUI.Label(new Rect(box.x + 20f, box.y + 48f, box.width - 40f, bh + 4f), body, bodySt);
             GUI.color = Color.white;
+            GUI.matrix = old;
         }
     }
 }

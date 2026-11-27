@@ -282,9 +282,9 @@ namespace FantaLandia.Horror.EditorTools
         /// </summary>
         public static GameObject Notebook()
         {
-            var v = new VoxelBuilder(0.01f);
+            var v = new VoxelBuilder(0.01f) { shadeVariation = 0.015f }; // carta liscia, non a scacchi
             int leather = v.C("#5a3a22"), leatherDark = v.C("#45301d"), worn = v.C("#7a5236"), paper = v.C("#efe7d2"), paperShade = v.C("#e2d8c0"),
-                line = v.C("#a9c0d8"), margin = v.C("#d08080"), ring = v.C("#9a9ca0"), band = v.C("#1a1a1a"), ribbon = v.C("#8a1f1f"), coffee = v.C("#c9b48e");
+                line = v.C("#c9d6e2"), margin = v.C("#d08080"), ring = v.C("#9a9ca0"), band = v.C("#1a1a1a"), ribbon = v.C("#8a1f1f"), coffee = v.C("#c9b48e");
             v.Fill(0, 0, 0, 28, 1, 20, leather);
             for (int x = 0; x < 28; x++) { v.Set(x, 0, 0, leatherDark); v.Set(x, 0, 19, leatherDark); }
             v.Set(1, 0, 1, worn); v.Set(26, 0, 18, worn); v.Set(2, 0, 18, worn);

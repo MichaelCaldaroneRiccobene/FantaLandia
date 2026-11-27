@@ -85,22 +85,21 @@ namespace FantaLandia.Horror.Interaction
         void OnGUI()
         {
             if (DialogueSystem.IsBlocking || FantaLandia.Horror.UI.IntroSequence.Active || FantaLandia.Horror.UI.NotebookMenu.IsOpen) return;
-            if (promptStyle == null)
-                promptStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, richText = true };
-
-            // mirino: un puntino, più grande se c'è qualcosa da usare
-            float size = Target != null ? 8f : 4f;
-            GUI.color = new Color(1f, 1f, 1f, Target != null ? 0.95f : 0.5f);
-            GUI.DrawTexture(new Rect((Screen.width - size) * 0.5f, (Screen.height - size) * 0.5f, size, size), Texture2D.whiteTexture);
-            GUI.color = Color.white;
+            // mirino: un puntino morbido, che si allarga (con un anello) se c'è qualcosa da usare
+            Vector2 center = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            if (Target != null) FantaLandia.Horror.UI.UiStyle.Dot(center, 16f, new Color(1f, 0.92f, 0.75f, 0.25f));
+            FantaLandia.Horror.UI.UiStyle.Dot(center, Target != null ? 7f : 4f, new Color(1f, 1f, 1f, Target != null ? 0.95f : 0.55f));
 
             if (Target == null || !Target.CanInteract(this)) return;
-            string text = $"<b>E</b>  {Target.Prompt(this)}";
-            Rect r = new Rect(0f, Screen.height * 0.5f + 24f, Screen.width, 30f);
-            GUI.color = new Color(0f, 0f, 0f, 0.8f);
-            GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), $"E  {Target.Prompt(this)}", promptStyle);
-            GUI.color = Color.white;
-            GUI.Label(r, text, promptStyle);
+            // scritta: tasto E disegnato + azione, a mano, con l'ombra
+            var st = FantaLandia.Horror.UI.UiStyle.Text(22, TextAnchor.MiddleLeft, false);
+            string label = Target.Prompt(this);
+            float tw = st.CalcSize(new GUIContent(label)).x;
+            float total = 30f + 10f + tw;
+            float x = center.x - total * 0.5f, y = center.y + 26f;
+            FantaLandia.Horror.UI.UiStyle.Panel(new Rect(x - 12f, y - 6f, total + 24f, 40f), new Color(0.03f, 0.035f, 0.06f, 0.45f), 12);
+            float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(x, y, "E", 28f);
+            FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(x + kw + 10f, y - 2f, tw + 10f, 30f), label, st, new Color(0.98f, 0.96f, 0.9f));
         }
     }
 }

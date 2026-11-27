@@ -480,32 +480,35 @@ namespace FantaLandia.Horror.Dialogue
             float sc = FantaLandia.Horror.UI.GameSettings.TextScale;
             if (textStyle != null && Mathf.Approximately(sc, styleScale)) return;
             styleScale = sc;
-            nameStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(22 * sc), fontStyle = FontStyle.Bold, richText = true };
-            textStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(22 * sc), wordWrap = true, richText = true };
-            choiceStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(20 * sc), alignment = TextAnchor.MiddleLeft, richText = true, padding = new RectOffset(16, 16, 6, 6) };
-            barkStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(18 * sc), alignment = TextAnchor.MiddleCenter, richText = true };
-            hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleRight, richText = true };
+            Font hand = FantaLandia.Horror.UI.UiStyle.Hand;
+            nameStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(23 * sc), richText = true, font = hand };
+            textStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(26 * sc), wordWrap = true, richText = true, font = hand };
+            choiceStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(23 * sc), alignment = TextAnchor.MiddleLeft, richText = true, font = hand };
+            barkStyle = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(21 * sc), alignment = TextAnchor.MiddleCenter, richText = true, font = hand };
+            hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleLeft, richText = true, font = hand };
         }
 
         void OnGUI()
         {
             GUI.depth = -10; // sopra al resto
             EnsureStyles();
-            float w = Mathf.Min(900f, Screen.width - 80f);
+            float sc = FantaLandia.Horror.UI.GameSettings.TextScale;
+            float w = Mathf.Min(860f, Screen.width - 80f);
             float x = (Screen.width - w) * 0.5f;
             bool showing = active && !paused && index >= 0 && index < steps.Count;
 
-            // frasi di sottofondo
+            // frasi di sottofondo (sopra i sottotitoli, con un'ombra morbida)
             DrawOverheadBarks();
-            float by = Screen.height - (showing ? 200f : 90f);
+            float by = Screen.height - (showing ? 190f * sc : 80f);
             for (int i = barks.Count - 1; i >= 0; i--)
             {
                 var b = barks[i];
                 if (b.overhead || !FantaLandia.Horror.UI.GameSettings.Subtitles) continue;
+                float a = Mathf.Clamp01((b.until - Time.time) * 1.5f);
                 string bhex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
-                Rect r = new Rect(x, by, w, 28f);
-                DrawShadowed(r, $"<color=#{bhex}>{b.speaker.name}:</color> {b.text}", barkStyle);
-                by -= 28f;
+                Rect r = new Rect(x, by, w, 30f * sc);
+                FantaLandia.Horror.UI.UiStyle.Shadowed(r, $"<color=#{bhex}>{b.speaker.name}</color>  {b.text}", barkStyle, new Color(1f, 1f, 1f, a));
+                by -= 30f * sc;
             }
 
             if (!showing || FantaLandia.Horror.UI.NotebookMenu.IsOpen) return;
@@ -513,46 +516,50 @@ namespace FantaLandia.Horror.Dialogue
 
             if (s.options != null)
             {
-                float h = 40f;
-                float total = s.options.Length * (h + 6f);
-                float y = Screen.height - 36f - total;
-                GUI.color = new Color(0f, 0f, 0f, 0.6f);
-                GUI.DrawTexture(new Rect(x - 16f, y - 14f, w + 32f, total + 22f), Texture2D.whiteTexture);
-                // tempo per rispondere: una barra che si accorcia
+                // scelte: una "carta" scura per risposta, con il tasto numerico disegnato
+                float h = 44f * sc, gap = 8f;
+                float cw = Mathf.Min(w, 720f);
+                float cx = (Screen.width - cw) * 0.5f;
+                float total = s.options.Length * (h + gap);
+                float y = Screen.height - 40f - total;
                 if (s.timeout > 0f)
                 {
                     float left = 1f - Mathf.Clamp01((Time.time - choiceStart) / s.timeout);
-                    GUI.color = new Color(0.9f, 0.85f, 0.6f, 0.7f);
-                    GUI.DrawTexture(new Rect(x - 16f, y - 14f, (w + 32f) * left, 3f), Texture2D.whiteTexture);
+                    FantaLandia.Horror.UI.UiStyle.Panel(new Rect(cx + 8f, y - 12f, cw - 16f, 4f), new Color(1f, 1f, 1f, 0.12f), 2);
+                    FantaLandia.Horror.UI.UiStyle.Panel(new Rect(cx + 8f, y - 12f, (cw - 16f) * left, 4f), new Color(0.93f, 0.8f, 0.52f, 0.85f), 2);
                 }
-                GUI.color = Color.white;
                 for (int i = 0; i < s.options.Length; i++)
-                    GUI.Label(new Rect(x, y + i * (h + 6f), w, h), $"<color=#e8d8a8><b>{i + 1}</b></color>   {s.options[i]}", choiceStyle);
+                {
+                    Rect card = new Rect(cx, y + i * (h + gap), cw, h);
+                    FantaLandia.Horror.UI.UiStyle.Panel(card, new Color(0.04f, 0.05f, 0.08f, 0.72f), 12);
+                    float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(card.x + 12f, card.y + (h - 28f) * 0.5f, (i + 1).ToString(), 28f);
+                    FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(card.x + 24f + kw, card.y, card.width - kw - 36f, h), s.options[i], choiceStyle, new Color(0.97f, 0.95f, 0.9f));
+                }
                 return;
             }
 
             if (!FantaLandia.Horror.UI.GameSettings.Subtitles) return; // senza sottotitoli restano solo le scelte
-            float boxH = 110f * FantaLandia.Horror.UI.GameSettings.TextScale;
-            Rect box = new Rect(x - 20f, Screen.height - boxH - 24f, w + 40f, boxH);
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(box, Texture2D.whiteTexture);
-            GUI.color = Color.white;
-
+            // sottotitolo: pannello scuro arrotondato, barretta del colore di chi parla, nome e testo a mano
+            float boxH = 112f * sc;
+            Rect box = new Rect(x - 20f, Screen.height - boxH - 28f, w + 40f, boxH);
+            FantaLandia.Horror.UI.UiStyle.Panel(box, new Color(0.03f, 0.035f, 0.06f, 0.66f), 16);
+            Color sp = s.speaker != null ? s.speaker.color : Color.white;
+            FantaLandia.Horror.UI.UiStyle.Panel(new Rect(box.x + 12f, box.y + 14f, 4f, box.height - 28f), new Color(sp.r, sp.g, sp.b, 0.9f), 2);
             if (s.speaker != null)
-            {
-                string hex = ColorUtility.ToHtmlStringRGB(s.speaker.color);
-                GUI.Label(new Rect(x, box.y + 8f, w, 30f), $"<color=#{hex}>{s.speaker.name}</color>", nameStyle);
-            }
+                FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(box.x + 28f, box.y + 8f, w, 32f * sc), $"<color=#{ColorUtility.ToHtmlStringRGB(sp)}>{s.speaker.name}</color>", nameStyle, Color.white);
             string shown = s.text.Substring(0, Mathf.Clamp((int)visibleChars, 0, s.text.Length));
-            GUI.Label(new Rect(x, box.y + 38f, w, boxH - 44f), shown, textStyle);
+            FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(box.x + 28f, box.y + 8f + 30f * sc, w - 20f, boxH - 40f * sc), shown, textStyle, new Color(0.97f, 0.95f, 0.9f));
             if (!blocking)
             {
-                GUI.color = new Color(1f, 1f, 1f, 0.45f);
-                GUI.Label(new Rect(box.x, box.yMax - 22f, box.width - 12f, 20f), "Spazio: salta", hintStyle);
-                GUI.color = Color.white;
+                float kx = box.xMax - 112f, ky = box.yMax - 30f;
+                float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(kx, ky, "Spazio", 20f, 0.55f);
+                var c = GUI.color;
+                GUI.color = new Color(1f, 1f, 1f, 0.5f);
+                GUI.Label(new Rect(kx + kw + 6f, ky - 1f, 60f, 22f), "salta", hintStyle);
+                GUI.color = c;
             }
             else if (visibleChars >= s.text.Length && Mathf.Repeat(Time.time, 1f) < 0.6f)
-                GUI.Label(new Rect(box.xMax - 60f, box.yMax - 34f, 50f, 30f), "▼", textStyle);
+                FantaLandia.Horror.UI.UiStyle.Panel(new Rect(box.xMax - 30f, box.yMax - 24f, 10f, 10f), new Color(0.93f, 0.8f, 0.52f, 0.9f), 5);
         }
 
         GUIStyle overheadStyle;
@@ -562,7 +569,7 @@ namespace FantaLandia.Horror.Dialogue
         {
             Camera cam = Camera.main;
             if (cam == null) return;
-            if (overheadStyle == null) overheadStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter, richText = true, wordWrap = true };
+            if (overheadStyle == null) overheadStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, richText = true, wordWrap = true, font = FantaLandia.Horror.UI.UiStyle.Hand };
             foreach (var b in barks)
             {
                 if (!b.overhead) continue;
@@ -576,11 +583,13 @@ namespace FantaLandia.Horror.Dialogue
                 if (Physics.Linecast(cam.transform.position, b.position, ~((1 << 2) | (1 << 7)), QueryTriggerInteraction.Ignore)) continue;
                 float alpha = Mathf.Clamp01((MaxOverheadDistance - dist) / 5f) * Mathf.Clamp01((b.until - Time.time) * 2f);
                 string hex = ColorUtility.ToHtmlStringRGB(b.speaker.color);
-                Rect r = new Rect(sp.x - 160f, Screen.height - sp.y - 20f, 320f, 40f);
-                var c = GUI.color;
-                GUI.color = new Color(1f, 1f, 1f, alpha);
-                DrawShadowed(r, $"<color=#{hex}>{b.speaker.name}:</color> {b.text}", overheadStyle);
-                GUI.color = c;
+                string line = $"<color=#{hex}>{b.speaker.name}</color>  {b.text}";
+                Vector2 size = overheadStyle.CalcSize(new GUIContent(System.Text.RegularExpressions.Regex.Replace(line, "<.*?>", "")));
+                float bw = Mathf.Min(size.x + 24f, 340f);
+                float bh = overheadStyle.CalcHeight(new GUIContent(b.text), bw - 24f) + 10f;
+                Rect r = new Rect(sp.x - bw * 0.5f, Screen.height - sp.y - bh, bw, bh);
+                FantaLandia.Horror.UI.UiStyle.Panel(r, new Color(0.03f, 0.035f, 0.06f, 0.5f * alpha), 10);
+                FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(r.x + 12f, r.y, r.width - 24f, r.height), line, overheadStyle, new Color(1f, 1f, 1f, alpha));
             }
         }
 

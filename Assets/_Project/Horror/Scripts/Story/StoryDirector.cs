@@ -1270,7 +1270,7 @@ namespace FantaLandia.Horror.Story
         void OnGUI()
         {
             if (fade <= 0.001f) return;
-            if (titleStyle == null) titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 40, alignment = TextAnchor.MiddleCenter, richText = true };
+            if (titleStyle == null) titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 42, alignment = TextAnchor.MiddleCenter, richText = true, font = FantaLandia.Horror.UI.UiStyle.Hand };
             GUI.color = new Color(0f, 0f, 0f, fade);
             GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
             GUI.color = Color.white;

@@ -251,10 +251,10 @@ namespace FantaLandia.Horror.Player
         void OnGUI()
         {
             if (!IsSeated || sitting || inputLocked || DialogueSystem.IsTalking) return;
-            var st = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
-            GUI.color = new Color(1f, 1f, 1f, 0.6f);
-            GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width, 24f), "WASD per alzarti", st);
-            GUI.color = Color.white;
+            var st = FantaLandia.Horror.UI.UiStyle.Text(18, TextAnchor.MiddleLeft, false);
+            float x = Screen.width * 0.5f - 90f, y = Screen.height - 46f;
+            float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(x, y, "WASD", 24f, 0.7f);
+            FantaLandia.Horror.UI.UiStyle.Shadowed(new Rect(x + kw + 8f, y - 2f, 160f, 26f), "per alzarti", st, new Color(1f, 1f, 1f, 0.7f));
         }
 
         public void SetLook(float newYaw, float newPitch)
