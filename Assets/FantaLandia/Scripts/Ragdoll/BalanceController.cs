@@ -17,9 +17,9 @@ namespace FantaLandia.Ragdoll
     ///     dopo qualche secondo si rialza (questa è l'unica fase con una forza esterna di aiuto).
     /// </summary>
     [RequireComponent(typeof(ActiveRagdoll))]
-    public class BalanceController : MonoBehaviour
+    public partial class BalanceController : MonoBehaviour
     {
-        public enum State { Standing, Stepping, Fallen, GettingUp }
+        public enum State { Calibrating, Standing, Stepping, Fallen, GettingUp }
 
         static readonly int[] Sides = { -1, 1 };
 
@@ -64,15 +64,11 @@ namespace FantaLandia.Ragdoll
         public float fallTiltAngle = 60f;
         public float stayDownTime = 2.5f;
         public bool autoGetUp = true;
-        [Tooltip("Il rialzo usa una forza esterna (non fisica) su bacino e torace.")]
-        public float getUpDuration = 1.2f;
-        public float getUpStiffness = 25f;
-        public float getUpDamping = 8f;
-        public float getUpTimeout = 5f;
 
         [Header("Aiuto (NON fisico)")]
-        [Tooltip("0 = completamente fisico. Aggiunge una coppia esterna che tiene dritto il bacino.")]
-        [Range(0f, 1f)] public float uprightAssist = 0f;
+        [Tooltip("0 = completamente fisico. Aggiunge una piccola coppia esterna che tiene dritto il bacino " +
+                 "(come fanno molti giochi con active ragdoll). Se sta in piedi anche a 0, lascialo a 0.")]
+        [Range(0f, 1f)] public float uprightAssist = 0.2f;
 
         [Header("Debug")]
         public bool drawGizmos = true;
@@ -89,7 +85,7 @@ namespace FantaLandia.Ragdoll
 
         ActiveRagdoll rd;
         State state = State.Standing;
-        float stateTime, strength, fallTimer, standTimer, assistFade, groundY;
+        float stateTime, strength, fallTimer, assistFade, groundY;
         float lastStepEndTime = -10f;
         bool groundL, groundR;
         Quaternion heading = Quaternion.identity;
@@ -103,6 +99,7 @@ namespace FantaLandia.Ragdoll
             strength = muscleStrength;
             groundY = transform.position.y;
             heading = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+            BeginCalibrationOrStand();
         }
 
         /// <summary>Fa svenire il manichino (si rialzerà da solo se autoGetUp è attivo).</summary>
@@ -122,7 +119,8 @@ namespace FantaLandia.Ragdoll
                 case State.Standing: UpdateStanding(); break;
                 case State.Stepping: UpdateStepping(); break;
                 case State.Fallen: UpdateFallen(); targetStrength = limpStrength; break;
-                case State.GettingUp: UpdateGettingUp(dt); break;
+                case State.Calibrating: UpdateCalibration(); break;
+                case State.GettingUp: UpdateGetUp(dt); targetStrength = muscleStrength * getUpStrengthBoost; break;
             }
 
             if (state == State.Standing || state == State.Stepping)
@@ -130,7 +128,7 @@ namespace FantaLandia.Ragdoll
                 CheckFall(dt);
                 if (assistFade > 0f)
                 {
-                    ApplyGetUpAssist(assistFade);
+                    ApplyStandAssist(assistFade);
                     assistFade = Mathf.Max(0f, assistFade - dt / 0.8f);
                 }
                 if (uprightAssist > 0f)
@@ -161,7 +159,7 @@ namespace FantaLandia.Ragdoll
                 groundY = y;
             }
 
-            if (state != State.GettingUp) heading = ComputeHeading();
+            if (state != State.GettingUp && state != State.Calibrating) heading = ComputeHeading();
 
             // Capture point del pendolo inverso lineare: x + v / ω, con ω = sqrt(g / h).
             float g = Mathf.Max(0.1f, -Physics.gravity.y);
@@ -216,8 +214,8 @@ namespace FantaLandia.Ragdoll
             state = next;
             stateTime = 0f;
             fallTimer = 0f;
-            standTimer = 0f;
             if (next == State.Fallen) assistFade = 0f;
+            if (next == State.GettingUp) BeginGetUp();
         }
 
         void UpdateStanding()
@@ -268,7 +266,7 @@ namespace FantaLandia.Ragdoll
         void BeginStep(int side)
         {
             swingSide = side;
-            var (_, _, foot) = Leg(side);
+            var foot = Leg(side).foot;
             stepStart = Flat(rd.JointPosition(foot));
             stepTarget = ComputeStepTarget(side);
             EnterState(State.Stepping);
@@ -337,35 +335,6 @@ namespace FantaLandia.Ragdoll
 
             if (autoGetUp && stateTime > stayDownTime && CenterOfMassVelocity.magnitude < 0.5f)
                 EnterState(State.GettingUp);
-        }
-
-        void UpdateGettingUp(float dt)
-        {
-            PoseUpperBody();
-            foreach (int side in Sides)
-            {
-                var (thigh, shin, foot) = Leg(side);
-                thigh.TargetLocal = Quaternion.identity;
-                shin.TargetLocal = Quaternion.AngleAxis(standKneeBend, Vector3.right);
-                foot.TargetLocal = Quaternion.identity;
-            }
-
-            ApplyGetUpAssist(Mathf.SmoothStep(0f, 1f, stateTime / getUpDuration));
-
-            bool upright = Vector3.Angle(rd.Chest.transform.up, Vector3.up) < 15f &&
-                           rd.Pelvis.transform.position.y - groundY > ActiveRagdoll.PelvisHeight - 0.08f &&
-                           groundL && groundR;
-            standTimer = upright ? standTimer + dt : 0f;
-
-            if (standTimer > 0.3f)
-            {
-                EnterState(State.Standing);
-                assistFade = 1f; // l'aiuto si spegne gradualmente
-            }
-            else if (stateTime > getUpTimeout)
-            {
-                EnterState(State.Fallen);
-            }
         }
 
         // ------------------------------------------------------------------ pose e muscoli
@@ -438,21 +407,24 @@ namespace FantaLandia.Ragdoll
 
         // ------------------------------------------------------------------ aiuti esterni (non fisici)
 
-        void ApplyGetUpAssist(float weight)
+        /// <summary>Aiuto che si spegne gradualmente appena finito il rialzo.</summary>
+        void ApplyStandAssist(float weight)
         {
             if (weight <= 0f) return;
             Vector3 feet = (FootGround(rd.FootL) + FootGround(rd.FootR)) * 0.5f;
             Vector3 pelvisTarget = feet + Vector3.up * (groundY + ActiveRagdoll.PelvisHeight);
-            Vector3 chestTarget = pelvisTarget + Vector3.up * 0.38f;
-            Lift(rd.Pelvis.Body, pelvisTarget, 0.5f * weight);
-            Lift(rd.Chest.Body, chestTarget, 0.5f * weight);
-            AlignTorque(rd.Pelvis.Body, heading, 30f * weight, 6f * weight);
-            AlignTorque(rd.Chest.Body, heading, 30f * weight, 6f * weight);
+            Vector3 chestTarget = pelvisTarget + Vector3.up * ChestAbovePelvis;
+            Lift(rd.Pelvis.Body, pelvisTarget, 0.5f * weight, getUpPositionStiffness, getUpPositionDamping, getUpGravityCompensation);
+            Lift(rd.Chest.Body, chestTarget, 0.5f * weight, getUpPositionStiffness, getUpPositionDamping, getUpGravityCompensation);
+            AlignTorque(rd.Pelvis.Body, heading, getUpRotationStiffness * weight, getUpRotationDamping * weight);
+            AlignTorque(rd.Chest.Body, heading, getUpRotationStiffness * weight, getUpRotationDamping * weight);
         }
 
-        void Lift(Rigidbody rb, Vector3 target, float share)
+        /// <summary>Forza PD verso target, con compensazione (parziale) della gravità di tutto il corpo.</summary>
+        void Lift(Rigidbody rb, Vector3 target, float share, float stiffness, float damping, float gravityCompensation)
         {
-            Vector3 acc = (target - rb.worldCenterOfMass) * getUpStiffness - rb.linearVelocity * getUpDamping - Physics.gravity;
+            Vector3 acc = (target - rb.worldCenterOfMass) * stiffness - rb.linearVelocity * damping
+                          - Physics.gravity * gravityCompensation;
             rb.AddForce(acc * (rd.TotalMass * share));
         }
 

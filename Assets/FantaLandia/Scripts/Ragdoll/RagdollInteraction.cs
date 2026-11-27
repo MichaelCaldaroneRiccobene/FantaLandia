@@ -128,7 +128,10 @@ namespace FantaLandia.Ragdoll
             if (!showHud || target == null) return;
 
             GUILayout.BeginArea(new Rect(10, 10, 360, 240), GUI.skin.box);
-            GUILayout.Label($"Stato: {StateName(target.CurrentState)}    Muscoli: {target.CurrentStrength:0.00}");
+            string stateText = StateName(target.CurrentState);
+            if (target.CurrentState == BalanceController.State.GettingUp)
+                stateText += $" ({PhaseName(target.CurrentGetUpPhase)})";
+            GUILayout.Label($"Stato: {stateText}    Muscoli: {target.CurrentStrength:0.00}");
             GUILayout.Label($"Capture point fuori dalla base: {Mathf.Max(0f, target.SupportDistance) * 100f:0} cm");
             GUILayout.Space(6);
             GUILayout.Label("WASD / frecce: spinta  (Shift = forte)");
@@ -142,11 +145,23 @@ namespace FantaLandia.Ragdoll
 
         static string StateName(BalanceController.State s) => s switch
         {
+            BalanceController.State.Calibrating => "Calibrazione",
             BalanceController.State.Standing => "In piedi",
             BalanceController.State.Stepping => "Passo di recupero",
             BalanceController.State.Fallen => "A terra",
             BalanceController.State.GettingUp => "Si rialza",
             _ => s.ToString()
+        };
+
+        static string PhaseName(BalanceController.GetUpPhase p) => p switch
+        {
+            BalanceController.GetUpPhase.Roll => "rotola",
+            BalanceController.GetUpPhase.PushUp => "spinta con le braccia",
+            BalanceController.GetUpPhase.HandsAndKnees => "carponi",
+            BalanceController.GetUpPhase.Kneel => "in ginocchio",
+            BalanceController.GetUpPhase.Lunge => "affondo",
+            BalanceController.GetUpPhase.Stand => "si alza",
+            _ => ""
         };
     }
 }

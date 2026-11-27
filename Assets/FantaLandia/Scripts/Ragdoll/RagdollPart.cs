@@ -61,7 +61,7 @@ namespace FantaLandia.Ragdoll
 
             // Con axis=(1,0,0), secondaryAxis=(0,1,0) e rotazione iniziale relativa = identità,
             // lo spazio del joint coincide con lo spazio locale: il target è l'inversa della rotazione voluta.
-            Joint.targetRotation = Quaternion.Inverse(TargetLocal);
+            Joint.targetRotation = Owner != null && Owner.invertDriveTargets ? TargetLocal : Quaternion.Inverse(TargetLocal);
         }
 
         void OnCollisionEnter(Collision collision) => RegisterContact(collision);

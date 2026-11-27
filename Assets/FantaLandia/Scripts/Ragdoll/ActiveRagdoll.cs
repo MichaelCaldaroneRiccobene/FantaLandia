@@ -30,6 +30,10 @@ namespace FantaLandia.Ragdoll
                  "Se ginocchia e gomiti si piegano al contrario, disattiva questa opzione.")]
         public bool invertXLimits = true;
 
+        [Tooltip("Convenzione del targetRotation dei joint. Viene verificata e corretta in automatico " +
+                 "dalla calibrazione iniziale del BalanceController.")]
+        public bool invertDriveTargets = false;
+
         [Range(4, 60)] public int solverIterations = 25;
         [Range(1, 30)] public int solverVelocityIterations = 12;
 
@@ -223,6 +227,30 @@ namespace FantaLandia.Ragdoll
             velocity = momentum / mass;
             return position / mass;
         }
+
+        /// <summary>Inverte i limiti sull'asse X di tutti i joint (usato dalla calibrazione).</summary>
+        public void FlipXLimits()
+        {
+            invertXLimits = !invertXLimits;
+            foreach (var part in Parts)
+            {
+                var joint = part.Joint;
+                if (joint == null) continue;
+                var low = joint.lowAngularXLimit;
+                var high = joint.highAngularXLimit;
+                float newLow = -high.limit, newHigh = -low.limit;
+                low.limit = newLow;
+                high.limit = newHigh;
+                joint.lowAngularXLimit = low;
+                joint.highAngularXLimit = high;
+            }
+        }
+
+        /// <summary>Rotazione attuale della parte relativa al genitore (stessa convenzione di TargetLocal).</summary>
+        public static Quaternion LocalRotation(RagdollPart part) =>
+            part.Parent != null
+                ? Quaternion.Inverse(part.Parent.transform.rotation) * part.transform.rotation
+                : part.transform.rotation;
 
         /// <summary>Posizione mondo del joint che collega la parte al genitore.</summary>
         public Vector3 JointPosition(RagdollPart part) =>
