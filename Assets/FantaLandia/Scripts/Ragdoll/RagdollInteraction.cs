@@ -127,11 +127,14 @@ namespace FantaLandia.Ragdoll
         {
             if (!showHud || target == null) return;
 
-            GUILayout.BeginArea(new Rect(10, 10, 360, 240), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(10, 10, 380, 260), GUI.skin.box);
             string stateText = StateName(target.CurrentState);
             if (target.CurrentState == BalanceController.State.GettingUp)
                 stateText += $" ({PhaseName(target.CurrentGetUpPhase)})";
             GUILayout.Label($"Stato: {stateText}    Muscoli: {target.CurrentStrength:0.00}");
+            if (BalanceController.IsCalibrated)
+                GUILayout.Label($"Calibrazione: drive {(BalanceController.CalibrationDriveInverted ? "invertiti" : "normali")}, " +
+                                $"limiti {(BalanceController.CalibrationLimitsFlipped ? "corretti" : "ok")}");
             GUILayout.Label($"Capture point fuori dalla base: {Mathf.Max(0f, target.SupportDistance) * 100f:0} cm");
             GUILayout.Space(6);
             GUILayout.Label("WASD / frecce: spinta  (Shift = forte)");

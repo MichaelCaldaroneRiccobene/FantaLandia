@@ -23,9 +23,17 @@ namespace FantaLandia.Ragdoll
         Vector3 calibrationStandPos, calibrationRaisedPos;
         bool calibrationDriveChecked, calibrationLimitsChecked;
 
+        [Header("Calibrazione")]
+        [Tooltip("All'avvio verifica e corregge da solo le convenzioni dei joint (circa 1,4 s sospeso in aria).")]
+        public bool autoCalibrate = true;
+
+        public static bool IsCalibrated => s_calibrated;
+        public static bool CalibrationDriveInverted => s_driveInverted;
+        public static bool CalibrationLimitsFlipped => s_limitsFlipped;
+
         void BeginCalibrationOrStand()
         {
-            if (s_calibrated)
+            if (s_calibrated || !autoCalibrate)
             {
                 rd.invertDriveTargets = s_driveInverted;
                 if (s_limitsFlipped) rd.FlipXLimits();

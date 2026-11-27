@@ -3,8 +3,9 @@ using UnityEngine;
 namespace FantaLandia.Ragdoll
 {
     /// <summary>
-    /// Controllo dell'equilibrio basato solo su coppie muscolari interne (nessuna forza "magica"
-    /// mentre sta in piedi, a meno che uprightAssist sia > 0).
+    /// Controllo dell'equilibrio basato su coppie muscolari interne, più un aiuto all'equilibrio
+    /// opzionale (balanceAssist) che si satura oltre una certa inclinazione: spinte forti lo fanno
+    /// comunque barcollare, fare passi o cadere.
     ///
     /// Strategie, come nell'equilibrio umano:
     ///  1. Caviglie: confronta il capture point (dove il centro di massa "andrà a fermarsi")
@@ -29,14 +30,15 @@ namespace FantaLandia.Ragdoll
 
         [Header("Equilibrio con le caviglie")]
         [Tooltip("Gradi di correzione per metro di errore del capture point (avanti/indietro).")]
-        public float anklePitchGain = 140f;
+        public float anklePitchGain = 60f;
         [Tooltip("Gradi di correzione per metro di errore del capture point (laterale).")]
-        public float ankleRollGain = 90f;
+        public float ankleRollGain = 50f;
         public float maxAnklePitch = 25f;
         public float maxAnkleRoll = 15f;
 
         [Header("Busto e postura")]
-        [Range(0f, 1f)] public float torsoUprightWeight = 0.85f;
+        [Tooltip("0 = le gambe restano allineate al bacino, 1 = le anche pensano solo a raddrizzare il bacino.")]
+        [Range(0f, 1f)] public float torsoUprightWeight = 0.4f;
         [Tooltip("Inclinazione in avanti del bacino (gradi).")]
         public float torsoLean = 2f;
         [Range(0f, 20f)] public float standKneeBend = 4f;
@@ -50,8 +52,8 @@ namespace FantaLandia.Ragdoll
         [Header("Passo di recupero")]
         public bool enableStepping = true;
         [Tooltip("Raggio della pianta del piede usato per la base d'appoggio (m).")]
-        public float footSupportRadius = 0.07f;
-        public float stepTriggerMargin = 0.02f;
+        public float footSupportRadius = 0.09f;
+        public float stepTriggerMargin = 0.04f;
         public float stepDuration = 0.3f;
         public float stepHeight = 0.10f;
         public float maxStepLength = 0.55f;
@@ -65,10 +67,15 @@ namespace FantaLandia.Ragdoll
         public float stayDownTime = 2.5f;
         public bool autoGetUp = true;
 
-        [Header("Aiuto (NON fisico)")]
-        [Tooltip("0 = completamente fisico. Aggiunge una piccola coppia esterna che tiene dritto il bacino " +
-                 "(come fanno molti giochi con active ragdoll). Se sta in piedi anche a 0, lascialo a 0.")]
-        [Range(0f, 1f)] public float uprightAssist = 0.2f;
+        [Header("Aiuto all'equilibrio (NON fisico)")]
+        [Tooltip("0 = completamente fisico. Coppia esterna su bacino e torace che li tiene dritti, " +
+                 "come fanno quasi tutti i giochi con active ragdoll (i joint di Unity da soli non reggono bene il peso).")]
+        [Range(0f, 1f)] public float balanceAssist = 0.8f;
+        [Tooltip("Rigidità dell'aiuto (1/s²). Sopra ~10 regge il corpo anche senza caviglie.")]
+        public float assistStiffness = 25f;
+        public float assistDamping = 8f;
+        [Tooltip("Oltre questa inclinazione l'aiuto non cresce più: le spinte forti lo fanno cadere.")]
+        public float assistMaxTilt = 20f;
 
         [Header("Debug")]
         public bool drawGizmos = true;
@@ -131,9 +138,7 @@ namespace FantaLandia.Ragdoll
                     ApplyStandAssist(assistFade);
                     assistFade = Mathf.Max(0f, assistFade - dt / 0.8f);
                 }
-                if (uprightAssist > 0f)
-                    AlignTorque(rd.Pelvis.Body, heading * Quaternion.AngleAxis(torsoLean, Vector3.right),
-                                80f * uprightAssist, 12f * uprightAssist);
+                ApplyBalanceAssist();
             }
 
             // I muscoli cedono in fretta e recuperano più lentamente.
@@ -406,6 +411,35 @@ namespace FantaLandia.Ragdoll
         }
 
         // ------------------------------------------------------------------ aiuti esterni (non fisici)
+
+        void ApplyBalanceAssist()
+        {
+            if (balanceAssist <= 0f) return;
+            float massShare = 0.5f * rd.TotalMass * balanceAssist;
+            float maxAngle = assistMaxTilt * Mathf.Deg2Rad;
+            Vector3 pelvisUp = heading * Quaternion.AngleAxis(torsoLean, Vector3.right) * Vector3.up;
+            TiltTorque(rd.Pelvis.Body, pelvisUp, massShare, maxAngle);
+            TiltTorque(rd.Chest.Body, Vector3.up, massShare, maxAngle);
+        }
+
+        /// <summary>
+        /// Coppia che porta l'asse "su" del corpo verso targetUp, senza toccare la rotazione attorno alla
+        /// verticale. Scalata sulla massa del corpo (braccio di leva ~1 m), quindi indipendente dal peso.
+        /// </summary>
+        void TiltTorque(Rigidbody rb, Vector3 targetUp, float massShare, float maxAngle)
+        {
+            Vector3 up = rb.transform.up;
+            Vector3 axis = Vector3.Cross(up, targetUp);
+            float sin = axis.magnitude;
+            float angle = Mathf.Atan2(sin, Vector3.Dot(up, targetUp));
+            Vector3 dir = sin > 1e-5f ? axis / sin : Vector3.zero;
+
+            Vector3 spin = rb.angularVelocity;
+            spin -= Vector3.Project(spin, Vector3.up);
+
+            Vector3 torque = (dir * (Mathf.Min(angle, maxAngle) * assistStiffness) - spin * assistDamping) * massShare;
+            rb.AddTorque(torque);
+        }
 
         /// <summary>Aiuto che si spegne gradualmente appena finito il rialzo.</summary>
         void ApplyStandAssist(float weight)
