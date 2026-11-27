@@ -32,6 +32,9 @@ namespace FantaLandia.Horror.Story
         /// <summary>Ricominciando da un salvataggio (menu del taccuino): il punto da cui ripartire, -1 = nessuno.</summary>
         public static int PendingStart = -1;
 
+        /// <summary>Cosa deve fare Muark adesso (lo scrive nel taccuino, a sinistra).</summary>
+        public static string Objective = "";
+
         [Header("Porte")]
         public HorrorDoor frontDoor;
         public HorrorDoor backDoor;
@@ -112,6 +115,7 @@ namespace FantaLandia.Horror.Story
         void Start()
         {
             if (PendingStart >= 0) { startAt = (StartAt)PendingStart; PendingStart = -1; }
+            Objective = "";
             fpc = FindFirstObjectByType<FirstPersonController>();
             if (fpc != null)
             {
@@ -157,6 +161,7 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator Arrival()
         {
+            Objective = "Bussare alla porta di Tom";
             Goal((null, Speakers.Muark, "Dovrei bussare alla porta di Tom."),
                  (null, Speakers.Muark, "Allora, busso o resto qui al freddo?"));
             // Tom all'inizio è in poltrona a guardare la TV (e non sbircia fuori dalla finestra)
@@ -194,6 +199,7 @@ namespace FantaLandia.Horror.Story
                                                     (Speakers.Tom, "Dai, entra. La birra mettila sull'isola in cucina.")))
                 .Say(Speakers.Tom, "Jef è in bagno. Da mezz'ora. Non chiedere."), tom);
 
+            Objective = "Posare la birra in cucina";
             Goal((tom, Speakers.Tom, "Muark, la birra! In cucina, sull'isola."),
                  (null, Speakers.Muark, "Prima mollo la birra in cucina."));
             Job(tom, TomHostsThenSits());
@@ -237,6 +243,7 @@ namespace FantaLandia.Horror.Story
             bool opened = false;
             System.Action<HorrorDoor> onOpen = d => opened = true;
             frontDoor.Opened += onOpen;
+            Objective = "Andare ad aprire la porta";
             frontDoor.requireFront = true; // si apre solo stando davanti: così Roy compare proprio di fronte
             float t = 0f;
             int reminders = 0;
@@ -334,6 +341,7 @@ namespace FantaLandia.Horror.Story
             // si comincia quando Roy si è seduto e Muark è davanti al divano (o seduto in salotto)
             for (float w = 0f; w < 25f && !roy.IsSeated; w += Time.deltaTime) yield return null;
             calm = true;
+            Objective = "Stare con gli altri in salotto";
             Goal((tom, Speakers.Tom, "Muark! Vieni in salotto, dai!"),
                  (roy, Speakers.Roy, "Muark, dove sei finito? Vieni qua!"));
             Vector3 sofaFront = seatRoy.FrontPosition;
@@ -384,6 +392,7 @@ namespace FantaLandia.Horror.Story
             SetNeighborChatter(true);
             backDoor.Unlock();
             backDoor.Open(-1);
+            Objective = "Vedere cos'è successo, in giardino";
             Goal((tom, Speakers.Tom, "Muark! Qui fuori, in fondo al giardino!"),
                  (roy, Speakers.Roy, "Muark, vieni a vedere! Presto!"));
             Job(tom, Actor(tom).WalkTo(deckTom.position, Gait.Jog, 25f));
@@ -562,6 +571,7 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator BackToTheTv()
         {
+            Objective = "Tornare dentro con gli altri";
             Goal((tom, Speakers.Tom, "Muark, rientra! Dai."),
                  (roy, Speakers.Roy, "Muark, non restare lì fuori da solo!"));
             Job(tom, SitOn(tom));
@@ -599,6 +609,7 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(2.5f);
 
             // chi era in giro torna (al buio) dagli altri; Muark viene chiamato se è lontano
+            Objective = "Raggiungere gli altri in salotto";
             Goal((tom, Speakers.Tom, "Muark?! Dove sei? Vieni qui, in salotto!"),
                  (roy, Speakers.Roy, "Muark! Non si vede niente, torna qui!"));
             yield return Gather();
@@ -668,16 +679,19 @@ namespace FantaLandia.Horror.Story
             {
                 PutTorchBack();
                 StartCoroutine(HighlightTorchUntilTaken());
+                Objective = "Prendere la torcia in cucina";
                 Goal((tom, Speakers.Tom, "La torcia è sul bancone in cucina, Muark."),
                      (roy, Speakers.Roy, "Che c'è, Muark? Hai paura del buio?"));
                 while (!flashlight.HasFlashlight && !PlayerInBasement && !started) yield return null;
             }
             if (!PlayerInBasement && !started)
             {
+                Objective = "Scendere in cantina";
                 Goal((tom, Speakers.Tom, "Muark? La cantina è da quella parte, accanto all'isola."),
                      (roy, Speakers.Roy, "Ehi, il generatore non si accende da solo!"));
                 while (!PlayerInBasement && !started) yield return null;
             }
+            Objective = "Accendere il generatore";
             Goal((null, Speakers.Muark, "Il generatore... cerca quella lucina rossa."),
                  (null, Speakers.Muark, "Tira la corda e torna su, Muark. Facile."));
             droneTarget = 0.22f;
@@ -696,6 +710,7 @@ namespace FantaLandia.Horror.Story
             DialogueSystem.Bark(Speakers.Muark, "Sì! Ce l'ho fatta.");
             yield return new WaitForSeconds(2.2f);
 
+            Objective = "Tornare di sopra dagli altri";
             Goal((roy, Speakers.Roy, "Muark! Sali, presto!"),
                  (null, Speakers.Muark, "Devo tornare di sopra."));
 
@@ -833,6 +848,7 @@ namespace FantaLandia.Horror.Story
         IEnumerator News()
         {
             calm = false;
+            Objective = "Guardare il notiziario con gli altri";
             Goal((roy, Speakers.Roy, "Muark! Il notiziario! Sbrigati!"),
                  (tom, Speakers.Tom, "Muark, vieni qui! Subito!"));
             StartCoroutine(Gather());
@@ -859,6 +875,7 @@ namespace FantaLandia.Horror.Story
 
             // la TV perde il segnale, poi il buio
             if (tv != null) tv.SetChannel(TvChannel.Static);
+            Objective = "Sopravvivere fino a domattina";
             HorrorAudio.Play2D(ProceduralAudio.Whisper(), 0.25f, 0.7f);
             yield return new WaitForSeconds(2.5f);
             Lock(true);

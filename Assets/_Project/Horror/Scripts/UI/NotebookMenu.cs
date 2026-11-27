@@ -117,7 +117,7 @@ namespace FantaLandia.Horror.UI
             if (handFontAsset != null) text.font = handFontAsset;
             else text.fontStyle = FontStyles.Italic;
             text.fontSize = 10;
-            text.lineSpacing = -8f;
+            text.lineSpacing = -14f;
             text.color = Ink;
             text.richText = true;
             text.alignment = TextAlignmentOptions.TopLeft;
@@ -315,31 +315,33 @@ namespace FantaLandia.Horror.UI
         void Redraw()
         {
             if (leftText == null) return;
+            string pencil = ColorUtility.ToHtmlStringRGB(Pencil);
+            string objective = FantaLandia.Horror.Story.StoryDirector.Objective;
             leftText.text =
-                $"<size=15><b>Taccuino di Muark</b></size>\n" +
-                $"<color=#{ColorUtility.ToHtmlStringRGB(Pencil)}>venerdì sera</color>\n\n" +
-                "- portare la birra da Tom\n" +
-                "- <color=#" + ColorUtility.ToHtmlStringRGB(RedInk) + ">NON</color> farsi fregare da Roy\n" +
-                "- chiedere a Jef se sta bene\n\n" +
-                $"\n\n\n\n<size=7><color=#{ColorUtility.ToHtmlStringRGB(Pencil)}>W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi</color></size>";
+                "<size=15><b>Taccuino di Muark</b></size>\n" +
+                $"<color=#{pencil}>venerdì sera</color>\n\n" +
+                (string.IsNullOrEmpty(objective) ? "" : "<size=8><color=#" + pencil + ">da fare:</color></size>\n- " + objective + "\n") +
+                $"\n\n\n\n\n<size=6><color=#{pencil}>W/S o mouse: scegli\nA/D, [-] [+], rotellina: cambia\nE o clic: conferma · Esc: chiudi</color></size>";
 
             var items = Items();
             var sb = new System.Text.StringBuilder();
-            sb.Append(page == Page.Main ? "<size=14><b>Menu</b></size>\n\n" : "<size=14><b>Impostazioni</b></size>\n");
+            bool main = page == Page.Main;
+            sb.Append(main ? "<size=14><b>Menu</b></size>\n\n" : "<size=12><b>Impostazioni</b></size>\n");
             string red = ColorUtility.ToHtmlStringRGB(RedInk);
             for (int i = 0; i < items.Count; i++)
             {
                 bool sel = i == cursor;
-                // ogni voce è un link (per il mouse); i valori hanno anche [-] e [+]
-                sb.Append(sel ? $"<color=#{red}>» </color>" : "   ");
+                // ogni voce è un link (per il mouse); le impostazioni su una riga sola, valore incolonnato a destra
+                sb.Append(sel ? $"<color=#{red}>»</color> " : "  ");
                 sb.Append($"<link=\"{i}\">").Append(sel ? "<b>" + items[i].label + "</b>" : items[i].label).Append("</link>");
                 if (items[i].value != null)
-                    sb.Append($":  <link=\"{i}-\">[-]</link> <b>").Append(items[i].value()).Append($"</b> <link=\"{i}+\">[+]</link>");
-                if (sel && confirmIndex == i) sb.Append($"\n      <color=#{red}>sicuro? conferma di nuovo</color>");
-                sb.Append(page == Page.Main ? "\n\n" : "\n");
+                    sb.Append($"<pos=60%><link=\"{i}-\">[-]</link> <b>").Append(items[i].value()).Append($"</b> <link=\"{i}+\">[+]</link>");
+                if (sel && confirmIndex == i) sb.Append($"\n    <color=#{red}>sicuro? conferma di nuovo</color>");
+                sb.Append(main ? "\n\n" : "\n");
             }
             rightText.text = sb.ToString();
-            rightText.fontSize = page == Page.Main ? 11 : 8.5f;
+            rightText.fontSize = main ? 10 : 7;
+            rightText.enableWordWrapping = main;
             rightText.ForceMeshUpdate();
         }
 
