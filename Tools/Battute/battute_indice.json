@@ -1,0 +1,1914 @@
+[
+ {
+  "n": 1,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 164,
+  "speaker": "taccuino",
+  "text": "Bussare alla porta di Tom",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 2,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 165,
+  "speaker": "muark",
+  "text": "Dovrei bussare alla porta di Tom.",
+  "kind": "battuta"
+ },
+ {
+  "n": 3,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 166,
+  "speaker": "muark",
+  "text": "Allora, busso o resto qui al freddo?",
+  "kind": "battuta"
+ },
+ {
+  "n": 4,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 180,
+  "speaker": "tom",
+  "text": "Arrivo, arrivo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 5,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 192,
+  "speaker": "tom",
+  "text": "Muark! Finalmente, pensavo ti fossi perso.",
+  "kind": "battuta"
+ },
+ {
+  "n": 6,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 193,
+  "speaker": "muark",
+  "text": "Ho portato la birra, come promesso.",
+  "kind": "scelta"
+ },
+ {
+  "n": 7,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 193,
+  "speaker": "muark",
+  "text": "Scusa, c'era un traffico assurdo.",
+  "kind": "scelta"
+ },
+ {
+  "n": 8,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 195,
+  "speaker": "tom",
+  "text": "Grande! Mettila sull'isola in cucina, va.",
+  "kind": "battuta"
+ },
+ {
+  "n": 9,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 196,
+  "speaker": "tom",
+  "text": "Traffico? Abiti a due isolati...",
+  "kind": "battuta"
+ },
+ {
+  "n": 10,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 197,
+  "speaker": "tom",
+  "text": "Dai, entra. La birra mettila sull'isola in cucina.",
+  "kind": "battuta"
+ },
+ {
+  "n": 11,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 198,
+  "speaker": "tom",
+  "text": "Muark? Tutto bene? Sembri congelato.",
+  "kind": "battuta"
+ },
+ {
+  "n": 12,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 199,
+  "speaker": "tom",
+  "text": "Dai, entra. La birra mettila sull'isola in cucina.",
+  "kind": "battuta"
+ },
+ {
+  "n": 13,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 200,
+  "speaker": "tom",
+  "text": "Jef è in bagno. Da mezz'ora. Non chiedere.",
+  "kind": "battuta"
+ },
+ {
+  "n": 14,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 202,
+  "speaker": "taccuino",
+  "text": "Posare la birra in cucina",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 15,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 203,
+  "speaker": "tom",
+  "text": "Muark, la birra! In cucina, sull'isola.",
+  "kind": "battuta"
+ },
+ {
+  "n": 16,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 204,
+  "speaker": "muark",
+  "text": "Prima mollo la birra in cucina.",
+  "kind": "battuta"
+ },
+ {
+  "n": 17,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 241,
+  "speaker": "tom",
+  "text": "Muark, vai a vedere tu? Io qui sto troppo comodo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 18,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 246,
+  "speaker": "taccuino",
+  "text": "Andare ad aprire la porta",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 19,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 258,
+  "speaker": "tom",
+  "text": "Muark! La porta!",
+  "kind": "battuta"
+ },
+ {
+  "n": 20,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 259,
+  "speaker": "tom",
+  "text": "Stanno ancora bussando...",
+  "kind": "battuta"
+ },
+ {
+  "n": 21,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 273,
+  "speaker": "muark",
+  "text": "...C'è qualcuno?",
+  "kind": "battuta"
+ },
+ {
+  "n": 22,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 277,
+  "speaker": "muark",
+  "text": "Ragazzi, non c'è nessuno! Ci hanno fatto uno scherzo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 23,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 278,
+  "speaker": "tom",
+  "text": "Saranno i ragazzini dei Kowalski. Chiudi, dai, che entra il freddo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 24,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 289,
+  "speaker": "roy",
+  "text": "BUUU!!",
+  "kind": "battuta"
+ },
+ {
+  "n": 25,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 295,
+  "speaker": "roy",
+  "text": "AH AH AH! Dovevi vedere la tua faccia, Muark!",
+  "kind": "battuta"
+ },
+ {
+  "n": 26,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 296,
+  "speaker": "muark",
+  "text": "Roy! Mi hai fatto prendere un colpo!",
+  "kind": "scelta"
+ },
+ {
+  "n": 27,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 296,
+  "speaker": "muark",
+  "text": "Sei un idiota. Entra, dai.",
+  "kind": "scelta"
+ },
+ {
+  "n": 28,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 298,
+  "speaker": "roy",
+  "text": "Lo so, lo so. Sono un genio.",
+  "kind": "battuta"
+ },
+ {
+  "n": 29,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 299,
+  "speaker": "roy",
+  "text": "Ti voglio bene anch'io, amico.",
+  "kind": "battuta"
+ },
+ {
+  "n": 30,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 301,
+  "speaker": "roy",
+  "text": "Allora? Ho sentito che c'è la pizza. Dov'è la pizza?",
+  "kind": "battuta"
+ },
+ {
+  "n": 31,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 345,
+  "speaker": "taccuino",
+  "text": "Stare con gli altri in salotto",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 32,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 346,
+  "speaker": "tom",
+  "text": "Muark! Vieni in salotto, dai!",
+  "kind": "battuta"
+ },
+ {
+  "n": 33,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 347,
+  "speaker": "roy",
+  "text": "Muark, dove sei finito? Vieni qua!",
+  "kind": "battuta"
+ },
+ {
+  "n": 34,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 355,
+  "speaker": "tom",
+  "text": "Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno.",
+  "kind": "battuta"
+ },
+ {
+  "n": 35,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 356,
+  "speaker": "roy",
+  "text": "Ancora? È lì dentro da quando sono nato.",
+  "kind": "battuta"
+ },
+ {
+  "n": 36,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 357,
+  "speaker": "tom",
+  "text": "Ho ordinato due pizze. Ora bisogna solo aspettare la pizza.",
+  "kind": "battuta"
+ },
+ {
+  "n": 37,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 358,
+  "speaker": "muark",
+  "text": "Che pizze hai preso?",
+  "kind": "scelta"
+ },
+ {
+  "n": 38,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 358,
+  "speaker": "muark",
+  "text": "Speriamo che arrivi presto, ho una fame...",
+  "kind": "scelta"
+ },
+ {
+  "n": 39,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 360,
+  "speaker": "tom",
+  "text": "Una salame piccante e una con l'ananas. Quella è per Jef.",
+  "kind": "battuta"
+ },
+ {
+  "n": 40,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 361,
+  "speaker": "roy",
+  "text": "Che schifo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 41,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 362,
+  "speaker": "roy",
+  "text": "Anch'io. Mi mangerei il divano.",
+  "kind": "battuta"
+ },
+ {
+  "n": 42,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 388,
+  "speaker": "tom",
+  "text": "Cos'è stato?!",
+  "kind": "battuta"
+ },
+ {
+  "n": 43,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 389,
+  "speaker": "roy",
+  "text": "Veniva da dietro! Dal giardino!",
+  "kind": "battuta"
+ },
+ {
+  "n": 44,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 390,
+  "speaker": "tom",
+  "text": "Andiamo a vedere, presto!",
+  "kind": "battuta"
+ },
+ {
+  "n": 45,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 396,
+  "speaker": "taccuino",
+  "text": "Vedere cos'è successo, in giardino",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 46,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 397,
+  "speaker": "tom",
+  "text": "Muark! Qui fuori, in fondo al giardino!",
+  "kind": "battuta"
+ },
+ {
+  "n": 47,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 398,
+  "speaker": "roy",
+  "text": "Muark, vieni a vedere! Presto!",
+  "kind": "battuta"
+ },
+ {
+  "n": 48,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 461,
+  "speaker": "martha",
+  "text": "Oh santo cielo, Frank, guarda quel fumo...",
+  "kind": "battuta"
+ },
+ {
+  "n": 49,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 461,
+  "speaker": "frank",
+  "text": "Torna dentro, Martha! Potrebbe esplodere ancora!",
+  "kind": "battuta"
+ },
+ {
+  "n": 50,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 462,
+  "speaker": "martha",
+  "text": "E se è la fabbrica? Ci abita la figlia dei Parker là vicino!",
+  "kind": "battuta"
+ },
+ {
+  "n": 51,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 462,
+  "speaker": "frank",
+  "text": "Chiamo lo sceriffo. Dov'è il telefono?",
+  "kind": "battuta"
+ },
+ {
+  "n": 52,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 463,
+  "speaker": "gary",
+  "text": "Linda! Prendi la videocamera!",
+  "kind": "battuta"
+ },
+ {
+  "n": 53,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 463,
+  "speaker": "linda",
+  "text": "Gary, non è il momento!",
+  "kind": "battuta"
+ },
+ {
+  "n": 54,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 464,
+  "speaker": "gary",
+  "text": "Ehi Tom! Avete sentito anche voi?",
+  "kind": "battuta"
+ },
+ {
+  "n": 55,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 464,
+  "speaker": "linda",
+  "text": "Sento le sirene... stanno arrivando.",
+  "kind": "battuta"
+ },
+ {
+  "n": 56,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 496,
+  "speaker": "tom",
+  "text": "Guardate là... quanto fumo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 57,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 497,
+  "speaker": "roy",
+  "text": "Sarà saltata una conduttura del gas. O un distributore.",
+  "kind": "battuta"
+ },
+ {
+  "n": 58,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 498,
+  "speaker": "muark",
+  "text": "Sembra vicino... a qualche isolato da qui.",
+  "kind": "scelta"
+ },
+ {
+  "n": 59,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 498,
+  "speaker": "muark",
+  "text": "Speriamo che non ci sia nessun ferito.",
+  "kind": "scelta"
+ },
+ {
+  "n": 60,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 500,
+  "speaker": "tom",
+  "text": "Verso la vecchia centrale, forse. Dietro Elm Street.",
+  "kind": "battuta"
+ },
+ {
+  "n": 61,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 501,
+  "speaker": "roy",
+  "text": "Già... senti quante sirene.",
+  "kind": "battuta"
+ },
+ {
+  "n": 62,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 504,
+  "speaker": "gary",
+  "text": "Ehi, Tom! L'avete sentita anche voi?!",
+  "kind": "battuta"
+ },
+ {
+  "n": 63,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 505,
+  "speaker": "tom",
+  "text": "Sì, Gary! Sai cos'è successo?",
+  "kind": "battuta"
+ },
+ {
+  "n": 64,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 506,
+  "speaker": "gary",
+  "text": "Non ne ho idea! Ha tremato tutta la casa!",
+  "kind": "battuta"
+ },
+ {
+  "n": 65,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 507,
+  "speaker": "martha",
+  "text": "Frank dice che è il gas. Frank dice sempre che è il gas.",
+  "kind": "battuta"
+ },
+ {
+  "n": 66,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 539,
+  "speaker": "muark",
+  "text": "Prima vediamo cosa sta succedendo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 67,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 562,
+  "speaker": "jef",
+  "text": "Che succede? Ho sentito un botto.",
+  "kind": "battuta"
+ },
+ {
+  "n": 68,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 563,
+  "speaker": "muark",
+  "text": "Non lo so. C'è stata un'esplosione.",
+  "kind": "scelta"
+ },
+ {
+  "n": 69,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 563,
+  "speaker": "muark",
+  "text": "Jef! Sei vivo! Pensavamo fossi caduto nel water.",
+  "kind": "scelta"
+ },
+ {
+  "n": 70,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 565,
+  "speaker": "jef",
+  "text": "...Un'esplosione.",
+  "kind": "battuta"
+ },
+ {
+  "n": 71,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 566,
+  "speaker": "jef",
+  "text": "Molto divertente.",
+  "kind": "battuta"
+ },
+ {
+  "n": 72,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 566,
+  "speaker": "roy",
+  "text": "Ti sei perso tutto, amico.",
+  "kind": "battuta"
+ },
+ {
+  "n": 73,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 568,
+  "speaker": "tom",
+  "text": "Torniamo dentro. Magari in TV dicono qualcosa.",
+  "kind": "battuta"
+ },
+ {
+  "n": 74,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 575,
+  "speaker": "taccuino",
+  "text": "Tornare dentro con gli altri",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 75,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 576,
+  "speaker": "tom",
+  "text": "Muark, rientra! Dai.",
+  "kind": "battuta"
+ },
+ {
+  "n": 76,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 577,
+  "speaker": "roy",
+  "text": "Muark, non restare lì fuori da solo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 77,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 590,
+  "speaker": "tom",
+  "text": "Ma che... c'è solo la neve.",
+  "kind": "battuta"
+ },
+ {
+  "n": 78,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 592,
+  "speaker": "roy",
+  "text": "Cambia canale, dai!",
+  "kind": "battuta"
+ },
+ {
+  "n": 79,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 593,
+  "speaker": "tom",
+  "text": "Ci sto provando! Canale 4... canale 7...",
+  "kind": "battuta"
+ },
+ {
+  "n": 80,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 595,
+  "speaker": "tom",
+  "text": "Niente. Sono tutti così. Nessun segnale.",
+  "kind": "battuta"
+ },
+ {
+  "n": 81,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 596,
+  "speaker": "jef",
+  "text": "...",
+  "kind": "battuta"
+ },
+ {
+  "n": 82,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 613,
+  "speaker": "taccuino",
+  "text": "Raggiungere gli altri in salotto",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 83,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 614,
+  "speaker": "tom",
+  "text": "Muark?! Dove sei? Vieni qui, in salotto!",
+  "kind": "battuta"
+ },
+ {
+  "n": 84,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 615,
+  "speaker": "roy",
+  "text": "Muark! Non si vede niente, torna qui!",
+  "kind": "battuta"
+ },
+ {
+  "n": 85,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 621,
+  "speaker": "roy",
+  "text": "Ehi! Chi ha spento la luce?",
+  "kind": "battuta"
+ },
+ {
+  "n": 86,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 622,
+  "speaker": "tom",
+  "text": "È saltata la corrente... Guardate fuori: è buio tutto il quartiere.",
+  "kind": "battuta"
+ },
+ {
+  "n": 87,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 623,
+  "speaker": "tom",
+  "text": "Ve lo dico io: sono i terroristi. Prima l'esplosione, adesso questo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 88,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 624,
+  "speaker": "roy",
+  "text": "Terroristi? A Maple Grove? Sono gli alieni, amico. Fidati.",
+  "kind": "battuta"
+ },
+ {
+  "n": 89,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 625,
+  "speaker": "muark",
+  "text": "Smettetela, mi state mettendo ansia.",
+  "kind": "scelta"
+ },
+ {
+  "n": 90,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 625,
+  "speaker": "muark",
+  "text": "Jef, tu che ne pensi?",
+  "kind": "scelta"
+ },
+ {
+  "n": 91,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 627,
+  "speaker": "roy",
+  "text": "Ansia? Io? Ma figurati.",
+  "kind": "battuta"
+ },
+ {
+  "n": 92,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 628,
+  "speaker": "jef",
+  "text": "...",
+  "kind": "battuta"
+ },
+ {
+  "n": 93,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 628,
+  "speaker": "tom",
+  "text": "Jef?",
+  "kind": "battuta"
+ },
+ {
+  "n": 94,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 628,
+  "speaker": "jef",
+  "text": "...",
+  "kind": "battuta"
+ },
+ {
+  "n": 95,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 630,
+  "speaker": "tom",
+  "text": "Aspettate! In cantina c'è il generatore d'emergenza. Mio padre l'ha comprato per gli uragani.",
+  "kind": "battuta"
+ },
+ {
+  "n": 96,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 631,
+  "speaker": "roy",
+  "text": "Grande! Vai.",
+  "kind": "battuta"
+ },
+ {
+  "n": 97,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 632,
+  "speaker": "tom",
+  "text": "Io? Neanche morto, laggiù non ci scendo. Facciamo così: sasso, carta, forbice. Chi perde va giù.",
+  "kind": "battuta"
+ },
+ {
+  "n": 98,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 633,
+  "speaker": "tom",
+  "text": "Muark, tu contro di me. Pronto? Sasso... carta... forbice!",
+  "kind": "battuta"
+ },
+ {
+  "n": 99,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 634,
+  "speaker": "muark",
+  "text": "Sasso!",
+  "kind": "scelta"
+ },
+ {
+  "n": 100,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 634,
+  "speaker": "muark",
+  "text": "Carta!",
+  "kind": "scelta"
+ },
+ {
+  "n": 101,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 634,
+  "speaker": "muark",
+  "text": "Forbice!",
+  "kind": "scelta"
+ },
+ {
+  "n": 102,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 637,
+  "speaker": "tom",
+  "text": "Carta! Carta batte sasso.",
+  "kind": "battuta"
+ },
+ {
+  "n": 103,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 637,
+  "speaker": "tom",
+  "text": "Forbice! Forbice batte carta.",
+  "kind": "battuta"
+ },
+ {
+  "n": 104,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 637,
+  "speaker": "tom",
+  "text": "Sasso! Sasso batte forbice.",
+  "kind": "battuta"
+ },
+ {
+  "n": 105,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 639,
+  "speaker": "roy",
+  "text": "Muark va in cantina! Muark va in cantina!",
+  "kind": "battuta"
+ },
+ {
+  "n": 106,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 640,
+  "speaker": "tom",
+  "text": "Troppo lento! Hai perso a tavolino.",
+  "kind": "battuta"
+ },
+ {
+  "n": 107,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 641,
+  "speaker": "roy",
+  "text": "Muark va in cantina! Muark va in cantina!",
+  "kind": "battuta"
+ },
+ {
+  "n": 108,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 642,
+  "speaker": "muark",
+  "text": "Ma dai! Al meglio di tre?",
+  "kind": "scelta"
+ },
+ {
+  "n": 109,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 642,
+  "speaker": "muark",
+  "text": "Va bene, va bene... ci vado io.",
+  "kind": "scelta"
+ },
+ {
+  "n": 110,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 644,
+  "speaker": "tom",
+  "text": "Niente rivincite. Le regole sono regole.",
+  "kind": "battuta"
+ },
+ {
+  "n": 111,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 645,
+  "speaker": "tom",
+  "text": "Bravo. Così si fa.",
+  "kind": "battuta"
+ },
+ {
+  "n": 112,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 647,
+  "speaker": "tom",
+  "text": "C'è una torcia sul bancone della cucina. La porta della cantina è quella accanto all'isola.",
+  "kind": "battuta"
+ },
+ {
+  "n": 113,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 648,
+  "speaker": "jef",
+  "text": "Stai attento, laggiù.",
+  "kind": "battuta"
+ },
+ {
+  "n": 114,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 683,
+  "speaker": "taccuino",
+  "text": "Prendere la torcia in cucina",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 115,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 684,
+  "speaker": "tom",
+  "text": "La torcia è sul bancone in cucina, Muark.",
+  "kind": "battuta"
+ },
+ {
+  "n": 116,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 685,
+  "speaker": "roy",
+  "text": "Che c'è, Muark? Hai paura del buio?",
+  "kind": "battuta"
+ },
+ {
+  "n": 117,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 690,
+  "speaker": "taccuino",
+  "text": "Scendere in cantina",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 118,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 691,
+  "speaker": "tom",
+  "text": "Muark? La cantina è da quella parte, accanto all'isola.",
+  "kind": "battuta"
+ },
+ {
+  "n": 119,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 692,
+  "speaker": "roy",
+  "text": "Ehi, il generatore non si accende da solo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 120,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 695,
+  "speaker": "taccuino",
+  "text": "Accendere il generatore",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 121,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 696,
+  "speaker": "muark",
+  "text": "Il generatore... cerca quella lucina rossa.",
+  "kind": "battuta"
+ },
+ {
+  "n": 122,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 697,
+  "speaker": "muark",
+  "text": "Tira la corda e torna su, Muark. Facile.",
+  "kind": "battuta"
+ },
+ {
+  "n": 123,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 711,
+  "speaker": "muark",
+  "text": "Sì! Ce l'ho fatta.",
+  "kind": "battuta"
+ },
+ {
+  "n": 124,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 714,
+  "speaker": "taccuino",
+  "text": "Tornare di sopra dagli altri",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 125,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 715,
+  "speaker": "roy",
+  "text": "Muark! Sali, presto!",
+  "kind": "battuta"
+ },
+ {
+  "n": 126,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 716,
+  "speaker": "muark",
+  "text": "Devo tornare di sopra.",
+  "kind": "battuta"
+ },
+ {
+  "n": 127,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 720,
+  "speaker": "roy",
+  "text": "Muark! Vieni, presto! C'è il notiziario!",
+  "kind": "battuta"
+ },
+ {
+  "n": 128,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 764,
+  "speaker": "muark",
+  "text": "...Ragazzi? Siete voi?",
+  "kind": "battuta"
+ },
+ {
+  "n": 129,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 772,
+  "speaker": "muark",
+  "text": "Topi. Sono solo topi. Grossi topi.",
+  "kind": "battuta"
+ },
+ {
+  "n": 130,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 781,
+  "speaker": "muark",
+  "text": "Chi c'è?!",
+  "kind": "battuta"
+ },
+ {
+  "n": 131,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 798,
+  "speaker": "muark",
+  "text": "...La radio? Ma è staccata.",
+  "kind": "battuta"
+ },
+ {
+  "n": 132,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 806,
+  "speaker": "muark",
+  "text": "No, no, no... non adesso.",
+  "kind": "battuta"
+ },
+ {
+  "n": 133,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 852,
+  "speaker": "taccuino",
+  "text": "Guardare il notiziario con gli altri",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 134,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 853,
+  "speaker": "roy",
+  "text": "Muark! Il notiziario! Sbrigati!",
+  "kind": "battuta"
+ },
+ {
+  "n": 135,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 854,
+  "speaker": "tom",
+  "text": "Muark, vieni qui! Subito!",
+  "kind": "battuta"
+ },
+ {
+  "n": 136,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 863,
+  "speaker": "tom",
+  "text": "Shh! Guarda...",
+  "kind": "battuta"
+ },
+ {
+  "n": 137,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 864,
+  "speaker": "tv",
+  "text": "Interrompiamo le trasmissioni per un'edizione straordinaria.",
+  "kind": "battuta"
+ },
+ {
+  "n": 138,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 865,
+  "speaker": "tv",
+  "text": "Questa sera, poco dopo le nove, una forte esplosione ha colpito la zona est di Maple Grove.",
+  "kind": "battuta"
+ },
+ {
+  "n": 139,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 866,
+  "speaker": "tv",
+  "text": "Le cause non sono ancora note. Le linee elettriche e telefoniche di tutta la contea sono fuori uso.",
+  "kind": "battuta"
+ },
+ {
+  "n": 140,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 867,
+  "speaker": "tv",
+  "text": "Le autorità raccomandano ai residenti di restare in casa, di chiudere porte e finestre e di non uscire per nessun motivo fino a domattina.",
+  "kind": "battuta"
+ },
+ {
+  "n": 141,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 868,
+  "speaker": "tv",
+  "text": "Ripetiamo: non uscite di casa. Non aprite a nessuno.",
+  "kind": "battuta"
+ },
+ {
+  "n": 142,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 869,
+  "speaker": "roy",
+  "text": "Ok... ok. Adesso ho paura sul serio.",
+  "kind": "battuta"
+ },
+ {
+  "n": 143,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 870,
+  "speaker": "tom",
+  "text": "Non aprite a nessuno?! Che vuol dire \\\"non aprite a nessuno\\\"?!",
+  "kind": "battuta"
+ },
+ {
+  "n": 144,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 871,
+  "speaker": "roy",
+  "text": "E adesso che facciamo?!",
+  "kind": "battuta"
+ },
+ {
+  "n": 145,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 872,
+  "speaker": "tom",
+  "text": "Chiudiamo tutto. Porte, finestre, tutto. E aspettiamo domattina.",
+  "kind": "battuta"
+ },
+ {
+  "n": 146,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 873,
+  "speaker": "jef",
+  "text": "Non è stata un'esplosione.",
+  "kind": "battuta"
+ },
+ {
+  "n": 147,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 874,
+  "speaker": "tom",
+  "text": "Cosa? Jef... che stai dicendo?",
+  "kind": "battuta"
+ },
+ {
+  "n": 148,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 875,
+  "speaker": "jef",
+  "text": "...",
+  "kind": "battuta"
+ },
+ {
+  "n": 149,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 879,
+  "speaker": "taccuino",
+  "text": "Sopravvivere fino a domattina",
+  "kind": "obiettivo"
+ },
+ {
+  "n": 150,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 932,
+  "speaker": "tom",
+  "text": "Sta arrivando questa pizza o no?",
+  "kind": "battuta"
+ },
+ {
+  "n": 151,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 932,
+  "speaker": "tom",
+  "text": "Questo cartone lo guardavo da piccolo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 152,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 932,
+  "speaker": "tom",
+  "text": "Ricordatemi di comprare altre birre.",
+  "kind": "battuta"
+ },
+ {
+  "n": 153,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 933,
+  "speaker": "roy",
+  "text": "Ehi Tom, hai ancora quel videogioco dei ninja?",
+  "kind": "battuta"
+ },
+ {
+  "n": 154,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 933,
+  "speaker": "roy",
+  "text": "Scommetto che il fattorino si è perso.",
+  "kind": "battuta"
+ },
+ {
+  "n": 155,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 933,
+  "speaker": "roy",
+  "text": "Jef è ancora in bagno? Chiamate un idraulico.",
+  "kind": "battuta"
+ },
+ {
+  "n": 156,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 934,
+  "speaker": "jef",
+  "text": "Hmm.",
+  "kind": "battuta"
+ },
+ {
+  "n": 157,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 934,
+  "speaker": "jef",
+  "text": "Forse.",
+  "kind": "battuta"
+ },
+ {
+  "n": 158,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 938,
+  "speaker": "tom",
+  "text": "Muark? Tutto bene là sotto?",
+  "kind": "battuta"
+ },
+ {
+  "n": 159,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 938,
+  "speaker": "tom",
+  "text": "Che silenzio... non mi piace.",
+  "kind": "battuta"
+ },
+ {
+  "n": 160,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 938,
+  "speaker": "tom",
+  "text": "Il frigo si sta scaldando. Meglio finire le birre.",
+  "kind": "battuta"
+ },
+ {
+  "n": 161,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 939,
+  "speaker": "roy",
+  "text": "Qualcuno ha delle candele?",
+  "kind": "battuta"
+ },
+ {
+  "n": 162,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 939,
+  "speaker": "roy",
+  "text": "Ragazzi, avete sentito anche voi?",
+  "kind": "battuta"
+ },
+ {
+  "n": 163,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 939,
+  "speaker": "roy",
+  "text": "Non vedo niente là fuori. Niente di niente.",
+  "kind": "battuta"
+ },
+ {
+  "n": 164,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 940,
+  "speaker": "jef",
+  "text": "...Sentite?",
+  "kind": "battuta"
+ },
+ {
+  "n": 165,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 940,
+  "speaker": "jef",
+  "text": "Non è normale.",
+  "kind": "battuta"
+ },
+ {
+  "n": 166,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 1115,
+  "speaker": "tom",
+  "text": "Ehi, quella è la mia poltrona! ...Vabbè, per stasera.",
+  "kind": "battuta"
+ },
+ {
+  "n": 167,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 1116,
+  "speaker": "roy",
+  "text": "Mi hai rubato il posto, eh?",
+  "kind": "battuta"
+ },
+ {
+  "n": 168,
+  "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
+  "line": 1237,
+  "speaker": "tom",
+  "text": "Muark? Che ci fai di sopra? La festa è qui sotto!",
+  "kind": "battuta"
+ },
+ {
+  "n": 169,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 19,
+  "speaker": "gufo",
+  "text": "Lucia e il buio.",
+  "kind": "battuta"
+ },
+ {
+  "n": 170,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 23,
+  "speaker": "gufo",
+  "text": "C'era una volta, in un prato vicino al bosco, una piccola lucciola di nome Lucia.",
+  "kind": "battuta"
+ },
+ {
+  "n": 171,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 24,
+  "speaker": "lucia",
+  "text": "Che bel tramonto! Peccato che dopo arrivi la notte...",
+  "kind": "battuta"
+ },
+ {
+  "n": 172,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 25,
+  "speaker": "tasso",
+  "text": "Ciao Lucia! Perché quella faccia triste?",
+  "kind": "battuta"
+ },
+ {
+  "n": 173,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 26,
+  "speaker": "lucia",
+  "text": "Ciao Tasso. Io ho paura del buio. Quando il sole va giù, mi nascondo sotto una foglia.",
+  "kind": "battuta"
+ },
+ {
+  "n": 174,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 27,
+  "speaker": "tasso",
+  "text": "Ma tu sei una lucciola! Tu fai luce!",
+  "kind": "battuta"
+ },
+ {
+  "n": 175,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 28,
+  "speaker": "tasso",
+  "text": "Guarda le altre lucciole: ogni sera accendono il prato come un albero di Natale!",
+  "kind": "battuta"
+ },
+ {
+  "n": 176,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 29,
+  "speaker": "lucia",
+  "text": "Loro sono grandi e coraggiose. Io sono piccola e fifona.",
+  "kind": "battuta"
+ },
+ {
+  "n": 177,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 30,
+  "speaker": "lucia",
+  "text": "Una lucina così piccola? Non serve a niente.",
+  "kind": "battuta"
+ },
+ {
+  "n": 178,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 34,
+  "speaker": "gufo",
+  "text": "Quella sera, ai margini del bosco, qualcuno piangeva.",
+  "kind": "battuta"
+ },
+ {
+  "n": 179,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 35,
+  "speaker": "rana",
+  "text": "Aiuto! Mi sono persa! Non trovo più lo stagno!",
+  "kind": "battuta"
+ },
+ {
+  "n": 180,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 36,
+  "speaker": "rana",
+  "text": "Stavo inseguendo una farfalla... e adesso è tutto uguale. Alberi, alberi e ancora alberi!",
+  "kind": "battuta"
+ },
+ {
+  "n": 181,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 37,
+  "speaker": "tasso",
+  "text": "È la piccola Rana! Si è persa nel bosco!",
+  "kind": "battuta"
+ },
+ {
+  "n": 182,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 38,
+  "speaker": "lucia",
+  "text": "Nel bosco? Ma tra poco sarà buio pesto...",
+  "kind": "battuta"
+ },
+ {
+  "n": 183,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 39,
+  "speaker": "tasso",
+  "text": "Io ho il naso buono, ma al buio non vedo niente. Vieni con me?",
+  "kind": "battuta"
+ },
+ {
+  "n": 184,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 40,
+  "speaker": "lucia",
+  "text": "Io... io ho paura.",
+  "kind": "battuta"
+ },
+ {
+  "n": 185,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 41,
+  "speaker": "tasso",
+  "text": "Anch'io ho un po' paura. Ma se andiamo insieme, la paura diventa più piccola.",
+  "kind": "battuta"
+ },
+ {
+  "n": 186,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 45,
+  "speaker": "gufo",
+  "text": "Il sole se ne andò, e il bosco diventò nero come l'inchiostro.",
+  "kind": "battuta"
+ },
+ {
+  "n": 187,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 46,
+  "speaker": "lucia",
+  "text": "Tasso? Dove sei? Non ti vedo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 188,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 47,
+  "speaker": "tasso",
+  "text": "Ahia! Ho sbattuto il naso contro un albero!",
+  "kind": "battuta"
+ },
+ {
+  "n": 189,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 48,
+  "speaker": "tasso",
+  "text": "Sono qui! Lucia, accendi la tua luce!",
+  "kind": "battuta"
+ },
+ {
+  "n": 190,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 49,
+  "speaker": "lucia",
+  "text": "Va bene... ci provo.",
+  "kind": "battuta"
+ },
+ {
+  "n": 191,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 50,
+  "speaker": "gufo",
+  "text": "Lucia tremava come una foglia. Ma pensò alla piccola Rana, sola nel bosco.",
+  "kind": "battuta"
+ },
+ {
+  "n": 192,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 53,
+  "speaker": "gufo",
+  "text": "E la codina di Lucia si accese. Piccola piccola, ma calda.",
+  "kind": "battuta"
+ },
+ {
+  "n": 193,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 54,
+  "speaker": "tasso",
+  "text": "Ti vedo! E vedo anche il sentiero!",
+  "kind": "battuta"
+ },
+ {
+  "n": 194,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 55,
+  "speaker": "lucia",
+  "text": "Davvero? La mia lucina basta?",
+  "kind": "battuta"
+ },
+ {
+  "n": 195,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 59,
+  "speaker": "gufo",
+  "text": "Uhu! Chi va là, a quest'ora?",
+  "kind": "battuta"
+ },
+ {
+  "n": 196,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 60,
+  "speaker": "tasso",
+  "text": "Signor Gufo! Cerchiamo la piccola Rana, si è persa.",
+  "kind": "battuta"
+ },
+ {
+  "n": 197,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 61,
+  "speaker": "gufo",
+  "text": "L'ho sentita vicino ai giunchi, oltre il grande sasso. Seguite il ruscello.",
+  "kind": "battuta"
+ },
+ {
+  "n": 198,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 62,
+  "speaker": "tasso",
+  "text": "Grande sasso, ruscello, giunchi. Ricordatevelo, eh!",
+  "kind": "battuta"
+ },
+ {
+  "n": 199,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 63,
+  "speaker": "lucia",
+  "text": "Io me lo ricordo! Andiamo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 200,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 64,
+  "speaker": "lucia",
+  "text": "Grazie, signor Gufo!",
+  "kind": "battuta"
+ },
+ {
+  "n": 201,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 65,
+  "speaker": "gufo",
+  "text": "E tu, piccola luce, non spegnerti. Al buio, anche una scintilla è una stella.",
+  "kind": "battuta"
+ },
+ {
+  "n": 202,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 69,
+  "speaker": "rana",
+  "text": "C'è qualcuno? Ho tanta paura...",
+  "kind": "battuta"
+ },
+ {
+  "n": 203,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 70,
+  "speaker": "lucia",
+  "text": "Rana! Siamo noi! Guarda la mia luce!",
+  "kind": "battuta"
+ },
+ {
+  "n": 204,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 71,
+  "speaker": "rana",
+  "text": "Sono qui! Sopra la ninfea!",
+  "kind": "battuta"
+ },
+ {
+  "n": 205,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 72,
+  "speaker": "rana",
+  "text": "Una stella che vola! Allora non sono sola!",
+  "kind": "battuta"
+ },
+ {
+  "n": 206,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 73,
+  "speaker": "tasso",
+  "text": "Vieni, piccola. Ti riportiamo a casa.",
+  "kind": "battuta"
+ },
+ {
+  "n": 207,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 74,
+  "speaker": "rana",
+  "text": "Ma il bosco è così buio...",
+  "kind": "battuta"
+ },
+ {
+  "n": 208,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 75,
+  "speaker": "lucia",
+  "text": "Stammi vicina. Io faccio luce, tu segui me.",
+  "kind": "battuta"
+ },
+ {
+  "n": 209,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 79,
+  "speaker": "gufo",
+  "text": "E così, in fila, attraversarono il bosco. Lucia davanti, Rana in mezzo e Tasso dietro.",
+  "kind": "battuta"
+ },
+ {
+  "n": 210,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 80,
+  "speaker": "rana",
+  "text": "Lucia, tu non hai paura del buio?",
+  "kind": "battuta"
+ },
+ {
+  "n": 211,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 81,
+  "speaker": "lucia",
+  "text": "Un po' sì. Ma adesso ho una cosa più importante da fare.",
+  "kind": "battuta"
+ },
+ {
+  "n": 212,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 82,
+  "speaker": "tasso",
+  "text": "Questo si chiama coraggio.",
+  "kind": "battuta"
+ },
+ {
+  "n": 213,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 83,
+  "speaker": "rana",
+  "text": "Il grande sasso! Ecco il ruscello!",
+  "kind": "battuta"
+ },
+ {
+  "n": 214,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 84,
+  "speaker": "tasso",
+  "text": "E sento già l'odore dello stagno. Ci siamo quasi!",
+  "kind": "battuta"
+ },
+ {
+  "n": 215,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 88,
+  "speaker": "rana",
+  "text": "Mamma! Papà! Sono a casa!",
+  "kind": "battuta"
+ },
+ {
+  "n": 216,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 89,
+  "speaker": "rana",
+  "text": "Lei è Lucia, e mi ha fatto luce per tutto il bosco!",
+  "kind": "battuta"
+ },
+ {
+  "n": 217,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 90,
+  "speaker": "gufo",
+  "text": "Quella notte, tutte le lucciole del prato vennero a vedere la piccola luce che aveva salvato la Rana.",
+  "kind": "battuta"
+ },
+ {
+  "n": 218,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 91,
+  "speaker": "lucia",
+  "text": "Sapete una cosa? Il buio non mi fa più così paura.",
+  "kind": "battuta"
+ },
+ {
+  "n": 219,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 92,
+  "speaker": "tasso",
+  "text": "E perché?",
+  "kind": "battuta"
+ },
+ {
+  "n": 220,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 93,
+  "speaker": "lucia",
+  "text": "Perché ho capito che anche la luce più piccola può aiutare qualcuno a tornare a casa.",
+  "kind": "battuta"
+ },
+ {
+  "n": 221,
+  "file": "Assets/_Project/Horror/Scripts/World/CartoonEpisode.cs",
+  "line": 97,
+  "speaker": "gufo",
+  "text": "Anche la luce più piccola può aiutare chi si è perso nel buio. Fine.",
+  "kind": "battuta"
+ },
+ {
+  "n": 222,
+  "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
+  "line": 426,
+  "speaker": "frank",
+  "text": "Martha, hai chiuso il gas?",
+  "kind": "battuta"
+ },
+ {
+  "n": 223,
+  "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
+  "line": 426,
+  "speaker": "martha",
+  "text": "Sì Frank, come ogni sera.",
+  "kind": "battuta"
+ },
+ {
+  "n": 224,
+  "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
+  "line": 426,
+  "speaker": "frank",
+  "text": "Questi ragazzi di Tom fanno sempre tardi.",
+  "kind": "battuta"
+ },
+ {
+  "n": 225,
+  "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
+  "line": 429,
+  "speaker": "gary",
+  "text": "Linda, la partita è finita?",
+  "kind": "battuta"
+ },
+ {
+  "n": 226,
+  "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
+  "line": 429,
+  "speaker": "linda",
+  "text": "Ma ti pare l'ora, Gary?",
+  "kind": "battuta"
+ },
+ {
+  "n": 227,
+  "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
+  "line": 429,
+  "speaker": "gary",
+  "text": "Bella serata, comunque.",
+  "kind": "battuta"
+ },
+ {
+  "n": 228,
+  "file": "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs",
+  "line": 62,
+  "speaker": "tom",
+  "text": "Ehi Muark!",
+  "kind": "battuta"
+ },
+ {
+  "n": 229,
+  "file": "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs",
+  "line": 63,
+  "speaker": "muark",
+  "text": "Ciao!",
+  "kind": "scelta"
+ },
+ {
+  "n": 230,
+  "file": "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs",
+  "line": 63,
+  "speaker": "muark",
+  "text": "Ho portato la birra.",
+  "kind": "scelta"
+ },
+ {
+  "n": 231,
+  "file": "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs",
+  "line": 430,
+  "speaker": "amici",
+  "text": "Ehi, Muark! Dove vai?",
+  "kind": "battuta"
+ },
+ {
+  "n": 232,
+  "file": "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs",
+  "line": 430,
+  "speaker": "amici",
+  "text": "Muark? Ti sto parlando!",
+  "kind": "battuta"
+ },
+ {
+  "n": 233,
+  "file": "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs",
+  "line": 430,
+  "speaker": "amici",
+  "text": "Ehi! Torna qui, dai.",
+  "kind": "battuta"
+ },
+ {
+  "n": 234,
+  "file": "Assets/_Project/Horror/Scripts/Story/NpcActor.cs",
+  "line": 194,
+  "speaker": "amici",
+  "text": "Ehi, spazio vitale!",
+  "kind": "battuta"
+ },
+ {
+  "n": 235,
+  "file": "Assets/_Project/Horror/Scripts/Story/NpcActor.cs",
+  "line": 194,
+  "speaker": "amici",
+  "text": "Mi stai addosso, amico.",
+  "kind": "battuta"
+ },
+ {
+  "n": 236,
+  "file": "Assets/_Project/Horror/Scripts/Story/NpcActor.cs",
+  "line": 194,
+  "speaker": "amici",
+  "text": "...Sì?",
+  "kind": "battuta"
+ },
+ {
+  "n": 237,
+  "file": "Assets/_Project/Horror/Scripts/Interaction/GeneratorStarter.cs",
+  "line": 34,
+  "speaker": "muark",
+  "text": "Dai...",
+  "kind": "battuta"
+ },
+ {
+  "n": 238,
+  "file": "Assets/_Project/Horror/Scripts/Interaction/GeneratorStarter.cs",
+  "line": 34,
+  "speaker": "muark",
+  "text": "Avanti, parti!",
+  "kind": "battuta"
+ },
+ {
+  "n": 239,
+  "file": "Assets/_Project/Horror/Scripts/Interaction/GeneratorStarter.cs",
+  "line": 34,
+  "speaker": "muark",
+  "text": "Ti prego, ti prego...",
+  "kind": "battuta"
+ }
+]

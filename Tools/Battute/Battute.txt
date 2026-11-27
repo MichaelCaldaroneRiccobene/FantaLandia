@@ -1,0 +1,267 @@
+BATTUTE DI FANTALANDIA - capitolo 1
+Cambia solo il testo dopo i due punti. Lascia il numero [..] e il nome. Le righe che non tocchi restano uguali.
+SCELTA = una risposta che il giocatore sceglie (la dice Muark). OBIETTIVO = cosa è scritto nel taccuino.
+
+======================================================================
+CAPITOLO 1 - LA STORIA
+======================================================================
+[001] Taccuino (OBIETTIVO): Bussare alla porta di Tom
+[002] Muark: Dovrei bussare alla porta di Tom.
+[003] Muark: Allora, busso o resto qui al freddo?
+[004] Tom: Arrivo, arrivo!
+[005] Tom: Muark! Finalmente, pensavo ti fossi perso.
+[006] Muark (SCELTA): Ho portato la birra, come promesso.
+[007] Muark (SCELTA): Scusa, c'era un traffico assurdo.
+[008] Tom: Grande! Mettila sull'isola in cucina, va.
+[009] Tom: Traffico? Abiti a due isolati...
+[010] Tom: Dai, entra. La birra mettila sull'isola in cucina.
+[011] Tom: Muark? Tutto bene? Sembri congelato.
+[012] Tom: Dai, entra. La birra mettila sull'isola in cucina.
+[013] Tom: Jef è in bagno. Da mezz'ora. Non chiedere.
+[014] Taccuino (OBIETTIVO): Posare la birra in cucina
+[015] Tom: Muark, la birra! In cucina, sull'isola.
+[016] Muark: Prima mollo la birra in cucina.
+[017] Tom: Muark, vai a vedere tu? Io qui sto troppo comodo.
+[018] Taccuino (OBIETTIVO): Andare ad aprire la porta
+[019] Tom: Muark! La porta!
+[020] Tom: Stanno ancora bussando...
+[021] Muark: ...C'è qualcuno?
+[022] Muark: Ragazzi, non c'è nessuno! Ci hanno fatto uno scherzo.
+[023] Tom: Saranno i ragazzini dei Kowalski. Chiudi, dai, che entra il freddo.
+[024] Roy: BUUU!!
+[025] Roy: AH AH AH! Dovevi vedere la tua faccia, Muark!
+[026] Muark (SCELTA): Roy! Mi hai fatto prendere un colpo!
+[027] Muark (SCELTA): Sei un idiota. Entra, dai.
+[028] Roy: Lo so, lo so. Sono un genio.
+[029] Roy: Ti voglio bene anch'io, amico.
+[030] Roy: Allora? Ho sentito che c'è la pizza. Dov'è la pizza?
+[031] Taccuino (OBIETTIVO): Stare con gli altri in salotto
+[032] Tom: Muark! Vieni in salotto, dai!
+[033] Roy: Muark, dove sei finito? Vieni qua!
+[034] Tom: Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno.
+[035] Roy: Ancora? È lì dentro da quando sono nato.
+[036] Tom: Ho ordinato due pizze. Ora bisogna solo aspettare la pizza.
+[037] Muark (SCELTA): Che pizze hai preso?
+[038] Muark (SCELTA): Speriamo che arrivi presto, ho una fame...
+[039] Tom: Una salame piccante e una con l'ananas. Quella è per Jef.
+[040] Roy: Che schifo.
+[041] Roy: Anch'io. Mi mangerei il divano.
+[042] Tom: Cos'è stato?!
+[043] Roy: Veniva da dietro! Dal giardino!
+[044] Tom: Andiamo a vedere, presto!
+[045] Taccuino (OBIETTIVO): Vedere cos'è successo, in giardino
+[046] Tom: Muark! Qui fuori, in fondo al giardino!
+[047] Roy: Muark, vieni a vedere! Presto!
+[048] Martha: Oh santo cielo, Frank, guarda quel fumo...
+[049] Frank: Torna dentro, Martha! Potrebbe esplodere ancora!
+[050] Martha: E se è la fabbrica? Ci abita la figlia dei Parker là vicino!
+[051] Frank: Chiamo lo sceriffo. Dov'è il telefono?
+[052] Gary: Linda! Prendi la videocamera!
+[053] Linda: Gary, non è il momento!
+[054] Gary: Ehi Tom! Avete sentito anche voi?
+[055] Linda: Sento le sirene... stanno arrivando.
+[056] Tom: Guardate là... quanto fumo!
+[057] Roy: Sarà saltata una conduttura del gas. O un distributore.
+[058] Muark (SCELTA): Sembra vicino... a qualche isolato da qui.
+[059] Muark (SCELTA): Speriamo che non ci sia nessun ferito.
+[060] Tom: Verso la vecchia centrale, forse. Dietro Elm Street.
+[061] Roy: Già... senti quante sirene.
+[062] Gary: Ehi, Tom! L'avete sentita anche voi?!
+[063] Tom: Sì, Gary! Sai cos'è successo?
+[064] Gary: Non ne ho idea! Ha tremato tutta la casa!
+[065] Martha: Frank dice che è il gas. Frank dice sempre che è il gas.
+[066] Muark: Prima vediamo cosa sta succedendo.
+[067] Jef: Che succede? Ho sentito un botto.
+[068] Muark (SCELTA): Non lo so. C'è stata un'esplosione.
+[069] Muark (SCELTA): Jef! Sei vivo! Pensavamo fossi caduto nel water.
+[070] Jef: ...Un'esplosione.
+[071] Jef: Molto divertente.
+[072] Roy: Ti sei perso tutto, amico.
+[073] Tom: Torniamo dentro. Magari in TV dicono qualcosa.
+[074] Taccuino (OBIETTIVO): Tornare dentro con gli altri
+[075] Tom: Muark, rientra! Dai.
+[076] Roy: Muark, non restare lì fuori da solo!
+[077] Tom: Ma che... c'è solo la neve.
+[078] Roy: Cambia canale, dai!
+[079] Tom: Ci sto provando! Canale 4... canale 7...
+[080] Tom: Niente. Sono tutti così. Nessun segnale.
+[081] Jef: ...
+[082] Taccuino (OBIETTIVO): Raggiungere gli altri in salotto
+[083] Tom: Muark?! Dove sei? Vieni qui, in salotto!
+[084] Roy: Muark! Non si vede niente, torna qui!
+[085] Roy: Ehi! Chi ha spento la luce?
+[086] Tom: È saltata la corrente... Guardate fuori: è buio tutto il quartiere.
+[087] Tom: Ve lo dico io: sono i terroristi. Prima l'esplosione, adesso questo.
+[088] Roy: Terroristi? A Maple Grove? Sono gli alieni, amico. Fidati.
+[089] Muark (SCELTA): Smettetela, mi state mettendo ansia.
+[090] Muark (SCELTA): Jef, tu che ne pensi?
+[091] Roy: Ansia? Io? Ma figurati.
+[092] Jef: ...
+[093] Tom: Jef?
+[094] Jef: ...
+[095] Tom: Aspettate! In cantina c'è il generatore d'emergenza. Mio padre l'ha comprato per gli uragani.
+[096] Roy: Grande! Vai.
+[097] Tom: Io? Neanche morto, laggiù non ci scendo. Facciamo così: sasso, carta, forbice. Chi perde va giù.
+[098] Tom: Muark, tu contro di me. Pronto? Sasso... carta... forbice!
+[099] Muark (SCELTA): Sasso!
+[100] Muark (SCELTA): Carta!
+[101] Muark (SCELTA): Forbice!
+[102] Tom: Carta! Carta batte sasso.
+[103] Tom: Forbice! Forbice batte carta.
+[104] Tom: Sasso! Sasso batte forbice.
+[105] Roy: Muark va in cantina! Muark va in cantina!
+[106] Tom: Troppo lento! Hai perso a tavolino.
+[107] Roy: Muark va in cantina! Muark va in cantina!
+[108] Muark (SCELTA): Ma dai! Al meglio di tre?
+[109] Muark (SCELTA): Va bene, va bene... ci vado io.
+[110] Tom: Niente rivincite. Le regole sono regole.
+[111] Tom: Bravo. Così si fa.
+[112] Tom: C'è una torcia sul bancone della cucina. La porta della cantina è quella accanto all'isola.
+[113] Jef: Stai attento, laggiù.
+[114] Taccuino (OBIETTIVO): Prendere la torcia in cucina
+[115] Tom: La torcia è sul bancone in cucina, Muark.
+[116] Roy: Che c'è, Muark? Hai paura del buio?
+[117] Taccuino (OBIETTIVO): Scendere in cantina
+[118] Tom: Muark? La cantina è da quella parte, accanto all'isola.
+[119] Roy: Ehi, il generatore non si accende da solo!
+[120] Taccuino (OBIETTIVO): Accendere il generatore
+[121] Muark: Il generatore... cerca quella lucina rossa.
+[122] Muark: Tira la corda e torna su, Muark. Facile.
+[123] Muark: Sì! Ce l'ho fatta.
+[124] Taccuino (OBIETTIVO): Tornare di sopra dagli altri
+[125] Roy: Muark! Sali, presto!
+[126] Muark: Devo tornare di sopra.
+[127] Roy: Muark! Vieni, presto! C'è il notiziario!
+[128] Muark: ...Ragazzi? Siete voi?
+[129] Muark: Topi. Sono solo topi. Grossi topi.
+[130] Muark: Chi c'è?!
+[131] Muark: ...La radio? Ma è staccata.
+[132] Muark: No, no, no... non adesso.
+[133] Taccuino (OBIETTIVO): Guardare il notiziario con gli altri
+[134] Roy: Muark! Il notiziario! Sbrigati!
+[135] Tom: Muark, vieni qui! Subito!
+[136] Tom: Shh! Guarda...
+[137] TV: Interrompiamo le trasmissioni per un'edizione straordinaria.
+[138] TV: Questa sera, poco dopo le nove, una forte esplosione ha colpito la zona est di Maple Grove.
+[139] TV: Le cause non sono ancora note. Le linee elettriche e telefoniche di tutta la contea sono fuori uso.
+[140] TV: Le autorità raccomandano ai residenti di restare in casa, di chiudere porte e finestre e di non uscire per nessun motivo fino a domattina.
+[141] TV: Ripetiamo: non uscite di casa. Non aprite a nessuno.
+[142] Roy: Ok... ok. Adesso ho paura sul serio.
+[143] Tom: Non aprite a nessuno?! Che vuol dire "non aprite a nessuno"?!
+[144] Roy: E adesso che facciamo?!
+[145] Tom: Chiudiamo tutto. Porte, finestre, tutto. E aspettiamo domattina.
+[146] Jef: Non è stata un'esplosione.
+[147] Tom: Cosa? Jef... che stai dicendo?
+[148] Jef: ...
+[149] Taccuino (OBIETTIVO): Sopravvivere fino a domattina
+[150] Tom: Sta arrivando questa pizza o no?
+[151] Tom: Questo cartone lo guardavo da piccolo.
+[152] Tom: Ricordatemi di comprare altre birre.
+[153] Roy: Ehi Tom, hai ancora quel videogioco dei ninja?
+[154] Roy: Scommetto che il fattorino si è perso.
+[155] Roy: Jef è ancora in bagno? Chiamate un idraulico.
+[156] Jef: Hmm.
+[157] Jef: Forse.
+[158] Tom: Muark? Tutto bene là sotto?
+[159] Tom: Che silenzio... non mi piace.
+[160] Tom: Il frigo si sta scaldando. Meglio finire le birre.
+[161] Roy: Qualcuno ha delle candele?
+[162] Roy: Ragazzi, avete sentito anche voi?
+[163] Roy: Non vedo niente là fuori. Niente di niente.
+[164] Jef: ...Sentite?
+[165] Jef: Non è normale.
+[166] Tom: Ehi, quella è la mia poltrona! ...Vabbè, per stasera.
+[167] Roy: Mi hai rubato il posto, eh?
+[168] Tom: Muark? Che ci fai di sopra? La festa è qui sotto!
+
+======================================================================
+CARTONE IN TV: LUCIA E IL BUIO
+======================================================================
+[169] Gufo: Lucia e il buio.
+[170] Gufo: C'era una volta, in un prato vicino al bosco, una piccola lucciola di nome Lucia.
+[171] Lucia: Che bel tramonto! Peccato che dopo arrivi la notte...
+[172] Tasso: Ciao Lucia! Perché quella faccia triste?
+[173] Lucia: Ciao Tasso. Io ho paura del buio. Quando il sole va giù, mi nascondo sotto una foglia.
+[174] Tasso: Ma tu sei una lucciola! Tu fai luce!
+[175] Tasso: Guarda le altre lucciole: ogni sera accendono il prato come un albero di Natale!
+[176] Lucia: Loro sono grandi e coraggiose. Io sono piccola e fifona.
+[177] Lucia: Una lucina così piccola? Non serve a niente.
+[178] Gufo: Quella sera, ai margini del bosco, qualcuno piangeva.
+[179] Rana: Aiuto! Mi sono persa! Non trovo più lo stagno!
+[180] Rana: Stavo inseguendo una farfalla... e adesso è tutto uguale. Alberi, alberi e ancora alberi!
+[181] Tasso: È la piccola Rana! Si è persa nel bosco!
+[182] Lucia: Nel bosco? Ma tra poco sarà buio pesto...
+[183] Tasso: Io ho il naso buono, ma al buio non vedo niente. Vieni con me?
+[184] Lucia: Io... io ho paura.
+[185] Tasso: Anch'io ho un po' paura. Ma se andiamo insieme, la paura diventa più piccola.
+[186] Gufo: Il sole se ne andò, e il bosco diventò nero come l'inchiostro.
+[187] Lucia: Tasso? Dove sei? Non ti vedo!
+[188] Tasso: Ahia! Ho sbattuto il naso contro un albero!
+[189] Tasso: Sono qui! Lucia, accendi la tua luce!
+[190] Lucia: Va bene... ci provo.
+[191] Gufo: Lucia tremava come una foglia. Ma pensò alla piccola Rana, sola nel bosco.
+[192] Gufo: E la codina di Lucia si accese. Piccola piccola, ma calda.
+[193] Tasso: Ti vedo! E vedo anche il sentiero!
+[194] Lucia: Davvero? La mia lucina basta?
+[195] Gufo: Uhu! Chi va là, a quest'ora?
+[196] Tasso: Signor Gufo! Cerchiamo la piccola Rana, si è persa.
+[197] Gufo: L'ho sentita vicino ai giunchi, oltre il grande sasso. Seguite il ruscello.
+[198] Tasso: Grande sasso, ruscello, giunchi. Ricordatevelo, eh!
+[199] Lucia: Io me lo ricordo! Andiamo!
+[200] Lucia: Grazie, signor Gufo!
+[201] Gufo: E tu, piccola luce, non spegnerti. Al buio, anche una scintilla è una stella.
+[202] Rana: C'è qualcuno? Ho tanta paura...
+[203] Lucia: Rana! Siamo noi! Guarda la mia luce!
+[204] Rana: Sono qui! Sopra la ninfea!
+[205] Rana: Una stella che vola! Allora non sono sola!
+[206] Tasso: Vieni, piccola. Ti riportiamo a casa.
+[207] Rana: Ma il bosco è così buio...
+[208] Lucia: Stammi vicina. Io faccio luce, tu segui me.
+[209] Gufo: E così, in fila, attraversarono il bosco. Lucia davanti, Rana in mezzo e Tasso dietro.
+[210] Rana: Lucia, tu non hai paura del buio?
+[211] Lucia: Un po' sì. Ma adesso ho una cosa più importante da fare.
+[212] Tasso: Questo si chiama coraggio.
+[213] Rana: Il grande sasso! Ecco il ruscello!
+[214] Tasso: E sento già l'odore dello stagno. Ci siamo quasi!
+[215] Rana: Mamma! Papà! Sono a casa!
+[216] Rana: Lei è Lucia, e mi ha fatto luce per tutto il bosco!
+[217] Gufo: Quella notte, tutte le lucciole del prato vennero a vedere la piccola luce che aveva salvato la Rana.
+[218] Lucia: Sapete una cosa? Il buio non mi fa più così paura.
+[219] Tasso: E perché?
+[220] Lucia: Perché ho capito che anche la luce più piccola può aiutare qualcuno a tornare a casa.
+[221] Gufo: Anche la luce più piccola può aiutare chi si è perso nel buio. Fine.
+
+======================================================================
+VICINI (PRIMA DELL'ESPLOSIONE)
+======================================================================
+[222] Frank: Martha, hai chiuso il gas?
+[223] Martha: Sì Frank, come ogni sera.
+[224] Frank: Questi ragazzi di Tom fanno sempre tardi.
+[225] Gary: Linda, la partita è finita?
+[226] Linda: Ma ti pare l'ora, Gary?
+[227] Gary: Bella serata, comunque.
+
+======================================================================
+RICHIAMI QUANDO TI ALLONTANI
+======================================================================
+[228] Tom: Ehi Muark!
+[229] Muark (SCELTA): Ciao!
+[230] Muark (SCELTA): Ho portato la birra.
+[231] Amici: Ehi, Muark! Dove vai?
+[232] Amici: Muark? Ti sto parlando!
+[233] Amici: Ehi! Torna qui, dai.
+
+======================================================================
+QUANDO STAI ADDOSSO A QUALCUNO
+======================================================================
+[234] Amici: Ehi, spazio vitale!
+[235] Amici: Mi stai addosso, amico.
+[236] Amici: ...Sì?
+
+======================================================================
+GENERATORE
+======================================================================
+[237] Muark: Dai...
+[238] Muark: Avanti, parti!
+[239] Muark: Ti prego, ti prego...
+

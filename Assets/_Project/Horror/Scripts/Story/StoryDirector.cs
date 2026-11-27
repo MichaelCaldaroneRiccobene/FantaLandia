@@ -255,7 +255,8 @@ namespace FantaLandia.Horror.Story
                     t = 0f;
                     reminders++;
                     frontDoor.Knock();
-                    DialogueSystem.Bark(Speakers.Tom, reminders == 1 ? "Muark! La porta!" : "Stanno ancora bussando...", Eye(tom));
+                    if (reminders == 1) DialogueSystem.Bark(Speakers.Tom, "Muark! La porta!", Eye(tom));
+                    else DialogueSystem.Bark(Speakers.Tom, "Stanno ancora bussando...", Eye(tom));
                 }
                 yield return null;
             }
