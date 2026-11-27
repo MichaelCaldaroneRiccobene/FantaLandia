@@ -73,7 +73,7 @@ namespace FantaLandia.Horror.UI
             // la lucina da lettura agganciata in cima al taccuino: illumina le pagine
             var lamp = new GameObject("Lucina del taccuino").AddComponent<Light>();
             lamp.transform.SetParent(notebook, false);
-            lamp.transform.localPosition = new Vector3(0.115f, 0.075f, 0.055f);
+            lamp.transform.localPosition = new Vector3(0.115f, 0.045f, 0.065f); // appena sotto la lampadina
             lamp.type = LightType.Point;
             lamp.range = 0.45f;
             lamp.intensity = 1.1f;
