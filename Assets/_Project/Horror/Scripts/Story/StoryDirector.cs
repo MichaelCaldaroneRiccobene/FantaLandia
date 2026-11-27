@@ -161,7 +161,7 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator Arrival()
         {
-            Objective = "Bussare alla porta di Tom";
+            Objective = "Bussare alla porta di Tom (Muoviti si gela coglione)";
             Goal((null, Speakers.Muark, "Dovrei bussare alla porta di Tom."),
                  (null, Speakers.Muark, "Allora, busso o resto qui al freddo?"));
             // Tom all'inizio è in poltrona a guardare la TV (e non sbircia fuori dalla finestra)
@@ -177,7 +177,7 @@ namespace FantaLandia.Horror.Story
             ClearGoal();
 
             yield return new WaitForSeconds(0.6f);
-            DialogueSystem.Bark(Speakers.Tom, "Arrivo, arrivo!", Eye(tom));
+            DialogueSystem.Bark(Speakers.Tom, "Arrivo, arrivo cazzo!", Eye(tom));
             yield return new WaitForSeconds(0.4f);
             Stand(tom);
             yield return new WaitForSeconds(0.5f);
@@ -190,17 +190,17 @@ namespace FantaLandia.Horror.Story
 
             yield return Talk(DialogueSystem.Conversation()
                 .Say(Speakers.Tom, "Muark! Finalmente, pensavo ti fossi perso.")
-                .Choice(new[] { "Ho portato la birra, come promesso.", "Scusa, c'era un traffico assurdo." }, i =>
+                .Choice(new[] { "Ho portato la birra cazzo.", "Scusa, c'era un traffico assurdo." }, i =>
                 {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Grande! Mettila sull'isola in cucina, va."));
-                    else DialogueSystem.Insert((Speakers.Tom, "Traffico? Abiti a due isolati..."),
+                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Grande! Mettila sull'isola in cucina, dai."));
+                    else DialogueSystem.Insert((Speakers.Tom, "Traffico? Abiti a due isolati frocio..."),
                                                (Speakers.Tom, "Dai, entra. La birra mettila sull'isola in cucina."));
-                }, 10f, () => DialogueSystem.Insert((Speakers.Tom, "Muark? Tutto bene? Sembri congelato."),
+                }, 10f, () => DialogueSystem.Insert((Speakers.Tom, "Muark? Tutto bene? Sembri una fighetta congelata."),
                                                     (Speakers.Tom, "Dai, entra. La birra mettila sull'isola in cucina.")))
-                .Say(Speakers.Tom, "Jef è in bagno. Da mezz'ora. Non chiedere."), tom);
+                .Say(Speakers.Tom, "Jef è in bagno. Da mezz'ora. Che rincoglionito."), tom);
 
-            Objective = "Posare la birra in cucina";
-            Goal((tom, Speakers.Tom, "Muark, la birra! In cucina, sull'isola."),
+            Objective = "Posare la birra in cucina (Deficiente)";
+            Goal((tom, Speakers.Tom, "Muark, la birra! In cucina, sull'isola. Dai cazzo!"),
                  (null, Speakers.Muark, "Prima mollo la birra in cucina."));
             Job(tom, TomHostsThenSits());
             while (island != null && island.Placed == null) yield return null;
@@ -238,12 +238,12 @@ namespace FantaLandia.Horror.Story
             frontDoor.locked = false;
             frontDoor.knockable = false;
             yield return new WaitForSeconds(1.2f);
-            DialogueSystem.Bark(Speakers.Tom, "Muark, vai a vedere tu? Io qui sto troppo comodo.", Eye(tom));
+            DialogueSystem.Bark(Speakers.Tom, "Muark, vai a vedere tu? Io non c'ho cazzi.", Eye(tom));
 
             bool opened = false;
             System.Action<HorrorDoor> onOpen = d => opened = true;
             frontDoor.Opened += onOpen;
-            Objective = "Andare ad aprire la porta";
+            Objective = "Andare ad aprire la porta (Ma va)";
             frontDoor.requireFront = true; // si apre solo stando davanti: così Roy compare proprio di fronte
             float t = 0f;
             int reminders = 0;
@@ -255,8 +255,8 @@ namespace FantaLandia.Horror.Story
                     t = 0f;
                     reminders++;
                     frontDoor.Knock();
-                    if (reminders == 1) DialogueSystem.Bark(Speakers.Tom, "Muark! La porta!", Eye(tom));
-                    else DialogueSystem.Bark(Speakers.Tom, "Stanno ancora bussando...", Eye(tom));
+                    if (reminders == 1) DialogueSystem.Bark(Speakers.Tom, "Muark! La porta! Cazzo!", Eye(tom));
+                    else DialogueSystem.Bark(Speakers.Tom, "Stanno ancora bussando... Coglione...", Eye(tom));
                 }
                 yield return null;
             }
@@ -274,7 +274,7 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(1.6f);
             yield return LookAt(Eye(tom), 0.9f);
             yield return Talk(DialogueSystem.Conversation().Blocking()
-                .Say(Speakers.Muark, "Ragazzi, non c'è nessuno! Ci hanno fatto uno scherzo.")
+                .Say(Speakers.Muark, "Raga, non c'è nessuno!")
                 .Say(Speakers.Tom, "Saranno i ragazzini dei Kowalski. Chiudi, dai, che entra il freddo."));
             Lock(true);
 
@@ -292,11 +292,11 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(1.6f);
 
             yield return Talk(DialogueSystem.Conversation().Blocking()
-                .Say(Speakers.Roy, "AH AH AH! Dovevi vedere la tua faccia, Muark!")
-                .Choice(new[] { "Roy! Mi hai fatto prendere un colpo!", "Sei un idiota. Entra, dai." }, i =>
+                .Say(Speakers.Roy, "AH AH AH! Dovevi vedere la tua faccia, testa di cazzo!")
+                .Choice(new[] { "Roy! Mi hai fatto prendere un colpo!", "Sei un cazzone. Entra, dai." }, i =>
                 {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Roy, "Lo so, lo so. Sono un genio."));
-                    else DialogueSystem.Insert((Speakers.Roy, "Ti voglio bene anch'io, amico."));
+                    if (i == 0) DialogueSystem.Insert((Speakers.Roy, "Lo so, lo so. Sono un fottuto GENIO."));
+                    else DialogueSystem.Insert((Speakers.Roy, "Vaffanculo anche a te."));
                 }, 8f)
                 .Say(Speakers.Roy, "Allora? Ho sentito che c'è la pizza. Dov'è la pizza?"));
             Lock(false);
@@ -342,7 +342,7 @@ namespace FantaLandia.Horror.Story
             // si comincia quando Roy si è seduto e Muark è davanti al divano (o seduto in salotto)
             for (float w = 0f; w < 25f && !roy.IsSeated; w += Time.deltaTime) yield return null;
             calm = true;
-            Objective = "Stare con gli altri in salotto";
+            Objective = "Stare con gli altri in salotto (Stramboide)";
             Goal((tom, Speakers.Tom, "Muark! Vieni in salotto, dai!"),
                  (roy, Speakers.Roy, "Muark, dove sei finito? Vieni qua!"));
             Vector3 sofaFront = seatRoy.FrontPosition;
@@ -352,14 +352,14 @@ namespace FantaLandia.Horror.Story
             calm = false;
             yield return Gather();
             yield return Talk(DialogueSystem.Conversation()
-                .Say(Speakers.Tom, "Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno.")
-                .Say(Speakers.Roy, "Ancora? È lì dentro da quando sono nato.")
-                .Say(Speakers.Tom, "Ho ordinato due pizze. Ora bisogna solo aspettare la pizza.")
+                .Say(Speakers.Tom, "Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno a cagare.")
+                .Say(Speakers.Roy, "Ancora?")
+                .Say(Speakers.Tom, "Ho ordinato due pizze.")
                 .Choice(new[] { "Che pizze hai preso?", "Speriamo che arrivi presto, ho una fame..." }, i =>
                 {
                     if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Una salame piccante e una con l'ananas. Quella è per Jef."),
-                                                      (Speakers.Roy, "Che schifo."));
-                    else DialogueSystem.Insert((Speakers.Roy, "Anch'io. Mi mangerei il divano."));
+                                                      (Speakers.Roy, "Che merda."));
+                    else DialogueSystem.Insert((Speakers.Roy, "Anch'io. Mi mangerei il pianeta Terra."));
                 }, 8f), tom);
 
             // un po' di cartoni; il botto arriva quando Muark è al piano terra (o dopo un po' comunque)
@@ -385,7 +385,7 @@ namespace FantaLandia.Horror.Story
             Stand(roy);
             yield return new WaitForSeconds(0.4f);
             yield return Talk(DialogueSystem.Conversation()
-                .Say(Speakers.Tom, "Cos'è stato?!")
+                .Say(Speakers.Tom, "Cazzo è stato?!")
                 .Say(Speakers.Roy, "Veniva da dietro! Dal giardino!")
                 .Say(Speakers.Tom, "Andiamo a vedere, presto!"));
 
@@ -393,7 +393,7 @@ namespace FantaLandia.Horror.Story
             SetNeighborChatter(true);
             backDoor.Unlock();
             backDoor.Open(-1);
-            Objective = "Vedere cos'è successo, in giardino";
+            Objective = "Vedere cos'è successo, in giardino (Oh, la trama si infittisce)";
             Goal((tom, Speakers.Tom, "Muark! Qui fuori, in fondo al giardino!"),
                  (roy, Speakers.Roy, "Muark, vieni a vedere! Presto!"));
             Job(tom, Actor(tom).WalkTo(deckTom.position, Gait.Jog, 25f));
@@ -493,12 +493,12 @@ namespace FantaLandia.Horror.Story
             Lock(false);
 
             yield return Talk(DialogueSystem.Conversation().Blocking() // con i vicini la camera va su chi parla
-                .Say(Speakers.Tom, "Guardate là... quanto fumo!")
-                .Say(Speakers.Roy, "Sarà saltata una conduttura del gas. O un distributore.")
-                .Choice(new[] { "Sembra vicino... a qualche isolato da qui.", "Speriamo che non ci sia nessun ferito." }, i =>
+                .Say(Speakers.Tom, "Guardate là... quanto fumo cazzo!")
+                .Say(Speakers.Roy, "Sarà saltata una conduttura del gas.")
+                .Choice(new[] { "Sembra vicino...", "Speriamo che non ci rovini la festa." }, i =>
                 {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Verso la vecchia centrale, forse. Dietro Elm Street."));
-                    else DialogueSystem.Insert((Speakers.Roy, "Già... senti quante sirene."));
+                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Verso la vecchia centrale, dietro Elm Street."));
+                    else DialogueSystem.Insert((Speakers.Roy, "Muark, un po' di empatia... cazzo!"));
                 }, 8f)
                 .Do(() => Job(jef, JefRunsOut()))   // intanto Jef esce dal bagno e arriva di corsa
                 .Say(Speakers.Gary, "Ehi, Tom! L'avete sentita anche voi?!")
@@ -563,7 +563,7 @@ namespace FantaLandia.Horror.Story
                 .Choice(new[] { "Non lo so. C'è stata un'esplosione.", "Jef! Sei vivo! Pensavamo fossi caduto nel water." }, i =>
                 {
                     if (i == 0) DialogueSystem.Insert((Speakers.Jef, "...Un'esplosione."));
-                    else DialogueSystem.Insert((Speakers.Jef, "Molto divertente."), (Speakers.Roy, "Ti sei perso tutto, amico."));
+                    else DialogueSystem.Insert((Speakers.Jef, "Molto divertente."), (Speakers.Roy, "Ti sei perso Muark che se la faceva addosso, amico."));
                 }, 8f)
                 .Say(Speakers.Tom, "Torniamo dentro. Magari in TV dicono qualcosa."), jef, 9f);
         }
@@ -572,7 +572,7 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator BackToTheTv()
         {
-            Objective = "Tornare dentro con gli altri";
+            Objective = "Tornare dentro con gli altri (Fighette)";
             Goal((tom, Speakers.Tom, "Muark, rientra! Dai."),
                  (roy, Speakers.Roy, "Muark, non restare lì fuori da solo!"));
             Job(tom, SitOn(tom));
@@ -587,7 +587,7 @@ namespace FantaLandia.Horror.Story
             if (tv != null) tv.SetChannel(TvChannel.Static);
             yield return Gather();
             yield return Talk(DialogueSystem.Conversation()
-                .Say(Speakers.Tom, "Ma che... c'è solo la neve.")
+                .Say(Speakers.Tom, "Ma che... c'è solo statica.")
                 .Do(() => StartCoroutine(ChannelSurf(3)))
                 .Say(Speakers.Roy, "Cambia canale, dai!")
                 .Say(Speakers.Tom, "Ci sto provando! Canale 4... canale 7...")
@@ -610,7 +610,7 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(2.5f);
 
             // chi era in giro torna (al buio) dagli altri; Muark viene chiamato se è lontano
-            Objective = "Raggiungere gli altri in salotto";
+            Objective = "Raggiungere gli altri in salotto (Vai vicino ai tuoi amici frocione)";
             Goal((tom, Speakers.Tom, "Muark?! Dove sei? Vieni qui, in salotto!"),
                  (roy, Speakers.Roy, "Muark! Non si vede niente, torna qui!"));
             yield return Gather();
@@ -618,34 +618,34 @@ namespace FantaLandia.Horror.Story
             ClearGoal();
 
             yield return Talk(DialogueSystem.Conversation()
-                .Say(Speakers.Roy, "Ehi! Chi ha spento la luce?")
+                .Say(Speakers.Roy, "Merda, un blackout?")
                 .Say(Speakers.Tom, "È saltata la corrente... Guardate fuori: è buio tutto il quartiere.")
                 .Say(Speakers.Tom, "Ve lo dico io: sono i terroristi. Prima l'esplosione, adesso questo.")
-                .Say(Speakers.Roy, "Terroristi? A Maple Grove? Sono gli alieni, amico. Fidati.")
-                .Choice(new[] { "Smettetela, mi state mettendo ansia.", "Jef, tu che ne pensi?" }, i =>
+                .Say(Speakers.Roy, "Terroristi? Sono gli alieni, amico. Fidati.")
+                .Choice(new[] { "Siete rincoglioniti.", "Jef, tu che ne pensi?" }, i =>
                 {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Roy, "Ansia? Io? Ma figurati."));
+                    if (i == 0) DialogueSystem.Insert((Speakers.Roy, "Cazzo, può essere."));
                     else DialogueSystem.Insert((Speakers.Jef, "..."), (Speakers.Tom, "Jef?"), (Speakers.Jef, "..."));
                 }, 8f)
-                .Say(Speakers.Tom, "Aspettate! In cantina c'è il generatore d'emergenza. Mio padre l'ha comprato per gli uragani.")
+                .Say(Speakers.Tom, "Aspettate! In cantina c'è il generatore d'emergenza.")
                 .Say(Speakers.Roy, "Grande! Vai.")
-                .Say(Speakers.Tom, "Io? Neanche morto, laggiù non ci scendo. Facciamo così: sasso, carta, forbice. Chi perde va giù.")
+                .Say(Speakers.Tom, "Io? Neanche morto. Facciamo così: sasso, carta, forbice. Chi perde va giù.")
                 .Say(Speakers.Tom, "Muark, tu contro di me. Pronto? Sasso... carta... forbice!")
-                .Choice(new[] { "Sasso!", "Carta!", "Forbice!" }, i =>
+                .Choice(new[] { "Sasso!", "Carta!", "Fottiti!" }, i =>
                 {
                     // Tom vince sempre
-                    string[] tomPlays = { "Carta! Carta batte sasso.", "Forbice! Forbice batte carta.", "Sasso! Sasso batte forbice." };
-                    DialogueSystem.Insert((Speakers.Tom, tomPlays[i] + " Ho vinto!"),
+                    string[] tomPlays = { "Carta! Carta batte sasso.", "Forbice! Forbice batte carta.", "Gli scorbutici vanno in cantina, sono le regole della casa." };
+                    DialogueSystem.Insert((Speakers.Tom, i < 2 ? tomPlays[i] + " Ho vinto!" : tomPlays[i]),
                                           (Speakers.Roy, "Muark va in cantina! Muark va in cantina!"));
                 }, 8f, () => DialogueSystem.Insert((Speakers.Tom, "Troppo lento! Hai perso a tavolino."),
                                                    (Speakers.Roy, "Muark va in cantina! Muark va in cantina!")))
-                .Choice(new[] { "Ma dai! Al meglio di tre?", "Va bene, va bene... ci vado io." }, i =>
+                .Choice(new[] { "Cazzo!", "Va bene, va bene... ci vado io." }, i =>
                 {
-                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Niente rivincite. Le regole sono regole."));
+                    if (i == 0) DialogueSystem.Insert((Speakers.Tom, "Le regole sono regole."));
                     else DialogueSystem.Insert((Speakers.Tom, "Bravo. Così si fa."));
                 }, 8f)
                 .Say(Speakers.Tom, "C'è una torcia sul bancone della cucina. La porta della cantina è quella accanto all'isola.")
-                .Say(Speakers.Jef, "Stai attento, laggiù."), tom);
+                .Say(Speakers.Jef, "Stai attento, laggiù, non cadere e non fartela addosso."), tom);
             if (generator != null) generator.armed = true;
         }
 
@@ -680,19 +680,19 @@ namespace FantaLandia.Horror.Story
             {
                 PutTorchBack();
                 StartCoroutine(HighlightTorchUntilTaken());
-                Objective = "Prendere la torcia in cucina";
+                Objective = "Prendere la torcia in cucina (Si inizia)";
                 Goal((tom, Speakers.Tom, "La torcia è sul bancone in cucina, Muark."),
                      (roy, Speakers.Roy, "Che c'è, Muark? Hai paura del buio?"));
                 while (!flashlight.HasFlashlight && !PlayerInBasement && !started) yield return null;
             }
             if (!PlayerInBasement && !started)
             {
-                Objective = "Scendere in cantina";
+                Objective = "Scendere in cantina (Allora...)";
                 Goal((tom, Speakers.Tom, "Muark? La cantina è da quella parte, accanto all'isola."),
                      (roy, Speakers.Roy, "Ehi, il generatore non si accende da solo!"));
                 while (!PlayerInBasement && !started) yield return null;
             }
-            Objective = "Accendere il generatore";
+            Objective = "Accendere il generatore (...)";
             Goal((null, Speakers.Muark, "Il generatore... cerca quella lucina rossa."),
                  (null, Speakers.Muark, "Tira la corda e torna su, Muark. Facile."));
             droneTarget = 0.22f;
@@ -711,7 +711,7 @@ namespace FantaLandia.Horror.Story
             DialogueSystem.Bark(Speakers.Muark, "Sì! Ce l'ho fatta.");
             yield return new WaitForSeconds(2.2f);
 
-            Objective = "Tornare di sopra dagli altri";
+            Objective = "Tornare di sopra dagli altri (Beh, non è successo niente)";
             Goal((roy, Speakers.Roy, "Muark! Sali, presto!"),
                  (null, Speakers.Muark, "Devo tornare di sopra."));
 
@@ -849,7 +849,7 @@ namespace FantaLandia.Horror.Story
         IEnumerator News()
         {
             calm = false;
-            Objective = "Guardare il notiziario con gli altri";
+            Objective = "Guardare il notiziario con gli altri (Oh... Lore)";
             Goal((roy, Speakers.Roy, "Muark! Il notiziario! Sbrigati!"),
                  (tom, Speakers.Tom, "Muark, vieni qui! Subito!"));
             StartCoroutine(Gather());
@@ -876,7 +876,7 @@ namespace FantaLandia.Horror.Story
 
             // la TV perde il segnale, poi il buio
             if (tv != null) tv.SetChannel(TvChannel.Static);
-            Objective = "Sopravvivere fino a domattina";
+            Objective = "Sopravvivere fino a domattina (Non credo che ce la farai bro)";
             HorrorAudio.Play2D(ProceduralAudio.Whisper(), 0.25f, 0.7f);
             yield return new WaitForSeconds(2.5f);
             Lock(true);

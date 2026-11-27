@@ -4,7 +4,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 164,
   "speaker": "taccuino",
-  "text": "Bussare alla porta di Tom",
+  "text": "Bussare alla porta di Tom (Muoviti si gela coglione)",
   "kind": "obiettivo"
  },
  {
@@ -28,7 +28,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 180,
   "speaker": "tom",
-  "text": "Arrivo, arrivo!",
+  "text": "Arrivo, arrivo cazzo!",
   "kind": "battuta"
  },
  {
@@ -44,7 +44,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 193,
   "speaker": "muark",
-  "text": "Ho portato la birra, come promesso.",
+  "text": "Ho portato la birra cazzo.",
   "kind": "scelta"
  },
  {
@@ -60,7 +60,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 195,
   "speaker": "tom",
-  "text": "Grande! Mettila sull'isola in cucina, va.",
+  "text": "Grande! Mettila sull'isola in cucina, dai.",
   "kind": "battuta"
  },
  {
@@ -68,7 +68,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 196,
   "speaker": "tom",
-  "text": "Traffico? Abiti a due isolati...",
+  "text": "Traffico? Abiti a due isolati frocio...",
   "kind": "battuta"
  },
  {
@@ -84,7 +84,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 198,
   "speaker": "tom",
-  "text": "Muark? Tutto bene? Sembri congelato.",
+  "text": "Muark? Tutto bene? Sembri una fighetta congelata.",
   "kind": "battuta"
  },
  {
@@ -100,7 +100,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 200,
   "speaker": "tom",
-  "text": "Jef è in bagno. Da mezz'ora. Non chiedere.",
+  "text": "Jef è in bagno. Da mezz'ora. Che rincoglionito.",
   "kind": "battuta"
  },
  {
@@ -108,7 +108,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 202,
   "speaker": "taccuino",
-  "text": "Posare la birra in cucina",
+  "text": "Posare la birra in cucina (Deficiente)",
   "kind": "obiettivo"
  },
  {
@@ -116,7 +116,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 203,
   "speaker": "tom",
-  "text": "Muark, la birra! In cucina, sull'isola.",
+  "text": "Muark, la birra! In cucina, sull'isola. Dai cazzo!",
   "kind": "battuta"
  },
  {
@@ -132,7 +132,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 241,
   "speaker": "tom",
-  "text": "Muark, vai a vedere tu? Io qui sto troppo comodo.",
+  "text": "Muark, vai a vedere tu? Io non c'ho cazzi.",
   "kind": "battuta"
  },
  {
@@ -140,7 +140,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 246,
   "speaker": "taccuino",
-  "text": "Andare ad aprire la porta",
+  "text": "Andare ad aprire la porta (Ma va)",
   "kind": "obiettivo"
  },
  {
@@ -148,7 +148,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 258,
   "speaker": "tom",
-  "text": "Muark! La porta!",
+  "text": "Muark! La porta! Cazzo!",
   "kind": "battuta"
  },
  {
@@ -156,7 +156,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 259,
   "speaker": "tom",
-  "text": "Stanno ancora bussando...",
+  "text": "Stanno ancora bussando... Coglione...",
   "kind": "battuta"
  },
  {
@@ -172,7 +172,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 277,
   "speaker": "muark",
-  "text": "Ragazzi, non c'è nessuno! Ci hanno fatto uno scherzo.",
+  "text": "Raga, non c'è nessuno!",
   "kind": "battuta"
  },
  {
@@ -196,7 +196,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 295,
   "speaker": "roy",
-  "text": "AH AH AH! Dovevi vedere la tua faccia, Muark!",
+  "text": "AH AH AH! Dovevi vedere la tua faccia, testa di cazzo!",
   "kind": "battuta"
  },
  {
@@ -212,7 +212,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 296,
   "speaker": "muark",
-  "text": "Sei un idiota. Entra, dai.",
+  "text": "Sei un cazzone. Entra, dai.",
   "kind": "scelta"
  },
  {
@@ -220,7 +220,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 298,
   "speaker": "roy",
-  "text": "Lo so, lo so. Sono un genio.",
+  "text": "Lo so, lo so. Sono un fottuto GENIO.",
   "kind": "battuta"
  },
  {
@@ -228,7 +228,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 299,
   "speaker": "roy",
-  "text": "Ti voglio bene anch'io, amico.",
+  "text": "Vaffanculo anche a te.",
   "kind": "battuta"
  },
  {
@@ -244,7 +244,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 345,
   "speaker": "taccuino",
-  "text": "Stare con gli altri in salotto",
+  "text": "Stare con gli altri in salotto (Stramboide)",
   "kind": "obiettivo"
  },
  {
@@ -268,7 +268,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 355,
   "speaker": "tom",
-  "text": "Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno.",
+  "text": "Eccoci qua. Beh, quasi tutti: Jef è ancora in bagno a cagare.",
   "kind": "battuta"
  },
  {
@@ -276,7 +276,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 356,
   "speaker": "roy",
-  "text": "Ancora? È lì dentro da quando sono nato.",
+  "text": "Ancora?",
   "kind": "battuta"
  },
  {
@@ -284,7 +284,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 357,
   "speaker": "tom",
-  "text": "Ho ordinato due pizze. Ora bisogna solo aspettare la pizza.",
+  "text": "Ho ordinato due pizze.",
   "kind": "battuta"
  },
  {
@@ -316,7 +316,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 361,
   "speaker": "roy",
-  "text": "Che schifo.",
+  "text": "Che merda.",
   "kind": "battuta"
  },
  {
@@ -324,7 +324,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 362,
   "speaker": "roy",
-  "text": "Anch'io. Mi mangerei il divano.",
+  "text": "Anch'io. Mi mangerei il pianeta Terra.",
   "kind": "battuta"
  },
  {
@@ -332,7 +332,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 388,
   "speaker": "tom",
-  "text": "Cos'è stato?!",
+  "text": "Cazzo è stato?!",
   "kind": "battuta"
  },
  {
@@ -356,7 +356,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 396,
   "speaker": "taccuino",
-  "text": "Vedere cos'è successo, in giardino",
+  "text": "Vedere cos'è successo, in giardino (Oh, la trama si infittisce)",
   "kind": "obiettivo"
  },
  {
@@ -444,7 +444,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 496,
   "speaker": "tom",
-  "text": "Guardate là... quanto fumo!",
+  "text": "Guardate là... quanto fumo cazzo!",
   "kind": "battuta"
  },
  {
@@ -452,7 +452,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 497,
   "speaker": "roy",
-  "text": "Sarà saltata una conduttura del gas. O un distributore.",
+  "text": "Sarà saltata una conduttura del gas.",
   "kind": "battuta"
  },
  {
@@ -460,7 +460,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 498,
   "speaker": "muark",
-  "text": "Sembra vicino... a qualche isolato da qui.",
+  "text": "Sembra vicino...",
   "kind": "scelta"
  },
  {
@@ -468,7 +468,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 498,
   "speaker": "muark",
-  "text": "Speriamo che non ci sia nessun ferito.",
+  "text": "Speriamo che non ci rovini la festa.",
   "kind": "scelta"
  },
  {
@@ -476,7 +476,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 500,
   "speaker": "tom",
-  "text": "Verso la vecchia centrale, forse. Dietro Elm Street.",
+  "text": "Verso la vecchia centrale, dietro Elm Street.",
   "kind": "battuta"
  },
  {
@@ -484,7 +484,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 501,
   "speaker": "roy",
-  "text": "Già... senti quante sirene.",
+  "text": "Muark, un po' di empatia... cazzo!",
   "kind": "battuta"
  },
  {
@@ -572,7 +572,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 566,
   "speaker": "roy",
-  "text": "Ti sei perso tutto, amico.",
+  "text": "Ti sei perso Muark che se la faceva addosso, amico.",
   "kind": "battuta"
  },
  {
@@ -588,7 +588,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 575,
   "speaker": "taccuino",
-  "text": "Tornare dentro con gli altri",
+  "text": "Tornare dentro con gli altri (Fighette)",
   "kind": "obiettivo"
  },
  {
@@ -612,7 +612,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 590,
   "speaker": "tom",
-  "text": "Ma che... c'è solo la neve.",
+  "text": "Ma che... c'è solo statica.",
   "kind": "battuta"
  },
  {
@@ -652,7 +652,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 613,
   "speaker": "taccuino",
-  "text": "Raggiungere gli altri in salotto",
+  "text": "Raggiungere gli altri in salotto (Vai vicino ai tuoi amici frocione)",
   "kind": "obiettivo"
  },
  {
@@ -676,7 +676,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 621,
   "speaker": "roy",
-  "text": "Ehi! Chi ha spento la luce?",
+  "text": "Merda, un blackout?",
   "kind": "battuta"
  },
  {
@@ -700,7 +700,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 624,
   "speaker": "roy",
-  "text": "Terroristi? A Maple Grove? Sono gli alieni, amico. Fidati.",
+  "text": "Terroristi? Sono gli alieni, amico. Fidati.",
   "kind": "battuta"
  },
  {
@@ -708,7 +708,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 625,
   "speaker": "muark",
-  "text": "Smettetela, mi state mettendo ansia.",
+  "text": "Siete rincoglioniti.",
   "kind": "scelta"
  },
  {
@@ -724,7 +724,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 627,
   "speaker": "roy",
-  "text": "Ansia? Io? Ma figurati.",
+  "text": "Cazzo, può essere.",
   "kind": "battuta"
  },
  {
@@ -756,7 +756,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 630,
   "speaker": "tom",
-  "text": "Aspettate! In cantina c'è il generatore d'emergenza. Mio padre l'ha comprato per gli uragani.",
+  "text": "Aspettate! In cantina c'è il generatore d'emergenza.",
   "kind": "battuta"
  },
  {
@@ -772,7 +772,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 632,
   "speaker": "tom",
-  "text": "Io? Neanche morto, laggiù non ci scendo. Facciamo così: sasso, carta, forbice. Chi perde va giù.",
+  "text": "Io? Neanche morto. Facciamo così: sasso, carta, forbice. Chi perde va giù.",
   "kind": "battuta"
  },
  {
@@ -804,7 +804,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 634,
   "speaker": "muark",
-  "text": "Forbice!",
+  "text": "Fottiti!",
   "kind": "scelta"
  },
  {
@@ -828,7 +828,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 637,
   "speaker": "tom",
-  "text": "Sasso! Sasso batte forbice.",
+  "text": "Gli scorbutici vanno in cantina, sono le regole della casa.",
   "kind": "battuta"
  },
  {
@@ -860,7 +860,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 642,
   "speaker": "muark",
-  "text": "Ma dai! Al meglio di tre?",
+  "text": "Cazzo!",
   "kind": "scelta"
  },
  {
@@ -876,7 +876,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 644,
   "speaker": "tom",
-  "text": "Niente rivincite. Le regole sono regole.",
+  "text": "Le regole sono regole.",
   "kind": "battuta"
  },
  {
@@ -900,7 +900,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 648,
   "speaker": "jef",
-  "text": "Stai attento, laggiù.",
+  "text": "Stai attento, laggiù, non cadere e non fartela addosso.",
   "kind": "battuta"
  },
  {
@@ -908,7 +908,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 683,
   "speaker": "taccuino",
-  "text": "Prendere la torcia in cucina",
+  "text": "Prendere la torcia in cucina (Si inizia)",
   "kind": "obiettivo"
  },
  {
@@ -932,7 +932,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 690,
   "speaker": "taccuino",
-  "text": "Scendere in cantina",
+  "text": "Scendere in cantina (Allora...)",
   "kind": "obiettivo"
  },
  {
@@ -956,7 +956,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 695,
   "speaker": "taccuino",
-  "text": "Accendere il generatore",
+  "text": "Accendere il generatore (...)",
   "kind": "obiettivo"
  },
  {
@@ -988,7 +988,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 714,
   "speaker": "taccuino",
-  "text": "Tornare di sopra dagli altri",
+  "text": "Tornare di sopra dagli altri (Beh, non è successo niente)",
   "kind": "obiettivo"
  },
  {
@@ -1060,7 +1060,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 852,
   "speaker": "taccuino",
-  "text": "Guardare il notiziario con gli altri",
+  "text": "Guardare il notiziario con gli altri (Oh... Lore)",
   "kind": "obiettivo"
  },
  {
@@ -1188,7 +1188,7 @@
   "file": "Assets/_Project/Horror/Scripts/Story/StoryDirector.cs",
   "line": 879,
   "speaker": "taccuino",
-  "text": "Sopravvivere fino a domattina",
+  "text": "Sopravvivere fino a domattina (Non credo che ce la farai bro)",
   "kind": "obiettivo"
  },
  {

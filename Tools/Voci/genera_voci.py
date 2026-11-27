@@ -78,8 +78,12 @@ def collect():
         for who, text in re.findall(r'"(' + IDS + r')\|((?:[^"\\]|\\.)*)"', src):
             lines.add((who, unescape(text)))
     # battute costruite dal codice (non sono stringhe intere nel sorgente)
-    for p in ["Carta! Carta batte sasso.", "Forbice! Forbice batte carta.", "Sasso! Sasso batte forbice."]:
-        lines.add(("tom", p + " Ho vinto!"))
+    # le giocate di Tom a sasso-carta-forbice (tomPlays nello StoryDirector): le prime due finiscono con "Ho vinto!"
+    src = open(os.path.join(SCRIPTS, "Story/StoryDirector.cs"), encoding="utf-8").read()
+    m = re.search(r"tomPlays\s*=\s*\{([^}]*)\}", src)
+    if m:
+        for k, p in enumerate(re.findall(STR, m.group(1))):
+            lines.add(("tom", unescape(p) + (" Ho vinto!" if k < 2 else "")))
     for t in ["Dai...", "Avanti, parti!", "Ti prego, ti prego..."]: lines.add(("muark", t))
     for who in ["tom", "roy", "jef"]:
         for t in ["Ehi, Muark! Dove vai?", "Muark? Ti sto parlando!", "Ehi! Torna qui, dai.", "Ehi, spazio vitale!", "Mi stai addosso, amico.", "...Sì?"]:
