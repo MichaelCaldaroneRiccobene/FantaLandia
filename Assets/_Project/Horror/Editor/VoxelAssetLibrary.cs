@@ -301,7 +301,15 @@ namespace FantaLandia.Horror.EditorTools
             v.Fill(27, 0, 8, 28, 2, 9, band); v.Fill(27, 0, 12, 28, 2, 13, band);   // elastico
             v.Fill(20, 1, -3, 21, 2, 1, ribbon);                                 // segnalibro che pende
             v.Set(5, 1, 15, coffee); v.Set(6, 1, 15, coffee); v.Set(5, 1, 16, coffee); // macchia di caffè
-            return Save("Taccuino", v, new Vector3(14f * v.size, 0f, 10f * v.size), false);
+            // lucina da lettura a molletta sul bordo in alto a destra: pinza, collo flessibile, testina con la lampadina
+            int clip = v.C("#2a2a2c"), neck = v.C("#3a3a3e"), bulb = v.C("#fff0c0");
+            v.Fill(24, -1, 19, 27, 3, 21, clip);
+            for (int y = 3; y < 7; y++) v.Set(25, y, 20, neck);
+            v.Set(25, 7, 19, neck); v.Set(25, 7, 18, neck);
+            v.Fill(24, 6, 15, 27, 8, 18, clip);
+            v.Fill(24, 5, 16, 27, 6, 17, bulb);
+            return Save("Taccuino", v, new Vector3(14f * v.size, 0f, 10f * v.size), false,
+                c => c.r > 0.95f && c.g > 0.9f && c.b > 0.7f ? EditorAssetUtil.Emissive("Lucina taccuino", c, 3f) : null);
         }
 
         /// <summary>Lampione di periferia (cubetti da 15 cm).</summary>

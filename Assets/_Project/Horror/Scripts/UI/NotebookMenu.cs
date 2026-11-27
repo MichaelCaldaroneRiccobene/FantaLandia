@@ -31,7 +31,12 @@ namespace FantaLandia.Horror.UI
         Text leftText, rightText;
         float openT;            // 0 chiuso .. 1 aperto
         bool wantOpen;
-        float savedPitch;
+        float savedPitch, menuYaw;
+        [Tooltip("Il taccuino si apre da solo appena finisce l'intro (fa da menu iniziale)")]
+        public bool openOnStart = true;
+        /// <summary>Ricominciando da un salvataggio non si riapre da solo.</summary>
+        public static bool SuppressAutoOpen;
+        bool autoOpened, firstOpen = true;
 
         enum Page { Main, Settings }
         Page page = Page.Main;
@@ -65,6 +70,15 @@ namespace FantaLandia.Horror.UI
             foreach (var r in notebook.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             foreach (var t in notebook.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = 2;
 
+            // la lucina da lettura agganciata in cima al taccuino: illumina le pagine
+            var lamp = new GameObject("Lucina del taccuino").AddComponent<Light>();
+            lamp.transform.SetParent(notebook, false);
+            lamp.transform.localPosition = new Vector3(0.115f, 0.075f, 0.055f);
+            lamp.type = LightType.Point;
+            lamp.range = 0.45f;
+            lamp.intensity = 1.1f;
+            lamp.color = new Color(1f, 0.86f, 0.62f);
+            lamp.shadows = LightShadows.None;
             leftText = PageText(new Vector3(-0.07f, 0.0215f, 0f));
             rightText = PageText(new Vector3(0.07f, 0.0215f, 0f));
             notebook.gameObject.SetActive(false);
@@ -115,6 +129,7 @@ namespace FantaLandia.Horror.UI
             cursor = 0;
             confirmIndex = -1;
             savedPitch = fpc.Pitch;
+            menuYaw = fpc.Yaw; // il taccuino resta davanti a dove si guardava: la visuale lo raggiunge senza inseguirlo
             fpc.inputLocked = true;
             if (interactor != null) interactor.interactionEnabled = false;
             notebook.gameObject.SetActive(true);
@@ -124,6 +139,7 @@ namespace FantaLandia.Horror.UI
 
         void Close()
         {
+            firstOpen = false;
             wantOpen = false;
             confirmIndex = -1;
             HorrorAudio.Play2D(ProceduralAudio.PickUp(), 0.4f, 0.9f);
@@ -135,6 +151,13 @@ namespace FantaLandia.Horror.UI
 
             if (!IsOpen)
             {
+                // all'avvio (finita l'intro) il taccuino è già aperto: è il menu iniziale
+                if (openOnStart && !autoOpened && !IntroSequence.Active && CanOpen)
+                {
+                    autoOpened = true;
+                    if (SuppressAutoOpen) SuppressAutoOpen = false;
+                    else { Open(); return; }
+                }
                 if (GameInput.MenuToggle && CanOpen) Open();
                 return;
             }
@@ -156,18 +179,20 @@ namespace FantaLandia.Horror.UI
             if (!IsOpen || fpc == null || fpc.cam == null) return;
             float e = openT * openT * (3f - 2f * openT);
             Transform root = fpc.transform;
-            Vector3 fwd = root.forward, right = root.right;
+            Quaternion basis = Quaternion.Euler(0f, menuYaw, 0f);
+            Vector3 fwd = basis * Vector3.forward, right = basis * Vector3.right;
             // dalla tasca (fianco destro, in basso) a davanti al petto
             Vector3 pocket = root.position + Vector3.up * 0.9f + right * 0.25f + fwd * 0.1f;
-            Vector3 hold = root.position + Vector3.up * 1.18f + fwd * 0.4f + right * 0.03f;
+            Vector3 hold = root.position + Vector3.up * 1.4f + fwd * 0.42f;
             notebook.position = Vector3.Lerp(pocket, hold, e);
-            notebook.rotation = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.Euler(Mathf.Lerp(-80f, -42f, e), 0f, Mathf.Lerp(-30f, 0f, e));
+            notebook.rotation = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.Euler(Mathf.Lerp(-80f, -58f, e), 0f, Mathf.Lerp(-30f, 0f, e));
             notebook.localScale = Vector3.one * Mathf.Lerp(0.6f, 1f, e);
 
             // la mano destra tiene il taccuino dal bordo destro
             if (anim != null)
             {
-                Vector3 grip = notebook.TransformPoint(new Vector3(0.12f, -0.025f, -0.03f));
+                // sotto l'angolo in basso a destra: il braccio arriva da sotto e non copre le pagine
+                Vector3 grip = notebook.TransformPoint(new Vector3(0.12f, -0.03f, -0.07f));
                 Vector3 pole = right * 0.8f + Vector3.down * 0.6f - fwd * 0.2f;
                 anim.SetExternalHandIK(1, grip, pole, Mathf.Clamp01(openT * 1.5f), null);
             }
@@ -189,7 +214,7 @@ namespace FantaLandia.Horror.UI
             var list = new List<Item>();
             if (page == Page.Main)
             {
-                list.Add(new Item { label = "Riprendi", confirm = Close });
+                list.Add(new Item { label = firstOpen ? "Gioca" : "Riprendi", confirm = Close });
                 list.Add(new Item { label = "Impostazioni", confirm = () => { page = Page.Settings; cursor = 0; } });
                 if (GameSettings.Checkpoint > 0)
                     list.Add(new Item { label = "Ricomincia dall'ultimo punto", ask = true, confirm = () => Restart(GameSettings.Checkpoint) });
@@ -286,6 +311,7 @@ namespace FantaLandia.Horror.UI
 
         void Restart(int startAt)
         {
+            SuppressAutoOpen = true;
             FantaLandia.Horror.Story.StoryDirector.PendingStart = startAt;
             IntroSequence.SkipLogo = true;
             IsOpen = false;
