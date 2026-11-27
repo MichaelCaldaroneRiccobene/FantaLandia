@@ -198,7 +198,7 @@ namespace FantaLandia.Horror.UI
             Vector3 fwd = basis * Vector3.forward, right = basis * Vector3.right;
             // dalla tasca (fianco destro, in basso) a davanti al petto
             Vector3 pocket = root.position + Vector3.up * 0.9f + right * 0.25f + fwd * 0.1f;
-            Vector3 hold = root.position + Vector3.up * 1.4f + fwd * 0.42f;
+            Vector3 hold = root.position + Vector3.up * 1.38f + fwd * 0.5f;
             notebook.position = Vector3.Lerp(pocket, hold, e);
             notebook.rotation = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.Euler(Mathf.Lerp(-80f, -58f, e), 0f, Mathf.Lerp(-30f, 0f, e));
             notebook.localScale = Vector3.one * Mathf.Lerp(0.6f, 1f, e);
@@ -206,9 +206,9 @@ namespace FantaLandia.Horror.UI
             // la mano destra tiene il taccuino dal bordo destro
             if (anim != null)
             {
-                // sotto l'angolo in basso a destra: il braccio arriva da sotto e non copre le pagine
-                Vector3 grip = notebook.TransformPoint(new Vector3(0.12f, -0.03f, -0.07f));
-                Vector3 pole = right * 0.8f + Vector3.down * 0.6f - fwd * 0.2f;
+                // la mano stringe il bordo destro da fuori (pollice sul bordo): niente braccio attraverso le pagine
+                Vector3 grip = notebook.TransformPoint(new Vector3(0.175f, -0.005f, -0.035f));
+                Vector3 pole = right * 1f + Vector3.down * 0.7f;
                 anim.SetExternalHandIK(1, grip, pole, Mathf.Clamp01(openT * 1.5f), null);
             }
 
