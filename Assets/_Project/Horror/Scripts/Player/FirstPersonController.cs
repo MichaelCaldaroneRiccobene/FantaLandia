@@ -48,6 +48,8 @@ namespace FantaLandia.Horror.Player
         public float roll;
         [Tooltip("La regia vieta la corsa (es. seguendo Tom al buio)")]
         public bool noRun;
+        [Tooltip("Da seduti ci si può alzare (la regia può impedirlo, es. all'inizio del capitolo 2)")]
+        public bool canStandUp = true;
 
         /// <summary>Una spinta improvvisa (un'esplosione, un colpo): si vola all'indietro e la spinta si smorza da sola.</summary>
         public void Push(Vector3 impulse)
@@ -117,7 +119,7 @@ namespace FantaLandia.Horror.Player
                 Vector2 md = GameInput.MouseDelta * mouseSensitivity * FantaLandia.Horror.UI.GameSettings.Sensitivity;
                 yaw = seatYaw + Mathf.Clamp(Mathf.DeltaAngle(seatYaw, yaw + md.x), -110f, 110f);
                 pitch = Mathf.Clamp(pitch - md.y, -70f, 75f);
-                if (GameInput.StandUp) StandUp();
+                if (GameInput.StandUp && canStandUp) StandUp();
             }
 
             // --- guardarsi intorno
@@ -281,7 +283,7 @@ namespace FantaLandia.Horror.Player
 
         void OnGUI()
         {
-            if (!IsSeated || sitting || inputLocked || DialogueSystem.IsTalking) return;
+            if (!IsSeated || sitting || inputLocked || !canStandUp || DialogueSystem.IsTalking) return;
             var st = FantaLandia.Horror.UI.UiStyle.Text(18, TextAnchor.MiddleLeft, false);
             float x = Screen.width * 0.5f - 90f, y = Screen.height - 46f;
             float kw = FantaLandia.Horror.UI.UiStyle.KeyCap(x, y, "WASD", 24f, 0.7f);

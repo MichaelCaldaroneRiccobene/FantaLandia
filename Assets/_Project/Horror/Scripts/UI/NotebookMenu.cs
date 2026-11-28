@@ -160,19 +160,21 @@ namespace FantaLandia.Horror.UI
             leftContent = Group("Diario");
             rightContent = Group("Menu");
 
-            // la mano di Muark: tiene l'angolo in basso a destra, fuori dalla pagina (manica di flanella verde)
-            var sleeve = Img(book, null, new Color32(42, 78, 52, 255));
-            Place(sleeve.rectTransform, BookW + 10f, BookH - 30f, 420f, 230f);
-            sleeve.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 28f);
-            var cuff = Img(book, null, new Color32(30, 56, 38, 255));
-            Place(cuff.rectTransform, BookW - 2f, BookH - 40f, 40f, 230f);
-            cuff.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 28f);
-            var hand = Img(book, null, new Color32(196, 150, 112, 255));
-            Place(hand.rectTransform, BookW - 95f, BookH - 55f, 150f, 105f);
-            hand.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 22f);
-            var thumb = Img(book, null, new Color32(214, 170, 132, 255));
-            Place(thumb.rectTransform, BookW - 110f, BookH - 62f, 62f, 34f);
-            thumb.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 22f);
+            // la mano di Muark: la manica di flanella verde a quadri, il polsino con il bottone, la mano che stringe
+            // l'angolo in basso a destra (il pollice appoggiato sull'angolo della pagina, le dita dietro la copertina)
+            var sleeve = new GameObject("Manica", typeof(RectTransform)).AddComponent<RawImage>();
+            sleeve.texture = FlannelTexture(210, 120);
+            sleeve.raycastTarget = false;
+            sleeve.rectTransform.SetParent(book, false);
+            Place(sleeve.rectTransform, 0f, 0f, 460f, 220f);
+            sleeve.rectTransform.pivot = new Vector2(0f, 0.5f);          // parte dal polso e scende fuori dallo schermo
+            sleeve.rectTransform.anchoredPosition = new Vector2(BookW + 80f, -(BookH + 125f));
+            sleeve.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -38f);
+            var hand = new GameObject("Mano", typeof(RectTransform)).AddComponent<RawImage>();
+            hand.texture = HandTexture();
+            hand.raycastTarget = false;
+            hand.rectTransform.SetParent(book, false);
+            Place(hand.rectTransform, BookW - 236f, BookH - 160f, 380f, 320f);
 
             LayoutTabs();
         }
@@ -895,6 +897,94 @@ namespace FantaLandia.Horror.UI
             t.SetPixels32(px);
             t.Apply(false);
             return t;
+        }
+
+        /// <summary>Un tratto colorato (sopra quello che c'è già, con i bordi morbidi): per dipingere la mano.</summary>
+        static void Paint(Color32[] px, int w, int h, float x0, float y0, float x1, float y1, float width, Color32 col)
+        {
+            float r = width * 0.5f;
+            int minX = Mathf.Max(0, (int)(Mathf.Min(x0, x1) - r - 2)), maxX = Mathf.Min(w - 1, (int)(Mathf.Max(x0, x1) + r + 2));
+            int minY = Mathf.Max(0, (int)(Mathf.Min(y0, y1) - r - 2)), maxY = Mathf.Min(h - 1, (int)(Mathf.Max(y0, y1) + r + 2));
+            Vector2 a = new Vector2(x0, y0), ab = new Vector2(x1, y1) - a;
+            float len2 = Mathf.Max(0.0001f, ab.sqrMagnitude);
+            for (int y = minY; y <= maxY; y++)
+                for (int x = minX; x <= maxX; x++)
+                {
+                    Vector2 p = new Vector2(x + 0.5f, y + 0.5f);
+                    float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / len2);
+                    float k = Mathf.Clamp01(r - Vector2.Distance(p, a + ab * t) + 0.5f) * col.a / 255f;
+                    if (k <= 0f) continue;
+                    int i = y * w + x;
+                    Color32 o = px[i];
+                    float oa = o.a / 255f, na = k + oa * (1f - k);
+                    if (na <= 0f) continue;
+                    px[i] = new Color32((byte)((col.r * k + o.r * oa * (1f - k)) / na), (byte)((col.g * k + o.g * oa * (1f - k)) / na),
+                                        (byte)((col.b * k + o.b * oa * (1f - k)) / na), (byte)(na * 255f));
+                }
+        }
+
+        /// <summary>
+        /// La mano destra di Muark vista da davanti: il palmo e il polso in basso a destra, il pollice che si appoggia
+        /// sull'angolo della pagina (con l'unghia e la piega), le punte delle dita che spuntano dal bordo della copertina.
+        /// Ombre e luci a strati (prima la sagoma scura, poi la pelle, poi i riflessi), come le altre cose disegnate.
+        /// </summary>
+        static Texture2D HandTexture()
+        {
+            const int W = 380, H = 320;
+            Color32 shadow = new Color32(120, 78, 52, 255), skin = new Color32(207, 160, 124, 255), light = new Color32(228, 188, 152, 255),
+                    crease = new Color32(150, 100, 70, 255), nail = new Color32(236, 206, 188, 255), nailEdge = new Color32(250, 236, 226, 255);
+            var tex = NewTex(W, H);
+            var px = new Color32[W * H];
+            // le dita dietro la copertina: si vedono solo le punte sopra il bordo destro (in ombra)
+            foreach (var f in new[] { new Vector4(258, 236, 266, 262), new Vector4(286, 226, 296, 250), new Vector4(312, 212, 322, 232) })
+            {
+                Paint(px, W, H, f.x, f.y - 40, f.z, f.w, 34f, shadow);
+                Paint(px, W, H, f.x + 1, f.y - 40, f.z, f.w - 3, 28f, skin);
+                Paint(px, W, H, f.z - 4, f.w - 6, f.z - 2, f.w - 2, 14f, nail);
+            }
+            // il palmo e il polso
+            Paint(px, W, H, 300, 40, 300, 150, 150f, shadow);
+            Paint(px, W, H, 296, 46, 298, 148, 140f, skin);
+            Paint(px, W, H, 318, 70, 320, 140, 70f, light);
+            Paint(px, W, H, 330, 0, 340, 60, 120f, skin);   // il polso
+            // il pollice: dal palmo sale verso sinistra e si appoggia sulla pagina
+            Paint(px, W, H, 252, 146, 132, 232, 60f, shadow);
+            Paint(px, W, H, 250, 147, 134, 231, 52f, skin);
+            Paint(px, W, H, 238, 162, 140, 230, 20f, light);
+            Paint(px, W, H, 122, 240, 140, 230, 22f, nail);   // l'unghia
+            Paint(px, W, H, 118, 243, 124, 240, 8f, nailEdge);
+            Paint(px, W, H, 182, 186, 196, 208, 3f, crease);  // la piega della nocca
+            Paint(px, W, H, 188, 181, 202, 202, 2f, crease);
+            // le pieghe del palmo e l'attaccatura del pollice
+            Paint(px, W, H, 248, 120, 300, 150, 3f, crease);
+            Paint(px, W, H, 262, 96, 330, 118, 2.5f, crease);
+            Paint(px, W, H, 236, 150, 262, 120, 3.5f, crease);
+            tex.SetPixels32(px);
+            tex.Apply(false);
+            return tex;
+        }
+
+        /// <summary>La flanella verde a quadri della camicia di Muark (con il polsino scuro e il bottone a sinistra).</summary>
+        static Texture2D FlannelTexture(int w, int h)
+        {
+            var tex = NewTex(w, h);
+            tex.filterMode = FilterMode.Point;
+            var px = new Color32[w * h];
+            Color32 g = new Color32(47, 90, 58, 255), dark = new Color32(26, 26, 26, 255), mid = new Color32(36, 64, 44, 255);
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    bool vx = (x / 6) % 5 == 0, vy = (y / 6) % 5 == 0;
+                    Color32 c = vx && vy ? dark : (vx || vy) ? mid : g;
+                    if (x < 22) c = Color32.Lerp(c, new Color32(20, 36, 26, 255), 0.55f);      // il polsino
+                    if (x >= 8 && x <= 14 && y >= h / 2 - 4 && y <= h / 2 + 3) c = new Color32(220, 214, 196, 255); // il bottone
+                    float edge = Mathf.Min(y, h - 1 - y) / (h * 0.5f);
+                    c = Color32.Lerp(new Color32(15, 26, 18, 255), c, Mathf.Clamp01(edge * 3f));   // la piega della manica
+                    px[y * w + x] = c;
+                }
+            tex.SetPixels32(px);
+            tex.Apply(false);
+            return tex;
         }
 
         /// <summary>Lo scarabocchio della pagina: una fetta di pizza (capitolo 1) o la radio con l'antenna (capitolo 2).</summary>

@@ -210,7 +210,11 @@ namespace FantaLandia.Horror.Story
             LookOf(jef, jefCeiling);
             TeleportPlayer(playerBasementStart);
             yield return null;
-            if (s == 0 && fpc != null && seatPlayer != null) fpc.SitOn(seatPlayer); // Muark sul divano con la radio davanti
+            if (s == 0 && fpc != null && seatPlayer != null)
+            {
+                fpc.SitOn(seatPlayer); // Muark sul divano con la radio davanti
+                fpc.canStandUp = false; // ci si alza solo dopo le prime scosse
+            }
 
             if (s >= (int)StartAt.Ritorno)
             {
@@ -329,10 +333,11 @@ namespace FantaLandia.Horror.Story
             System.Action<string> onHeard = id => reactions.Enqueue(id);
             radio.StationHeard += onHeard;
             // timer nascosto: un minuto dopo che Muark ha preso in mano la radio arrivano comunque i ruggiti
-            float deadline = float.MaxValue;
-            while (radio.HeardCount < 3 && Time.time < deadline)
+            // (il minuto conta solo mentre Muark ha la radio in mano: il menu o le pause non lo consumano)
+            float used = 0f;
+            while (radio.HeardCount < 3 && used < 60f)
             {
-                if (radio.InUse && deadline == float.MaxValue) deadline = Time.time + 60f;
+                if (radio.InUse && !NotebookMenu.IsOpen) used += Time.deltaTime;
                 if (reactions.Count > 0 && !DialogueSystem.IsTalking)
                 {
                     yield return new WaitForSeconds(0.8f);
@@ -383,6 +388,7 @@ namespace FantaLandia.Horror.Story
             if (radio != null) { radio.PutDown(); radio.usable = false; }
             bunkerChatter = false;
             yield return Quake(1f, 0);
+            if (fpc != null) fpc.canStandUp = true;
             Stand(tom);
             Stand(roy);
             LookOf(jef, null);
