@@ -17,6 +17,7 @@ namespace FantaLandia.Horror.UI
         public static bool SpokenVoices = true;    // voci parlate vere; spente = borbottio
         public static int TextSize = 1;            // 0 piccolo, 1 medio, 2 grande
         public static string Language = "en";      // "en" inglese (predefinita), "it" italiano
+        public static bool Retro = true;           // look retrò a pixel grossi (attivo di serie)
 
         public static event Action Changed;
 
@@ -39,6 +40,7 @@ namespace FantaLandia.Horror.UI
             SpokenVoices = PlayerPrefs.GetInt("fl_spoken", 1) == 1;
             TextSize = PlayerPrefs.GetInt("fl_text", 1);
             Language = PlayerPrefs.GetString("fl_lang", "en");
+            Retro = PlayerPrefs.GetInt("fl_retro", 1) == 1;
         }
 
         public static void Save()
@@ -54,6 +56,7 @@ namespace FantaLandia.Horror.UI
             PlayerPrefs.SetInt("fl_spoken", SpokenVoices ? 1 : 0);
             PlayerPrefs.SetInt("fl_text", TextSize);
             PlayerPrefs.SetString("fl_lang", Language);
+            PlayerPrefs.SetInt("fl_retro", Retro ? 1 : 0);
             PlayerPrefs.Save();
             Changed?.Invoke();
         }

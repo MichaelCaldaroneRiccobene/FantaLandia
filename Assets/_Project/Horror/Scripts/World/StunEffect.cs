@@ -18,6 +18,15 @@ namespace FantaLandia.Horror.World
         [Range(0f, 1f)] public float stun;      // quanto si è storditi adesso
         public float recovery = 22f;            // secondi per riprendersi del tutto
         [Range(0f, 1f)] public float muffle;    // suoni ovattati (segue lo stordimento, più lento)
+        [Tooltip("Angoscia / claustrofobia (0..1): la vista si stringe, i bordi diventano neri, il cuore batte forte")]
+        [Range(0f, 1f)] public float dread;
+
+        Volume dreadVolume;
+        Vignette dreadVignette;
+        LensDistortion dreadLens;
+        AudioSource heart;
+        Camera cam;
+        float baseFov = -1f;
 
         Volume volume;
         Vignette vignette;
@@ -60,6 +69,35 @@ namespace FantaLandia.Horror.World
             blur.gaussianMaxRadius.Override(1.5f);
             aberration = profile.Add<ChromaticAberration>(true);
             aberration.intensity.Override(0.9f);
+
+            // l'angoscia: un secondo volume, nero ai bordi, l'immagine che si "stringe" verso il centro
+            var dgo = new GameObject("Angoscia (post-processing)");
+            dgo.transform.SetParent(transform, false);
+            dreadVolume = dgo.AddComponent<Volume>();
+            dreadVolume.isGlobal = true;
+            dreadVolume.priority = 49f;
+            dreadVolume.weight = 0f;
+            var dp = ScriptableObject.CreateInstance<VolumeProfile>();
+            dreadVolume.sharedProfile = dp;
+            dreadVignette = dp.Add<Vignette>(true);
+            dreadVignette.color.Override(Color.black);
+            dreadVignette.intensity.Override(0.6f);
+            dreadVignette.smoothness.Override(1f);
+            dreadLens = dp.Add<LensDistortion>(true);
+            dreadLens.intensity.Override(-0.35f);
+            var dc = dp.Add<ChromaticAberration>(true);
+            dc.intensity.Override(0.7f);
+            var dcol = dp.Add<ColorAdjustments>(true);
+            dcol.saturation.Override(-35f);
+            dcol.contrast.Override(18f);
+            cam = GetComponent<Camera>();
+            heart = gameObject.AddComponent<AudioSource>();
+            heart.clip = ProceduralAudio.Heartbeat();
+            heart.loop = true;
+            heart.spatialBlend = 0f;
+            heart.playOnAwake = false;
+            heart.volume = 0f;
+            heart.bypassListenerEffects = true;
 
             earFilter = GetComponent<AudioLowPassFilter>();
             if (earFilter == null) earFilter = gameObject.AddComponent<AudioLowPassFilter>();
@@ -111,7 +149,7 @@ namespace FantaLandia.Horror.World
         public void ClearAll()
         {
             drops.Clear();
-            stun = muffle = flash = 0f;
+            stun = muffle = flash = dread = 0f;
         }
 
         void Update()
@@ -135,6 +173,27 @@ namespace FantaLandia.Horror.World
             {
                 ringing.volume = Mathf.Clamp01(muffle * 1.4f) * 0.12f * FantaLandia.Horror.UI.GameSettings.Effects;
                 if (muffle <= 0.001f && ringing.isPlaying) ringing.Stop();
+            }
+            // angoscia: il cuore accelera, la vista si stringe e "pulsa" a ogni battito
+            float dk = dread * dread * (3f - 2f * dread);
+            if (dreadVolume != null)
+            {
+                float beat = heart != null && heart.isPlaying && heart.clip != null ? Mathf.Exp(-(heart.time % heart.clip.length) * 6f) : 0f;
+                dreadVolume.weight = dk;
+                dreadVignette.intensity.value = 0.45f + 0.2f * dk + 0.08f * beat;
+                dreadLens.intensity.value = -0.2f - 0.25f * dk - 0.06f * beat;
+            }
+            if (cam != null)
+            {
+                if (baseFov < 0f) baseFov = cam.fieldOfView;
+                cam.fieldOfView = baseFov - 16f * dk;
+            }
+            if (heart != null)
+            {
+                heart.volume = dk * 0.55f * FantaLandia.Horror.UI.GameSettings.Effects;
+                heart.pitch = 1f + 0.35f * dk;
+                if (dk > 0.01f && !heart.isPlaying) heart.Play();
+                if (dk <= 0.01f && heart.isPlaying) heart.Stop();
             }
             for (int i = drops.Count - 1; i >= 0; i--)
             {

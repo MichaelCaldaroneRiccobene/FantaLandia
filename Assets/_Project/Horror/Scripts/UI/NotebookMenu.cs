@@ -251,6 +251,7 @@ namespace FantaLandia.Horror.UI
                                     change = d => GameSettings.Brightness = Mathf.Clamp(GameSettings.Brightness + d, -5, 5) });
                 list.Add(new Item { label = "Qualità grafica", value = () => new[] { "bassa", "media", "alta" }[GameSettings.Quality],
                                     change = d => GameSettings.Quality = Mathf.Clamp(GameSettings.Quality + d, 0, 2) });
+                list.Add(new Item { label = "Effetto retrò", value = () => GameSettings.Retro ? "sì" : "no", change = d => GameSettings.Retro = !GameSettings.Retro });
                 list.Add(new Item { label = "Sottotitoli", value = () => GameSettings.Subtitles ? "sì" : "no", change = d => GameSettings.Subtitles = !GameSettings.Subtitles });
                 list.Add(new Item { label = "Testo", value = () => new[] { "piccolo", "medio", "grande" }[GameSettings.TextSize],
                                     change = d => GameSettings.TextSize = Mathf.Clamp(GameSettings.TextSize + d, 0, 2) });

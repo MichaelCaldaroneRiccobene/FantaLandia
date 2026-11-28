@@ -11,9 +11,9 @@ namespace FantaLandia.Horror.World
     public class RetroScreen : MonoBehaviour
     {
         [Tooltip("Altezza in pixel dell'immagine (240 = PS1)")]
-        public int verticalResolution = 360;
-        [Tooltip("Spento di default: con le luci e il post-processing l'immagine piena è molto più bella (F2 per provarlo)")]
-        public bool retroEnabled = false;
+        public int verticalResolution = 300;
+        [Tooltip("Acceso di serie; si toglie dalle impostazioni del taccuino (o con F2)")]
+        public bool retroEnabled = true;
 
         Camera cam;
         RenderTexture rt;
@@ -34,7 +34,9 @@ namespace FantaLandia.Horror.World
 
         void Update()
         {
-            if (GameInput.RetroToggle) retroEnabled = !retroEnabled;
+            if (GameInput.RetroToggle) { FantaLandia.Horror.UI.GameSettings.Retro = !FantaLandia.Horror.UI.GameSettings.Retro; FantaLandia.Horror.UI.GameSettings.Save(); }
+            FantaLandia.Horror.UI.GameSettings.Load();
+            retroEnabled = FantaLandia.Horror.UI.GameSettings.Retro;
 
             if (!retroEnabled)
             {

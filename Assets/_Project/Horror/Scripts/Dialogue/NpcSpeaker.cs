@@ -15,6 +15,13 @@ namespace FantaLandia.Horror.Dialogue
         [Tooltip("Distanza entro cui si gira verso chi parla")]
         public float listenDistance = 8f;
 
+        /// <summary>
+        /// La regia può bloccare lo sguardo (es. tutti fissano la creatura, o guardano Tom che fa da capo):
+        /// finché è impostato, parlare o ascoltare non lo cambia e l'espressione resta 'holdBrow'.
+        /// </summary>
+        [System.NonSerialized] public Transform holdLook;
+        [System.NonSerialized] public float holdBrow;
+
         static readonly List<NpcSpeaker> all = new List<NpcSpeaker>();
         FaceAnimator face;
         float releaseAt = -1f;
@@ -81,6 +88,7 @@ namespace FantaLandia.Horror.Dialogue
         void LateUpdate()
         {
             if (LookPoint != null) LookPoint.position = EyePoint;
+            if (holdLook != null && face != null) { face.lookTarget = holdLook; face.SetExpression(holdBrow); releaseAt = -1f; return; }
             if (releaseAt > 0f && Time.time > releaseAt && !DialogueSystem.IsTalking)
             {
                 releaseAt = -1f;
@@ -95,7 +103,7 @@ namespace FantaLandia.Horror.Dialogue
 
         void OnLine(Speaker s, string text)
         {
-            if (face == null || s == null) return;
+            if (face == null || s == null || holdLook != null) return;
             Transform player = Camera.main != null ? Camera.main.transform : null;
 
             if (s.id == speakerId)

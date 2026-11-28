@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using FantaLandia.Characters;
 using FantaLandia.EditorTools;
 using FantaLandia.Horror.Interaction;
@@ -109,9 +110,6 @@ namespace FantaLandia.Horror.EditorTools
             Stubs(r, true, Z1, 1f, X0, X1, rng);
             Stubs(r, false, X0, -1f, Z0, Z1, rng);
             Stubs(r, false, X1, 1f, Z0, Z1, rng);
-            // un pezzo di muro interno di sopra rimasto in piedi (la camera di Tom)
-            Box("Moncone muro camera", r, new Vector3(-2.08f, F1 - S, 7.2f), new Vector3(-1.92f, F1 + 1.4f, 9.1f), interiorUp);
-            Box("Moncone muro camera (rotto)", r, new Vector3(-2.08f, F1 + 1.4f, 7.2f), new Vector3(-1.92f, F1 + 0.6f, 8.3f), interiorUp);
 
             // travi spezzate che pendono dentro le stanze
             Material beam = rubbleWood;
@@ -257,6 +255,69 @@ namespace FantaLandia.Horror.EditorTools
             Tilt(Place(VoxelFurniture.Get("Comodino"), f, new Vector3(1.9f, F0 + 0.25f, 4.7f), 30f), 90f, 0f, 0f);
             Tilt(Place(VoxelFurniture.Get("Cesto bucato"), f, new Vector3(5.1f, F0 + 0.2f, 2.2f), 0f), 0f, 0f, 95f);
             Place(VoxelFurniture.Get("Scarpe"), f, new Vector3(-1.4f, F0, 4.9f), 150f);
+        }
+
+        /// <summary>
+        /// Il giardino dopo la notte: la staccionata alta a pezzi (pannelli mancanti buttati nel prato, altri piegati,
+        /// qualche palo storto), assi e calcinacci sparsi sull'erba.
+        /// </summary>
+        static void DamageYard(Transform yard)
+        {
+            var rng = new System.Random(4242);
+            float R() => (float)rng.NextDouble();
+            foreach (Transform fence in new List<Transform>(yard.GetComponentsInChildren<Transform>()))
+            {
+                if (fence == null || !fence.name.StartsWith("Staccionata")) continue;
+                foreach (Transform part in new List<Transform>(fence.Cast<Transform>()))
+                {
+                    if (part.name == "Palo")
+                    {
+                        if (R() < 0.35f) part.localRotation = Quaternion.Euler(R() * 24f - 12f, 0f, R() * 24f - 12f);
+                        continue;
+                    }
+                    if (part.name != "Assi") continue;
+                    // il pannello unico diventa una fila di pannelli da un metro: alcuni mancano, altri sono piegati
+                    Vector3 c = part.localPosition, sz = part.localScale;
+                    Material mat = part.GetComponent<Renderer>().sharedMaterial;
+                    bool alongX = sz.x > sz.z;
+                    float len = alongX ? sz.x : sz.z, from = (alongX ? c.x : c.z) - len * 0.5f;
+                    Object.DestroyImmediate(part.gameObject);
+                    for (float a = from; a < from + len - 0.05f; a += 1f)
+                    {
+                        float w = Mathf.Min(1f, from + len - a);
+                        float mid = a + w * 0.5f;
+                        Vector3 baseP = alongX ? new Vector3(mid, c.y - sz.y * 0.5f, c.z) : new Vector3(c.x, c.y - sz.y * 0.5f, mid);
+                        Vector3 half = alongX ? new Vector3(w * 0.5f, 0f, sz.z * 0.5f) : new Vector3(sz.x * 0.5f, 0f, w * 0.5f);
+                        double roll = R();
+                        if (roll < 0.22)
+                        {
+                            // strappato via e buttato nel prato
+                            Vector3 p = baseP + new Vector3(R() * 4f - 2f, 0.03f, R() * 4f - 2f);
+                            var go = Box("Pannello staccato", fence, p - new Vector3(half.x, 0f, half.z) - Vector3.up * 0.02f,
+                                         p + new Vector3(half.x, 0f, half.z) + Vector3.up * 0.02f, mat);
+                            go.transform.localScale = new Vector3(w, 0.05f, sz.y);
+                            go.transform.localRotation = Quaternion.Euler(R() * 10f, R() * 360f, 0f);
+                            continue;
+                        }
+                        var pivot = new GameObject("Pannello").transform;
+                        pivot.SetParent(fence, false);
+                        pivot.localPosition = baseP;
+                        if (roll < 0.5) pivot.localRotation = alongX ? Quaternion.Euler(R() * 50f - 25f, 0f, R() * 8f - 4f) : Quaternion.Euler(R() * 8f - 4f, 0f, R() * 50f - 25f);
+                        Box("Assi", pivot, -half, half + Vector3.up * sz.y * (roll < 0.62 ? 0.45f + R() * 0.4f : 1f), mat); // qualcuno è spezzato a metà
+                    }
+                }
+            }
+            // assi e calcinacci sparsi nel prato
+            for (int i = 0; i < 40; i++)
+            {
+                Vector3 p = new Vector3(R() * 24f - 12f, 0f, Z1 + 1f + R() * 10f);
+                bool plank = R() < 0.5f;
+                float s = 0.1f + R() * 0.3f;
+                Vector3 half = plank ? new Vector3(0.06f, 0.03f, 0.4f + R() * 0.5f) : new Vector3(s, s * 0.6f, s * 0.8f);
+                var go = Box(plank ? "Asse nel prato" : "Calcinaccio nel prato", yard, p + Vector3.up * half.y - half, p + Vector3.up * half.y + half, plank ? rubbleWood : RubbleMat(rng));
+                go.transform.localRotation = Quaternion.Euler(R() * 20f, R() * 360f, R() * 20f);
+                NoCollider(go);
+            }
         }
 
         // ------------------------------------------------------------------ il rifugio in cantina
@@ -438,6 +499,7 @@ namespace FantaLandia.Horror.EditorTools
             d.bloodMaterial = BloodMaterial();
             d.dustMaterial = SmokeMat("Polvere delle macerie", false, 0.8f, 0.55f);
             d.rockMaterial = rockMat;
+            d.fireMaterial = SmokeMat("Bagliore incendio", true, 0.9f, 0.45f);
 
             Reverb(world, "Eco cantina", new Vector3(0f, FB + 0.6f, (Z0 + Z1) * 0.5f), 3f, 4.5f, AudioReverbPreset.StoneCorridor);
         }
@@ -483,7 +545,11 @@ namespace FantaLandia.Horror.EditorTools
             root.transform.SetParent(world, false);
             root.transform.position = pos;
             root.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            // più alta di una volta e mezza (circa 95 metri): il modello è fatto in "metri da 60"
+            root.transform.localScale = Vector3.one * 1.55f;
             var gc = root.AddComponent<GiantCreature>();
+            gc.sink = 64f;
+            Material eyes = EyesMaterial();
 
             Transform Pivot(string n, Transform parent, Vector3 local, Vector3 euler)
             {
@@ -492,6 +558,14 @@ namespace FantaLandia.Horror.EditorTools
                 t.localPosition = local;
                 t.localRotation = Quaternion.Euler(euler);
                 return t;
+            }
+            // uno spuntone/placca storta: centro, rotazione, spessore e lunghezza
+            void Spike(string n, Transform parent, Vector3 at, Vector3 euler, float w, float len)
+            {
+                var go = NoCollider(Box(n, parent, new Vector3(-w, 0f, -w), new Vector3(w, len, w), m));
+                go.transform.localPosition = at;
+                go.transform.localRotation = Quaternion.Euler(euler);
+                go.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
             }
             void Part(string n, Transform parent, Vector3 min, Vector3 max) => NoCollider(Box(n, parent, min, max, m)).GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
 
@@ -503,6 +577,19 @@ namespace FantaLandia.Horror.EditorTools
                 Transform shin = Pivot("Stinco", thigh, new Vector3(0f, -14f, 0f), new Vector3(24f, 0f, 0f));
                 Part("Stinco", shin, new Vector3(-1.8f, -14f, -1.9f), new Vector3(1.8f, 0f, 1.9f));
                 Part("Piede", shin, new Vector3(-2.2f, -15.2f, -1.6f), new Vector3(2.2f, -13.6f, 5.5f));
+                // muscolo della coscia, spuntone sul ginocchio, speroni e dita del piede
+                Part("Muscolo coscia", thigh, new Vector3(-2.8f, -10f, -0.5f), new Vector3(2.8f, -2f, 3.1f));
+                Spike("Spuntone ginocchio", shin, new Vector3(0f, -1f, 1.6f), new Vector3(60f, 0f, 0f), 0.6f, 3.5f);
+                Spike("Sperone", shin, new Vector3(0f, -13f, -1.6f), new Vector3(-130f, 0f, 0f), 0.5f, 3f);
+                for (int k = -1; k <= 1; k++) Spike("Dito", shin, new Vector3(k * 1.3f, -15f, 5.2f), new Vector3(100f, k * 12f, 0f), 0.45f, 2.6f);
+            }
+            // la coda: quattro segmenti che scendono dietro e si assottigliano
+            Transform tail = Pivot("Coda", hips, new Vector3(0f, 1f, -4f), new Vector3(-150f, 0f, 0f));
+            for (int k = 0; k < 4; k++)
+            {
+                float w = 2.2f - k * 0.45f;
+                Part("Coda", tail, new Vector3(-w, k * 6f, -w), new Vector3(w, k * 6f + 6.3f, w));
+                Spike("Spina coda", tail, new Vector3(0f, k * 6f + 3f, w), new Vector3(30f, 0f, 0f), 0.35f, 2.2f - k * 0.3f);
             }
             Transform torso = Pivot("Busto", hips, Vector3.zero, Vector3.zero);
             Part("Ventre", torso, new Vector3(-6f, -1f, -4f), new Vector3(6f, 10f, 4.5f));
@@ -516,12 +603,33 @@ namespace FantaLandia.Horror.EditorTools
                 sp.transform.localRotation = Quaternion.Euler(-35f, 0f, 0f);
                 sp.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
             }
+            // costole che sporgono sui fianchi del petto, placche sulle spalle
+            for (int k = 0; k < 5; k++)
+                foreach (int side in new[] { -1, 1 })
+                    Part("Costola", torso, new Vector3(side < 0 ? -9.3f : 8.5f, 10.5f + k * 2.2f, -3.5f), new Vector3(side < 0 ? -8.5f : 9.3f, 11.3f + k * 2.2f, 4.5f));
+            foreach (int side in new[] { -1, 1 })
+            {
+                Spike("Placca spalla", torso, new Vector3(9.5f * side, 22.5f, 0f), new Vector3(0f, 0f, -55f * side), 2.2f, 3.5f);
+                Spike("Placca spalla", torso, new Vector3(8f * side, 23.5f, -2.5f), new Vector3(-30f, 0f, -35f * side), 1.4f, 4.5f);
+            }
             Transform head = Pivot("Testa", torso, new Vector3(0f, 25f, 2.6f), Vector3.zero);
             Part("Cranio", head, new Vector3(-2.6f, -0.6f, -1.5f), new Vector3(2.6f, 3.2f, 4.6f));
             Part("Corno sx", head, new Vector3(-2.4f, 2.6f, -1.8f), new Vector3(-1.6f, 5.2f, -0.6f));
             Part("Corno dx", head, new Vector3(1.6f, 2.6f, -1.8f), new Vector3(2.4f, 5.2f, -0.6f));
             Transform jaw = Pivot("Mascella", head, new Vector3(0f, -0.4f, -0.6f), Vector3.zero);
             Part("Mascella", jaw, new Vector3(-2.3f, -2.2f, 0f), new Vector3(2.3f, -0.3f, 5f));
+            // denti in fila sopra e sotto, filamenti dietro la testa, occhi che brillano
+            for (int k = -3; k <= 3; k++)
+            {
+                Spike("Dente", head, new Vector3(k * 0.62f, -0.4f, 4.3f), new Vector3(180f, 0f, 0f), 0.16f, 1.1f + (k % 2 == 0 ? 0.5f : 0f));
+                Spike("Dente", jaw, new Vector3(k * 0.58f, -0.4f, 4.6f), Vector3.zero, 0.15f, 0.9f);
+            }
+            for (int k = -2; k <= 2; k++) Spike("Filamento", head, new Vector3(k * 0.9f, 1.5f, -1.5f), new Vector3(-140f + Mathf.Abs(k) * 8f, k * 10f, 0f), 0.25f, 5f + (2 - Mathf.Abs(k)) * 1.5f);
+            foreach (int side in new[] { -1, 1 })
+            {
+                var eye = NoCollider(Box("Occhio", head, new Vector3(side * 1.55f - 0.42f, 1.5f, 4.55f), new Vector3(side * 1.55f + 0.42f, 1.95f, 4.75f), eyes));
+                eye.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
             Transform[] arms = new Transform[2];
             foreach (int side in new[] { -1, 1 })
             {
@@ -529,6 +637,8 @@ namespace FantaLandia.Horror.EditorTools
                 Part("Braccio", sh, new Vector3(-1.9f, -18f, -1.9f), new Vector3(1.9f, 1.5f, 1.9f));
                 Transform fore = Pivot("Avambraccio", sh, new Vector3(0f, -18f, 0f), new Vector3(-18f, 0f, 0f));
                 Part("Avambraccio", fore, new Vector3(-1.5f, -17f, -1.5f), new Vector3(1.5f, 0f, 1.5f));
+                Part("Gomito", sh, new Vector3(-2.2f, -19.5f, -2.4f), new Vector3(2.2f, -16.5f, 1.6f));
+                for (int k = 0; k < 3; k++) Spike("Spina braccio", fore, new Vector3(1.3f * side, -3f - k * 4.5f, -1f), new Vector3(-20f, 0f, -70f * side), 0.3f, 2.2f);
                 for (int k = -1; k <= 1; k++)
                 {
                     var claw = NoCollider(Box("Artiglio", fore, new Vector3(-0.35f, -4.5f, -0.35f), new Vector3(0.35f, 0f, 0.35f), m));
@@ -545,6 +655,23 @@ namespace FantaLandia.Horror.EditorTools
             gc.armL = arms[0];
             gc.armR = arms[1];
             return gc;
+        }
+
+        /// <summary>Gli occhi della creatura: piccoli, arancio vivo, senza nebbia (si vedono anche da lontanissimo).</summary>
+        static Material EyesMaterial()
+        {
+            string path = $"{EditorAssetUtil.MaterialFolder}/Occhi creatura.mat";
+            Shader sh = Shader.Find("FantaLandia/Silhouette");
+            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+            var e = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (e == null) { e = new Material(sh); AssetDatabase.CreateAsset(e, path); }
+            else e.shader = sh;
+            Color c = new Color(1f, 0.55f, 0.15f);
+            if (e.HasProperty("_Color")) e.SetColor("_Color", c);
+            if (e.HasProperty("_GlowColor")) e.SetColor("_GlowColor", c);
+            if (e.HasProperty("_BaseColor")) e.SetColor("_BaseColor", c);
+            EditorUtility.SetDirty(e);
+            return e;
         }
 
         static Material SilhouetteMaterial()

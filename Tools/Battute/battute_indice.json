@@ -1770,7 +1770,7 @@
  {
   "n": 222,
   "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
-  "line": 452,
+  "line": 462,
   "speaker": "frank",
   "text": "Martha, hai chiuso il gas?",
   "kind": "battuta"
@@ -1778,7 +1778,7 @@
  {
   "n": 223,
   "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
-  "line": 452,
+  "line": 462,
   "speaker": "martha",
   "text": "Sì Frank, come ogni sera.",
   "kind": "battuta"
@@ -1786,7 +1786,7 @@
  {
   "n": 224,
   "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
-  "line": 452,
+  "line": 462,
   "speaker": "frank",
   "text": "Questi ragazzi di Tom fanno sempre tardi.",
   "kind": "battuta"
@@ -1794,7 +1794,7 @@
  {
   "n": 225,
   "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
-  "line": 455,
+  "line": 465,
   "speaker": "gary",
   "text": "Linda, la partita è finita?",
   "kind": "battuta"
@@ -1802,7 +1802,7 @@
  {
   "n": 226,
   "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
-  "line": 455,
+  "line": 465,
   "speaker": "linda",
   "text": "Ma ti pare l'ora, Gary?",
   "kind": "battuta"
@@ -1810,7 +1810,7 @@
  {
   "n": 227,
   "file": "Assets/_Project/Horror/Editor/HouseSceneBuilder.cs",
-  "line": 455,
+  "line": 465,
   "speaker": "gary",
   "text": "Bella serata, comunque.",
   "kind": "battuta"
@@ -1914,7 +1914,7 @@
  {
   "n": 240,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 258,
+  "line": 285,
   "speaker": "roy",
   "text": "Te l'avevo detto di chiamare qualcuno.",
   "kind": "battuta"
@@ -1922,7 +1922,7 @@
  {
   "n": 241,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 258,
+  "line": 285,
   "speaker": "tom",
   "text": "E chi? I telefoni sono morti, Roy.",
   "kind": "battuta"
@@ -1930,7 +1930,7 @@
  {
   "n": 242,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 259,
+  "line": 286,
   "speaker": "roy",
   "text": "Potevamo andare via in macchina. Subito.",
   "kind": "battuta"
@@ -1938,7 +1938,7 @@
  {
   "n": 243,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 259,
+  "line": 286,
   "speaker": "tom",
   "text": "In macchina dove? Hai visto il cielo?",
   "kind": "battuta"
@@ -1946,7 +1946,7 @@
  {
   "n": 244,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 260,
+  "line": 287,
   "speaker": "roy",
   "text": "Meglio che stare chiusi qui sotto come topi.",
   "kind": "battuta"
@@ -1954,7 +1954,7 @@
  {
   "n": 245,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 260,
+  "line": 287,
   "speaker": "tom",
   "text": "Abbassa la voce.",
   "kind": "battuta"
@@ -1962,7 +1962,7 @@
  {
   "n": 246,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 260,
+  "line": 287,
   "speaker": "roy",
   "text": "Abbassala tu.",
   "kind": "battuta"
@@ -1970,7 +1970,7 @@
  {
   "n": 247,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 261,
+  "line": 288,
   "speaker": "tom",
   "text": "Quando finisce la benzina del generatore restiamo al buio. Lo sai, vero?",
   "kind": "battuta"
@@ -1978,7 +1978,7 @@
  {
   "n": 248,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 261,
+  "line": 288,
   "speaker": "roy",
   "text": "Grazie, Tom. Molto rassicurante.",
   "kind": "battuta"
@@ -1986,7 +1986,7 @@
  {
   "n": 249,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 285,
+  "line": 312,
   "speaker": "tom",
   "text": "Muark. Quella radio funziona ancora?",
   "kind": "battuta"
@@ -1994,7 +1994,7 @@
  {
   "n": 250,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 286,
+  "line": 313,
   "speaker": "muark",
   "text": "Proviamo.",
   "kind": "scelta"
@@ -2002,7 +2002,7 @@
  {
   "n": 251,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 286,
+  "line": 313,
   "speaker": "muark",
   "text": "Se non l'hai rotta tu, sì.",
   "kind": "scelta"
@@ -2010,7 +2010,7 @@
  {
   "n": 252,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 288,
+  "line": 315,
   "speaker": "tom",
   "text": "Molto divertente. Accendila.",
   "kind": "battuta"
@@ -2018,7 +2018,7 @@
  {
   "n": 253,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 290,
+  "line": 317,
   "speaker": "tom",
   "text": "Trova qualcuno. Chiunque. Dobbiamo sapere cosa succede là fuori.",
   "kind": "battuta"
@@ -2026,7 +2026,7 @@
  {
   "n": 254,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 296,
+  "line": 323,
   "speaker": "taccuino",
   "text": "Sintonizzare la radio (Gira la manopola, genio)",
   "kind": "obiettivo"
@@ -2034,7 +2034,7 @@
  {
   "n": 255,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 297,
+  "line": 324,
   "speaker": "muark",
   "text": "La radio... devo trovare una stazione.",
   "kind": "battuta"
@@ -2042,7 +2042,7 @@
  {
   "n": 256,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 298,
+  "line": 325,
   "speaker": "tom",
   "text": "Gira piano, Muark. Le stazioni sono tra una tacca e l'altra.",
   "kind": "battuta"
@@ -2050,7 +2050,7 @@
  {
   "n": 257,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 299,
+  "line": 326,
   "speaker": "roy",
   "text": "Prova più in alto, verso il cento.",
   "kind": "battuta"
@@ -2058,7 +2058,7 @@
  {
   "n": 258,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 312,
+  "line": 342,
   "speaker": "tom",
   "text": "Continua a cercare. Ci sarà qualcun altro.",
   "kind": "battuta"
@@ -2066,7 +2066,7 @@
  {
   "n": 259,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 313,
+  "line": 343,
   "speaker": "muark",
   "text": "Ci dev'essere qualcun altro, su questa radio.",
   "kind": "battuta"
@@ -2074,7 +2074,7 @@
  {
   "n": 260,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 328,
+  "line": 361,
   "speaker": "roy",
   "text": "\\\"Oh mio Dio\\\"? Cosa ha visto?",
   "kind": "battuta"
@@ -2082,7 +2082,7 @@
  {
   "n": 261,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 330,
+  "line": 363,
   "speaker": "tom",
   "text": "Restare in casa. Come se avessimo scelta.",
   "kind": "battuta"
@@ -2090,7 +2090,7 @@
  {
   "n": 262,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 333,
+  "line": 366,
   "speaker": "roy",
   "text": "Alto come un palazzo?! Ma che cazzo dice quello?",
   "kind": "battuta"
@@ -2098,7 +2098,7 @@
  {
   "n": 263,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 335,
+  "line": 368,
   "speaker": "jef",
   "text": "Dice la verità.",
   "kind": "battuta"
@@ -2106,7 +2106,7 @@
  {
   "n": 264,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 338,
+  "line": 371,
   "speaker": "roy",
   "text": "Martello Sette? Che cazzo vuol dire Martello Sette?",
   "kind": "battuta"
@@ -2114,7 +2114,7 @@
  {
   "n": 265,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 340,
+  "line": 373,
   "speaker": "tom",
   "text": "Evacuare a nord... e noi come ci arriviamo? A piedi?",
   "kind": "battuta"
@@ -2122,7 +2122,7 @@
  {
   "n": 266,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 356,
+  "line": 389,
   "speaker": "roy",
   "text": "Che cazzo era quello?!",
   "kind": "battuta"
@@ -2130,7 +2130,7 @@
  {
   "n": 267,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 358,
+  "line": 391,
   "speaker": "tom",
   "text": "Zitti! State zitti!",
   "kind": "battuta"
@@ -2138,7 +2138,7 @@
  {
   "n": 268,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 366,
+  "line": 399,
   "speaker": "jef",
   "text": "...Se n'è andato.",
   "kind": "battuta"
@@ -2146,7 +2146,7 @@
  {
   "n": 269,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 408,
+  "line": 441,
   "speaker": "fattorino",
   "text": "AIUTO!! APRITE!!",
   "kind": "battuta"
@@ -2154,7 +2154,7 @@
  {
   "n": 270,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 411,
+  "line": 444,
   "speaker": "fattorino",
   "text": "Vi prego! C'è qualcuno?! Aprite!",
   "kind": "battuta"
@@ -2162,7 +2162,7 @@
  {
   "n": 271,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 416,
+  "line": 449,
   "speaker": "roy",
   "text": "C'è qualcuno alla porta...",
   "kind": "battuta"
@@ -2170,7 +2170,7 @@
  {
   "n": 272,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 417,
+  "line": 450,
   "speaker": "tom",
   "text": "Non aprite a nessuno. L'ha detto la TV.",
   "kind": "battuta"
@@ -2178,7 +2178,7 @@
  {
   "n": 273,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 418,
+  "line": 451,
   "speaker": "roy",
   "text": "È un ragazzo, Tom! È solo un ragazzo!",
   "kind": "battuta"
@@ -2186,7 +2186,7 @@
  {
   "n": 274,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 419,
+  "line": 452,
   "speaker": "tom",
   "text": "E allora vai tu, Roy. Vai su tu.",
   "kind": "battuta"
@@ -2194,7 +2194,7 @@
  {
   "n": 275,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 420,
+  "line": 453,
   "speaker": "roy",
   "text": "Io? Sei matto?",
   "kind": "battuta"
@@ -2202,7 +2202,7 @@
  {
   "n": 276,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 421,
+  "line": 454,
   "speaker": "jef",
   "text": "Io non ci vado.",
   "kind": "battuta"
@@ -2210,7 +2210,7 @@
  {
   "n": 277,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 422,
+  "line": 455,
   "speaker": "muark",
   "text": "Vado io.",
   "kind": "scelta"
@@ -2218,7 +2218,7 @@
  {
   "n": 278,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 422,
+  "line": 455,
   "speaker": "muark",
   "text": "Cazzo... vado io.",
   "kind": "scelta"
@@ -2226,7 +2226,7 @@
  {
   "n": 279,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 424,
+  "line": 457,
   "speaker": "tom",
   "text": "Muark, no! Sei impazzito?",
   "kind": "battuta"
@@ -2234,7 +2234,7 @@
  {
   "n": 280,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 425,
+  "line": 458,
   "speaker": "roy",
   "text": "Muark... stai attento, ok?",
   "kind": "battuta"
@@ -2242,7 +2242,7 @@
  {
   "n": 281,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 426,
+  "line": 459,
   "speaker": "muark",
   "text": "...Vado io. Non possiamo lasciarlo lì.",
   "kind": "battuta"
@@ -2250,7 +2250,7 @@
  {
   "n": 282,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 427,
+  "line": 460,
   "speaker": "tom",
   "text": "Apri, fallo entrare e chiudi subito. Subito, hai capito?",
   "kind": "battuta"
@@ -2258,7 +2258,7 @@
  {
   "n": 283,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 444,
+  "line": 478,
   "speaker": "taccuino",
   "text": "Aprire la porta d'ingresso (Il coraggioso del gruppo)",
   "kind": "obiettivo"
@@ -2266,7 +2266,7 @@
  {
   "n": 284,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 445,
+  "line": 479,
   "speaker": "muark",
   "text": "La porta d'ingresso... devo aprirgli.",
   "kind": "battuta"
@@ -2274,7 +2274,7 @@
  {
   "n": 285,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 446,
+  "line": 480,
   "speaker": "roy",
   "text": "Muark! Il ragazzo! Sbrigati!",
   "kind": "battuta"
@@ -2282,7 +2282,7 @@
  {
   "n": 286,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 460,
+  "line": 494,
   "speaker": "fattorino",
   "text": "Per favore! Mi sentite?!",
   "kind": "battuta"
@@ -2290,7 +2290,7 @@
  {
   "n": 287,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 460,
+  "line": 494,
   "speaker": "fattorino",
   "text": "Aprite! Vi prego, aprite!",
   "kind": "battuta"
@@ -2298,7 +2298,7 @@
  {
   "n": 288,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 460,
+  "line": 494,
   "speaker": "fattorino",
   "text": "Sono il fattorino! Le pizze! Vi prego!",
   "kind": "battuta"
@@ -2306,7 +2306,7 @@
  {
   "n": 289,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 460,
+  "line": 494,
   "speaker": "fattorino",
   "text": "Sta arrivando qualcosa... APRITE!",
   "kind": "battuta"
@@ -2314,7 +2314,7 @@
  {
   "n": 290,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 493,
+  "line": 527,
   "speaker": "muark",
   "text": "Oh, cazzo... la casa...",
   "kind": "battuta"
@@ -2322,7 +2322,7 @@
  {
   "n": 291,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 495,
+  "line": 529,
   "speaker": "muark",
   "text": "Il piano di sopra... non c'è più.",
   "kind": "battuta"
@@ -2330,7 +2330,7 @@
  {
   "n": 292,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 529,
+  "line": 563,
   "speaker": "fattorino",
   "text": "Grazie! Grazie, cazzo... pensavo che nessuno...",
   "kind": "battuta"
@@ -2338,7 +2338,7 @@
  {
   "n": 293,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 530,
+  "line": 564,
   "speaker": "fattorino",
   "text": "Le avete ordinate voi, le pizze? Ho girato tutta la sera...",
   "kind": "battuta"
@@ -2346,7 +2346,7 @@
  {
   "n": 294,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 531,
+  "line": 565,
   "speaker": "fattorino",
   "text": "Là fuori c'è qualcosa. Dovete farmi entrare, subito, prima che...",
   "kind": "battuta"
@@ -2354,7 +2354,7 @@
  {
   "n": 295,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 540,
+  "line": 574,
   "speaker": "fattorino",
   "text": "...Cos'è questo rumore?",
   "kind": "battuta"
@@ -2362,7 +2362,7 @@
  {
   "n": 296,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 623,
+  "line": 682,
   "speaker": "muark",
   "text": "...Cosa... cos'è successo...",
   "kind": "battuta"
@@ -2370,7 +2370,7 @@
  {
   "n": 297,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 632,
+  "line": 692,
   "speaker": "muark",
   "text": "Il ragazzo... dov'è il ragazzo...",
   "kind": "battuta"
@@ -2378,7 +2378,7 @@
  {
   "n": 298,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 634,
+  "line": 694,
   "speaker": "muark",
   "text": "Devo... devo tornare giù.",
   "kind": "battuta"
@@ -2386,7 +2386,7 @@
  {
   "n": 299,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 652,
+  "line": 712,
   "speaker": "fattorino",
   "text": "No... no, no! NO!",
   "kind": "battuta"
@@ -2394,7 +2394,7 @@
  {
   "n": 300,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 670,
+  "line": 730,
   "speaker": "muark",
   "text": "No... no, no, no!",
   "kind": "battuta"
@@ -2402,7 +2402,7 @@
  {
   "n": 301,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 672,
+  "line": 732,
   "speaker": "muark",
   "text": "Era lì fuori... e io... devo tornare giù.",
   "kind": "battuta"
@@ -2410,7 +2410,7 @@
  {
   "n": 302,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 676,
+  "line": 736,
   "speaker": "roy",
   "text": "...L'ha preso.",
   "kind": "battuta"
@@ -2418,7 +2418,7 @@
  {
   "n": 303,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 678,
+  "line": 738,
   "speaker": "tom",
   "text": "Non c'era niente da fare. Niente.",
   "kind": "battuta"
@@ -2426,7 +2426,7 @@
  {
   "n": 304,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 690,
+  "line": 752,
   "speaker": "taccuino",
   "text": "Tornare in cantina dagli altri (Corri, cazzo)",
   "kind": "obiettivo"
@@ -2434,7 +2434,7 @@
  {
   "n": 305,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 691,
+  "line": 753,
   "speaker": "muark",
   "text": "Devo tornare giù dagli altri.",
   "kind": "battuta"
@@ -2442,7 +2442,7 @@
  {
   "n": 306,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 692,
+  "line": 754,
   "speaker": "tom",
   "text": "Muark?! MUARK! Rispondi!",
   "kind": "battuta"
@@ -2450,7 +2450,7 @@
  {
   "n": 307,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 702,
+  "line": 764,
   "speaker": "tom",
   "text": "Muark! Cristo santo... sei coperto di sangue!",
   "kind": "battuta"
@@ -2458,7 +2458,7 @@
  {
   "n": 308,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 703,
+  "line": 765,
   "speaker": "roy",
   "text": "Di chi è quel sangue? Muark? Di chi è?",
   "kind": "battuta"
@@ -2466,7 +2466,7 @@
  {
   "n": 309,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 704,
+  "line": 766,
   "speaker": "muark",
   "text": "Il ragazzo... era lì, mi ha detto grazie... e poi... un masso enorme... dal cielo...",
   "kind": "battuta"
@@ -2474,7 +2474,7 @@
  {
   "n": 310,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 705,
+  "line": 767,
   "speaker": "muark",
   "text": "Non c'è più. Non c'è più niente.",
   "kind": "battuta"
@@ -2482,7 +2482,7 @@
  {
   "n": 311,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 707,
+  "line": 769,
   "speaker": "roy",
   "text": "Muark! Hai sentito quel botto?",
   "kind": "battuta"
@@ -2490,7 +2490,7 @@
  {
   "n": 312,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 708,
+  "line": 770,
   "speaker": "muark",
   "text": "Il ragazzo... non ho fatto in tempo...",
   "kind": "battuta"
@@ -2498,7 +2498,7 @@
  {
   "n": 313,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 709,
+  "line": 771,
   "speaker": "jef",
   "text": "Non c'è più.",
   "kind": "battuta"
@@ -2506,7 +2506,7 @@
  {
   "n": 314,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 710,
+  "line": 772,
   "speaker": "jef",
   "text": "Siediti, Muark. Siediti.",
   "kind": "battuta"
@@ -2514,7 +2514,7 @@
  {
   "n": 315,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 712,
+  "line": 774,
   "speaker": "tom",
   "text": "Respira. Respira, ok? Sei qui con noi.",
   "kind": "battuta"
@@ -2522,7 +2522,7 @@
  {
   "n": 316,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 713,
+  "line": 775,
   "speaker": "roy",
   "text": "Ok... ok, e adesso? Adesso che facciamo?",
   "kind": "battuta"
@@ -2530,7 +2530,7 @@
  {
   "n": 317,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 722,
+  "line": 784,
   "speaker": "tom",
   "text": "La radio. Fammi provare.",
   "kind": "battuta"
@@ -2538,7 +2538,7 @@
  {
   "n": 318,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 731,
+  "line": 793,
   "speaker": "militare",
   "text": "...a tutti i civili ancora presenti nella zona di Maple Grove.",
   "kind": "battuta"
@@ -2546,7 +2546,7 @@
  {
   "n": 319,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 732,
+  "line": 794,
   "speaker": "militare",
   "text": "Abbandonate immediatamente l'area. Ripeto: abbandonate immediatamente l'area.",
   "kind": "battuta"
@@ -2554,7 +2554,7 @@
  {
   "n": 320,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 733,
+  "line": 795,
   "speaker": "militare",
   "text": "Questa zona non è sicura. Non è sic...",
   "kind": "battuta"
@@ -2562,7 +2562,7 @@
  {
   "n": 321,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 744,
+  "line": 806,
   "speaker": "tom",
   "text": "No, no, no! Torna su! Cazzo!",
   "kind": "battuta"
@@ -2570,7 +2570,7 @@
  {
   "n": 322,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 745,
+  "line": 807,
   "speaker": "roy",
   "text": "Abbandonare l'area? E come? Là fuori ci sono quelle cose!",
   "kind": "battuta"
@@ -2578,7 +2578,7 @@
  {
   "n": 323,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 746,
+  "line": 808,
   "speaker": "tom",
   "text": "Restare qui sotto è peggio, Roy!",
   "kind": "battuta"
@@ -2586,7 +2586,7 @@
  {
   "n": 324,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 747,
+  "line": 809,
   "speaker": "roy",
   "text": "E Muark? L'hai visto com'è ridotto?",
   "kind": "battuta"
@@ -2594,7 +2594,7 @@
  {
   "n": 325,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 748,
+  "line": 810,
   "speaker": "jef",
   "text": "Smettetela.",
   "kind": "battuta"
@@ -2602,7 +2602,7 @@
  {
   "n": 326,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 767,
+  "line": 829,
   "speaker": "roy",
   "text": "No, no, no... non adesso!",
   "kind": "battuta"
@@ -2610,7 +2610,7 @@
  {
   "n": 327,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 769,
+  "line": 831,
   "speaker": "tom",
   "text": "Merda. Il generatore è a secco.",
   "kind": "battuta"
@@ -2618,7 +2618,7 @@
  {
   "n": 328,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 788,
+  "line": 852,
   "speaker": "tom",
   "text": "Ascoltatemi. Ce ne andiamo. Adesso.",
   "kind": "battuta"
@@ -2626,7 +2626,7 @@
  {
   "n": 329,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 789,
+  "line": 853,
   "speaker": "tom",
   "text": "Prendiamo la macchina di mia madre e andiamo a nord, come ha detto la radio.",
   "kind": "battuta"
@@ -2634,7 +2634,7 @@
  {
   "n": 330,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 790,
+  "line": 854,
   "speaker": "roy",
   "text": "...Ok. Ok.",
   "kind": "battuta"
@@ -2642,7 +2642,7 @@
  {
   "n": 331,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 791,
+  "line": 855,
   "speaker": "tom",
   "text": "State dietro di me. Muark, ce la fai a camminare?",
   "kind": "battuta"
@@ -2650,7 +2650,7 @@
  {
   "n": 332,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 792,
+  "line": 856,
   "speaker": "muark",
   "text": "Sì... credo.",
   "kind": "scelta"
@@ -2658,7 +2658,7 @@
  {
   "n": 333,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 792,
+  "line": 856,
   "speaker": "muark",
   "text": "Non ho scelta, no?",
   "kind": "scelta"
@@ -2666,7 +2666,7 @@
  {
   "n": 334,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 794,
+  "line": 858,
   "speaker": "tom",
   "text": "No. Nessuno di noi ce l'ha.",
   "kind": "battuta"
@@ -2674,7 +2674,7 @@
  {
   "n": 335,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 798,
+  "line": 865,
   "speaker": "taccuino",
   "text": "Seguire Tom (Resta vicino alla luce)",
   "kind": "obiettivo"
@@ -2682,7 +2682,7 @@
  {
   "n": 336,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 799,
+  "line": 866,
   "speaker": "tom",
   "text": "Muark, di qua! Stammi dietro!",
   "kind": "battuta"
@@ -2690,7 +2690,7 @@
  {
   "n": 337,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 800,
+  "line": 867,
   "speaker": "roy",
   "text": "Muark, dai! Non restare indietro al buio!",
   "kind": "battuta"
@@ -2698,7 +2698,7 @@
  {
   "n": 338,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 816,
+  "line": 883,
   "speaker": "tom",
   "text": "Non si passa... c'è quel masso al posto della porta!",
   "kind": "battuta"
@@ -2706,7 +2706,7 @@
  {
   "n": 339,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 817,
+  "line": 884,
   "speaker": "roy",
   "text": "Il ragazzo è lì sotto. Vero, Muark? È lì sotto.",
   "kind": "battuta"
@@ -2714,7 +2714,7 @@
  {
   "n": 340,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 818,
+  "line": 885,
   "speaker": "roy",
   "text": "Cristo... il ragazzo era lì.",
   "kind": "battuta"
@@ -2722,7 +2722,7 @@
  {
   "n": 341,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 819,
+  "line": 886,
   "speaker": "tom",
   "text": "Dal retro. Usciamo in giardino e giriamo dal lato della casa.",
   "kind": "battuta"
@@ -2730,7 +2730,7 @@
  {
   "n": 342,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 831,
+  "line": 902,
   "speaker": "tom",
   "text": "Dai... dai, apriti!",
   "kind": "battuta"
@@ -2738,7 +2738,7 @@
  {
   "n": 343,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 838,
+  "line": 910,
   "speaker": "taccuino",
   "text": "Uscire in giardino con gli altri",
   "kind": "obiettivo"
@@ -2746,7 +2746,7 @@
  {
   "n": 344,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 921,
+  "line": 1008,
   "speaker": "roy",
   "text": "Sentite? Da quella parte...",
   "kind": "battuta"
@@ -2754,7 +2754,7 @@
  {
   "n": 345,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 924,
+  "line": 1011,
   "speaker": "tom",
   "text": "Zitti.",
   "kind": "battuta"
@@ -2762,7 +2762,7 @@
  {
   "n": 346,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 940,
+  "line": 1031,
   "speaker": "roy",
   "text": "Oh... mio... Dio...",
   "kind": "battuta"
@@ -2770,7 +2770,7 @@
  {
   "n": 347,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 947,
+  "line": 1038,
   "speaker": "tom",
   "text": "Non muovetevi. Non... non respirate.",
   "kind": "battuta"
@@ -2778,7 +2778,7 @@
  {
   "n": 348,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 953,
+  "line": 1048,
   "speaker": "jef",
   "text": "ATTENTI!",
   "kind": "battuta"
@@ -2786,7 +2786,7 @@
  {
   "n": 349,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1022,
+  "line": 1212,
   "speaker": "tv",
   "text": "...continua la nostra edizione straordinaria. Sono le sei del mattino.",
   "kind": "battuta"
@@ -2794,7 +2794,7 @@
  {
   "n": 350,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1024,
+  "line": 1214,
   "speaker": "tv",
   "text": "Questa notte, poco dopo le nove, qualcosa è uscito dal sottosuolo, sotto la vecchia centrale elettrica di Maple Grove.",
   "kind": "battuta"
@@ -2802,7 +2802,7 @@
  {
   "n": 351,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1025,
+  "line": 1215,
   "speaker": "tv",
   "text": "Queste immagini sono state riprese da un nostro elicottero, poco prima che perdessimo il contatto.",
   "kind": "battuta"
@@ -2810,7 +2810,7 @@
  {
   "n": 352,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1026,
+  "line": 1216,
   "speaker": "tv",
   "text": "La creatura, alta più di sessanta metri, ha attraversato la città da est a ovest, scagliando detriti per chilometri.",
   "kind": "battuta"
@@ -2818,7 +2818,7 @@
  {
   "n": 353,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1027,
+  "line": 1217,
   "speaker": "tv",
   "text": "Con lei, dalle fognature, sono uscite centinaia di creature più piccole.",
   "kind": "battuta"
@@ -2826,7 +2826,7 @@
  {
   "n": 354,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1029,
+  "line": 1219,
   "speaker": "tv",
   "text": "L'esercito ha istituito una zona di esclusione di quindici chilometri.",
   "kind": "battuta"
@@ -2834,7 +2834,7 @@
  {
   "n": 355,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1030,
+  "line": 1220,
   "speaker": "tv",
   "text": "Chi si trova ancora all'interno deve dirigersi verso nord, lungo la Route 9, fino a Fort Jackson.",
   "kind": "battuta"
@@ -2842,7 +2842,7 @@
  {
   "n": 356,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1032,
+  "line": 1222,
   "speaker": "tv",
   "text": "Le operazioni militari sono in corso. Il Pentagono non ha rilasciato dichiarazioni.",
   "kind": "battuta"
@@ -2850,7 +2850,7 @@
  {
   "n": 357,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1034,
+  "line": 1224,
   "speaker": "tv",
   "text": "Non abbiamo ancora un numero delle vittime. Si parla di migliaia di dispersi.",
   "kind": "battuta"
@@ -2858,7 +2858,7 @@
  {
   "n": 358,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1036,
+  "line": 1226,
   "speaker": "tv",
   "text": "Se ci state ascoltando... non restate dove siete. Andate a nord.",
   "kind": "battuta"
@@ -2866,7 +2866,7 @@
  {
   "n": 359,
   "file": "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs",
-  "line": 1037,
+  "line": 1227,
   "speaker": "tv",
   "text": "Ripetiamo: andate a n...",
   "kind": "battuta"

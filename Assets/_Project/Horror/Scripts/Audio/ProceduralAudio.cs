@@ -687,6 +687,25 @@ namespace FantaLandia.Horror.Audio
             }, 515);
         }
 
+        /// <summary>Il battito del cuore che rimbomba nelle orecchie (tum-tum, in loop, circa 80 battiti al minuto).</summary>
+        public static AudioClip Heartbeat()
+        {
+            return Build("battito", 0.75f, (d, r) =>
+            {
+                foreach (float at in new[] { 0f, 0.22f })
+                {
+                    int s0 = (int)(at * Rate);
+                    float amp = at > 0f ? 0.7f : 1f;
+                    for (int i = s0; i < s0 + Rate / 5 && i < d.Length; i++)
+                    {
+                        float t = (i - s0) / (float)Rate;
+                        d[i] += Mathf.Sin(2f * Mathf.PI * (48f + 30f * Mathf.Exp(-t * 30f)) * t) * Mathf.Exp(-t * 22f) * amp;
+                    }
+                }
+                LowPass(d, 160f);
+            }, 516);
+        }
+
         /// <summary>Urla lontane di gente (più voci, filtrate dalla distanza).</summary>
         public static AudioClip DistantScreams()
         {

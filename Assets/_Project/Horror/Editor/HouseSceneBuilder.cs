@@ -1205,9 +1205,19 @@ namespace FantaLandia.Horror.EditorTools
             Box("Lampada sul retro", y, new Vector3(-1.58f, F0 + 2.4f, Z1 + 0.02f), new Vector3(-1.42f, F0 + 2.6f, Z1 + 0.09f),
                 EditorAssetUtil.Emissive("Casa Lampada accesa", new Color(1f, 0.85f, 0.55f), 2f));
             HorrorVisuals.LightCone(y, new Vector3(-1.5f, F0 + 2.4f, Z1 + 0.1f), 2.6f, 1.4f, new Color(1f, 0.8f, 0.5f), 0.1f);
-            Place(VoxelFurniture.Get("Barbecue"), y, new Vector3(1.2f, 0.15f, 13.2f), 0f);
-            Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-3f, 0.15f, 12.9f), 30f);
-            Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-1.6f, 0.15f, 13.3f), -20f);
+            if (!ch2)
+            {
+                Place(VoxelFurniture.Get("Barbecue"), y, new Vector3(1.2f, 0.15f, 13.2f), 0f);
+                Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-3f, 0.15f, 12.9f), 30f);
+                Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-1.6f, 0.15f, 13.3f), -20f);
+            }
+            else
+            {
+                // capitolo 2: il barbecue rovesciato nel prato, le sedie sbalzate via, una dentro la staccionata
+                Tilt(Place(VoxelFurniture.Get("Barbecue"), y, new Vector3(2.9f, 0.25f, 15.1f), 40f), 0f, 0f, 92f);
+                Tilt(Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(-4.6f, 0.3f, 15.8f), 110f), 85f, 0f, 10f);
+                Tilt(Place(VoxelFurniture.Get("Sedia da giardino"), y, new Vector3(5.2f, 0.45f, 21.3f), -60f), 20f, 0f, 115f);
+            }
             Place(VoxelFurniture.Get("Albero"), y, new Vector3(8f, 0f, 17f), 0f);
             Place(VoxelFurniture.Get("Albero"), y, new Vector3(-9f, 0f, 19f), 0f);
             Floor("Vialetto laterale", y, new Vector3(7f, 0f, 7.2f), new Vector3(9f, 0.03f, 9.6f), sidewalk, Surface.Concrete);
@@ -1215,6 +1225,7 @@ namespace FantaLandia.Horror.EditorTools
             Fence(y, "Staccionata retro", new Vector3(-13f, 0f, 22f), new Vector3(13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
             Fence(y, "Staccionata sinistra", new Vector3(-13f, 0f, 1f), new Vector3(-13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
             Fence(y, "Staccionata destra", new Vector3(13f, 0f, 1f), new Vector3(13f, 0f, 22f), FenceHeight, fenceWood, fenceWood, true);
+            if (ch2) DamageYard(y);
         }
 
         // ------------------------------------------------------------------ vicinato

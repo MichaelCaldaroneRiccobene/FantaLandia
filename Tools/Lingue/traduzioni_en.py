@@ -434,4 +434,5 @@ UI.update({
 "Non si passa. C'è un masso enorme al posto della porta.": "No way through. There's a huge boulder where the door was.",
 "Siediti sulla cassa": "Sit on the crate",
 "Meglio restare qui sotto con gli altri.": "Better stay down here with the others.",
+"Effetto retrò": "Retro effect",
 })

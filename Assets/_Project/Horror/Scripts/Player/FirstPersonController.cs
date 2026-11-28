@@ -46,6 +46,8 @@ namespace FantaLandia.Horror.Player
         [Range(0f, 1f)] public float knockdown;
         [Tooltip("Rollio della camera in gradi (si somma all'ondeggiare)")]
         public float roll;
+        [Tooltip("La regia vieta la corsa (es. seguendo Tom al buio)")]
+        public bool noRun;
 
         /// <summary>Una spinta improvvisa (un'esplosione, un colpo): si vola all'indietro e la spinta si smorza da sola.</summary>
         public void Push(Vector3 impulse)
@@ -133,7 +135,7 @@ namespace FantaLandia.Horror.Player
             // --- movimento
             Vector2 input = locked ? Vector2.zero : GameInput.PanAxis;
             IsCrouching = !locked && !talking && GameInput.CrouchHeld;
-            IsRunning = !locked && !talking && !IsCrouching && GameInput.RunHeld && input.y > 0.1f;
+            IsRunning = !locked && !talking && !noRun && !IsCrouching && GameInput.RunHeld && input.y > 0.1f;
             float speed = IsCrouching ? crouchSpeed : IsRunning ? runSpeed : walkSpeed;
             Vector3 wish = (transform.forward * input.y + transform.right * input.x);
             if (wish.sqrMagnitude > 1f) wish.Normalize();

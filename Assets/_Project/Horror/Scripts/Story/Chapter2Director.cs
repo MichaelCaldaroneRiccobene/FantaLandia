@@ -89,6 +89,7 @@ namespace FantaLandia.Horror.Story
         public Material bloodMaterial;
         public Material dustMaterial;
         public Material rockMaterial;
+        public Material fireMaterial;
 
         // ------------------------------------------------------------------ stato
 
@@ -160,6 +161,22 @@ namespace FantaLandia.Horror.Story
             StartCoroutine(Main());
             StartCoroutine(BunkerChatter());
             StartCoroutine(Aftershocks());
+            StartCoroutine(DistantRoars());
+        }
+
+        bool distantRoars;
+
+        /// <summary>Di sopra e fuori: ogni tanto un ruggito lontano (niente sirene: la città tace).</summary>
+        IEnumerator DistantRoars()
+        {
+            int n = 0;
+            while (true)
+            {
+                yield return new WaitForSeconds(Random.Range(22f, 40f));
+                if (!distantRoars || fade > 0.01f || PlayerInBasement || aftershocks && Random.value < 0.5f) continue;
+                HorrorAudio.Play2D(ProceduralAudio.Roar(n++ % 3), Random.Range(0.3f, 0.5f), Random.Range(0.78f, 0.92f));
+                Shake(0.12f, 1.5f);
+            }
         }
 
         IEnumerator Main()
@@ -510,7 +527,7 @@ namespace FantaLandia.Horror.Story
             DialogueSystem.Bark(Speakers.Muark, "Oh, cazzo... la casa...");
             yield return new WaitForSeconds(3.2f);
             DialogueSystem.Bark(Speakers.Muark, "Il piano di sopra... non c'è più.");
-            sirenTarget = 0.25f;
+            distantRoars = true; // da qui in poi, ogni tanto, la creatura ruggisce lontano
         }
 
         /// <summary>Il fattorino aspetta sul portico con la pizza in mano, col fiatone, e si guarda alle spalle.</summary>
@@ -556,8 +573,11 @@ namespace FantaLandia.Horror.Story
             LookOf(pizzaBoy, sky);
             DialogueSystem.Bark(Speakers.PizzaBoy, "...Cos'è questo rumore?", boyEye);
             yield return new WaitForSeconds(0.7f);
-            StartCoroutine(LookAt(boyEye + (from - boyEye).normalized * 3f, 1.1f));
+            // la camera resta sulla faccia del ragazzo (che guarda in alto): il masso entra nell'inquadratura da solo
+            bool falling = true;
+            StartCoroutine(TrackFace(boySp, () => falling));
             yield return RockFalls(rockFront, from, land, 1.7f, true);
+            falling = false;
             Destroy(sky.gameObject);
 
             // l'impatto, con Muark a un metro e mezzo
@@ -567,6 +587,26 @@ namespace FantaLandia.Horror.Story
             PlaceFrontRock(true);
             if (pizzaBox != null) { pizzaBox.gameObject.SetActive(false); }
             yield return ThrownBack(land);
+        }
+
+        IEnumerator TrackFace(NpcSpeaker who, System.Func<bool> keep)
+        {
+            while (who != null && keep())
+            {
+                Vector3 dir = who.EyePoint - fpc.cam.transform.position;
+                float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+                float pitch = Mathf.Clamp(-Mathf.Atan2(dir.y, new Vector2(dir.x, dir.z).magnitude) * Mathf.Rad2Deg, -80f, 70f);
+                float k = 1f - Mathf.Exp(-8f * Time.unscaledDeltaTime);
+                fpc.SetLook(Mathf.LerpAngle(fpc.Yaw, yaw, k), Mathf.Lerp(fpc.Pitch, pitch, k));
+                yield return null;
+            }
+        }
+
+        /// <summary>Il corpo di Muark (visto da terra sembrerebbe in piedi): nascosto finché non si rialza.</summary>
+        void SetBodyVisible(bool visible)
+        {
+            if (fpc == null || fpc.body == null) return;
+            foreach (var r in fpc.body.GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
         }
 
         /// <summary>Il frammento scende dal cielo girando su sé stesso; nell'ultimo tratto tutto rallenta.</summary>
@@ -626,6 +666,7 @@ namespace FantaLandia.Horror.Story
             away.y = 0f;
             away = away.sqrMagnitude > 0.01f ? away.normalized : -player.forward;
             fpc.Push(away * 7.5f + Vector3.up * 3f);
+            SetBodyVisible(false);
             for (float t = 0f; t < 1f; t += Time.deltaTime / 0.55f) { fpc.knockdown = t; fpc.roll = Mathf.Lerp(0f, -12f, t); yield return null; }
             fpc.knockdown = 1f;
             yield return new WaitForSeconds(1.2f);
@@ -645,6 +686,7 @@ namespace FantaLandia.Horror.Story
             for (float t = 1f; t > 0f; t -= Time.deltaTime / 2.6f) { fpc.knockdown = t; fpc.roll = Mathf.Lerp(0f, -12f, t); yield return null; }
             fpc.knockdown = 0f;
             fpc.roll = 0f;
+            SetBodyVisible(true);
             Lock(false);
             StartCoroutine(StaggerFades(45f));
             DialogueSystem.Bark(Speakers.Muark, "Il ragazzo... dov'è il ragazzo...");
@@ -703,12 +745,14 @@ namespace FantaLandia.Horror.Story
         {
             aftershocks = true;
             droneTarget = 0.12f;
-            if (!PlayerInBasement)
+            Vector3 sofa = seatPlayer.FrontPosition;
+            bool NearSofa() => PlayerInBasement && Flat(player.position, sofa) < 1.5f;
+            if (!NearSofa())
             {
                 StoryDirector.Objective = "Tornare in cantina dagli altri (Corri, cazzo)";
                 Goal((null, Speakers.Muark, "Devo tornare giù dagli altri."),
                      (tom, Speakers.Tom, "Muark?! MUARK! Rispondi!"));
-                while (!PlayerInBasement) yield return null;
+                while (!NearSofa()) yield return null;
                 ClearGoal();
             }
             // gli amici gli vanno incontro e lo fanno sedere
@@ -794,6 +838,8 @@ namespace FantaLandia.Horror.Story
         {
             Stand(tom); Stand(roy); Stand(jef);
             LookOf(jef, null);
+            if (fpc != null) fpc.noRun = true; // al buio dietro a Tom si cammina
+            foreach (var m in new[] { tom, roy, jef }) { Actor(m).idleLook = false; Actor(m).keepPersonalSpace = false; }
             // Tom prende la torcia dalla cassa e la accende
             if (tomTorch != null)
             {
@@ -813,6 +859,9 @@ namespace FantaLandia.Horror.Story
                 }, 8f)
                 .Do(() => { if (fpc != null && fpc.IsSeated) fpc.StandUp(); }), tom, 9f);
 
+            // Tom è il capo: Roy e Jef guardano lui, non Muark
+            HoldLook(roy, Look(tom), 0.4f);
+            HoldLook(jef, Look(tom), 0.4f);
             StoryDirector.Objective = "Seguire Tom (Resta vicino alla luce)";
             Goal((tom, Speakers.Tom, "Muark, di qua! Stammi dietro!"),
                  (roy, Speakers.Roy, "Muark, dai! Non restare indietro al buio!"));
@@ -841,6 +890,10 @@ namespace FantaLandia.Horror.Story
             Job(jef, Follow(jef, roy, 1.2f));
             yield return WaitFor(() => Flat(tom.transform.position, backInside.position) < 0.8f, 25f);
             Unstick(backInside.position);
+            // Tom resta girato verso la porta (anche se Muark è indietro)
+            var doorPoint = new GameObject("Porta sul retro (sguardo)").transform;
+            doorPoint.position = backDoor.transform.position + Vector3.up * 1.5f;
+            HoldLook(tom, doorPoint, 0.6f);
             yield return Actor(tom).FaceTowards(backDoor.transform.position, 0.4f);
             for (int i = 0; i < 2; i++)
             {
@@ -851,6 +904,7 @@ namespace FantaLandia.Horror.Story
             }
             backDoor.Unlock();
             backDoor.Open(-1);
+            HoldLook(tom, null, 0f);
             HorrorAudio.PlayAt(ProceduralAudio.DoorCreak(1), backDoor.transform.position, 0.8f);
             yield return new WaitForSeconds(0.8f);
             StoryDirector.Objective = "Uscire in giardino con gli altri";
@@ -868,8 +922,8 @@ namespace FantaLandia.Horror.Story
             {
                 if (player != null && Vector3.Distance(player.position, tom.transform.position) > 7f)
                 {
+                    // si ferma e aspetta, ma resta girato dove sta andando
                     tom.MoveTo(tom.transform.position, false);
-                    yield return actor.FaceTowards(player.position, 0.5f);
                     while (Vector3.Distance(player.position, tom.transform.position) > 4.5f) yield return null;
                     continue;
                 }
@@ -912,6 +966,22 @@ namespace FantaLandia.Horror.Story
         }
 
         /// <summary>La torcia in mano a Tom: un faro che segue lo sguardo del personaggio.</summary>
+        static Transform Look(CharacterMotor m)
+        {
+            var sp = m != null ? m.GetComponent<NpcSpeaker>() : null;
+            return sp != null ? sp.LookPoint : null;
+        }
+
+        /// <summary>Blocca lo sguardo (e l'espressione) di un personaggio: parlare o ascoltare non lo cambia più.</summary>
+        static void HoldLook(CharacterMotor m, Transform target, float brow)
+        {
+            var sp = m != null ? m.GetComponent<NpcSpeaker>() : null;
+            if (sp == null) return;
+            sp.holdLook = target;
+            sp.holdBrow = brow;
+            LookOf(m, target);
+        }
+
         void TomFlashlight()
         {
             if (tomLight != null) return;
@@ -931,7 +1001,6 @@ namespace FantaLandia.Horror.Story
         {
             ClearGoal();
             yield return WaitFor(() => !PlayerInside && Flat(player.position, gardenTom.position) < 7f, 120f);
-            sirenTarget = 0.3f;
             yield return new WaitForSeconds(1.5f);
             // urla lontane, a destra
             HorrorAudio.PlayAt(ProceduralAudio.DistantScreams(), screamsPoint.position, 1f, 1f, 160f);
@@ -944,16 +1013,20 @@ namespace FantaLandia.Horror.Story
 
             // la creatura si alza all'orizzonte: nessuno riesce a muoversi
             Lock(true);
+            distantRoars = false;
             foreach (var m in new[] { tom, roy, jef }) { StopJob(m); m.MoveTo(m.transform.position, false); }
-            Vector3 head = creature.head != null ? creature.head.position : creature.transform.position + Vector3.up * 55f;
-            StartCoroutine(LookAt(creature.transform.position + Vector3.up * 30f, 2.4f));
-            HorrorAudio.Play2D(ProceduralAudio.Rumble(), 0.6f, 0.6f);
-            Shake(0.4f, 6f);
             var focus = new GameObject("La creatura (sguardi)").transform;
             focus.SetParent(creature.head != null ? creature.head : creature.transform, false);
-            foreach (var m in new[] { tom, roy, jef }) { LookOf(m, focus); StartCoroutine(Actor(m).FaceTowards(creature.transform.position, 1.2f)); }
+            // tutti fissano la creatura, terrorizzati (sopracciglia alzate), girati verso di lei
+            foreach (var m in new[] { tom, roy, jef }) HoldLook(m, focus, 1f);
+            staring = true;
+            StartCoroutine(StareAtCreature());
+            StartCoroutine(LookAt(creature.transform.position + Vector3.up * 45f, 2.4f));
+            HorrorAudio.Play2D(ProceduralAudio.Rumble(), 0.6f, 0.6f);
+            Shake(0.4f, 6f);
+            dreadOn = true;
             yield return creature.Rise(7f);
-            head = creature.head != null ? creature.head.position : head;
+            Vector3 head = creature.head != null ? creature.head.position : creature.transform.position + Vector3.up * 90f;
             yield return LookAt(head, 1.4f);
             DialogueSystem.Bark(Speakers.Roy, "Oh... mio... Dio...", Eye(roy));
             yield return new WaitForSeconds(1.6f);
@@ -965,27 +1038,42 @@ namespace FantaLandia.Horror.Story
             DialogueSystem.Bark(Speakers.Tom, "Non muovetevi. Non... non respirate.", Eye(tom));
             yield return new WaitForSeconds(3.4f);
 
-            // il fischio dall'alto: "ATTENTI!"
+            // il fischio dall'alto: Jef grida e indica il cielo, Muark si gira verso di lui...
             HorrorAudio.Play2D(ProceduralAudio.Whistle(), 1f, 0.9f);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.4f);
+            staring = false;
+            var sky = new GameObject("Il cielo sopra il giardino").transform;
+            sky.position = jef.transform.position + Vector3.up * 30f;
+            HoldLook(jef, sky, 1f);
             DialogueSystem.Bark(Speakers.Jef, "ATTENTI!", Eye(jef));
-            StartCoroutine(JefPointsUp(3f));
+            StartCoroutine(JefPointsUp(5f));
+            dreadOn = false;
+            yield return LookAt(Eye(jef) + Vector3.up * 0.4f, 0.5f);
+            yield return new WaitForSeconds(1f);
+            // ...e un secondo dopo il macigno in fiamme gli arriva addosso dal cielo
             Vector3 cam = fpc.cam.transform.position;
-            Vector3 dir = (creature.transform.position - cam);
+            Vector3 dir = creature.transform.position - cam;
             dir.y = 0f;
             dir.Normalize();
-            Vector3 from = cam + dir * 30f + Vector3.up * 70f;
-            yield return LookAt(cam + (from - cam).normalized * 10f, 0.55f);
-            // il macigno viene addosso: riempie la vista, poi nero e silenzio
+            Vector3 from = cam + dir * 45f + Vector3.up * 60f;
             rockFinal.gameObject.SetActive(true);
             rockFinal.position = from;
+            SetOnFire(rockFinal);
             Quaternion r0 = rockFinal.rotation;
-            for (float t = 0f; t < 1f; t += Time.deltaTime / 1.3f)
+            Vector3 end = cam + Vector3.up * 0.3f;
+            float seconds = 2.2f;
+            for (float t = 0f; t < 1f; t += Time.deltaTime / seconds)
             {
-                rockFinal.position = Vector3.Lerp(from, cam + Vector3.up * 0.4f, t * t);
+                rockFinal.position = Vector3.Lerp(from, end, t * t);
                 rockFinal.rotation = Quaternion.Euler(t * 160f, t * 90f, 0f) * r0;
-                if (t > 0.55f && Time.timeScale > 0.5f) SetTimeScale(0.35f);
-                if (Vector3.Distance(rockFinal.position, cam) < 2.2f) break;
+                // lo sguardo va sul macigno e lo segue mentre arriva
+                Vector3 to = rockFinal.position - fpc.cam.transform.position;
+                float yaw = Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg;
+                float pitch = Mathf.Clamp(-Mathf.Atan2(to.y, new Vector2(to.x, to.z).magnitude) * Mathf.Rad2Deg, -80f, 70f);
+                float k = 1f - Mathf.Exp(-(t < 0.25f ? 5f : 12f) * Time.unscaledDeltaTime);
+                fpc.SetLook(Mathf.LerpAngle(fpc.Yaw, yaw, k), Mathf.Lerp(fpc.Pitch, pitch, k));
+                if (t > 0.7f && Time.timeScale > 0.5f) SetTimeScale(0.4f);
+                if (Vector3.Distance(rockFinal.position, fpc.cam.transform.position) < 2.4f) break;
                 yield return null;
             }
             SetTimeScale(1f);
@@ -995,6 +1083,91 @@ namespace FantaLandia.Horror.Story
             AudioListener.volume = 0f;
             if (stun != null) stun.ClearAll();
             yield return new WaitForSeconds(3.5f);
+        }
+
+        bool staring, dreadOn;
+
+        /// <summary>
+        /// Mentre la creatura si alza: i ragazzi restano girati verso di lei, impietriti. Roy si mette le mani in testa,
+        /// Tom allarga un braccio davanti agli altri, Jef stringe i pugni al petto.
+        /// </summary>
+        IEnumerator StareAtCreature()
+        {
+            var anims = new Dictionary<CharacterMotor, ProceduralBodyAnimator>();
+            foreach (var m in new[] { tom, roy, jef }) anims[m] = m.GetComponentInChildren<ProceduralBodyAnimator>();
+            for (float t = 0f; staring; t += Time.deltaTime)
+            {
+                float w = Mathf.Clamp01(t / 0.8f);
+                foreach (var m in new[] { tom, roy, jef })
+                {
+                    Vector3 d = creature.transform.position - m.transform.position;
+                    d.y = 0f;
+                    if (d.sqrMagnitude > 0.01f) m.transform.rotation = Quaternion.Slerp(m.transform.rotation, Quaternion.LookRotation(d), Time.deltaTime * 2.5f);
+                    var anim = anims[m];
+                    if (anim == null) continue;
+                    Transform r = m.transform;
+                    float shiver = Mathf.Sin(Time.time * 22f + m.GetInstanceID()) * 0.012f;
+                    if (m == roy)
+                        for (int side = -1; side <= 1; side += 2)
+                            anim.SetExternalHandIK(side, r.position + Vector3.up * (1.78f + shiver) + r.right * side * 0.16f + r.forward * 0.02f,
+                                                   r.right * side + Vector3.down * 0.3f, w, ProceduralBodyAnimator.PalmDown(side, -r.right * side));
+                    else if (m == tom)
+                        anim.SetExternalHandIK(-1, r.position + Vector3.up * (1.25f + shiver) - r.right * 0.62f + r.forward * 0.25f,
+                                               -r.right + Vector3.down * 0.5f, w, ProceduralBodyAnimator.PalmDown(-1, r.forward));
+                    else
+                        for (int side = -1; side <= 1; side += 2)
+                            anim.SetExternalHandIK(side, r.position + Vector3.up * (1.3f + shiver) + r.forward * 0.22f + r.right * side * 0.07f,
+                                                   r.right * side + Vector3.down * 0.5f, w, ProceduralBodyAnimator.PalmDown(side, r.forward));
+                }
+                yield return null;
+            }
+        }
+
+        /// <summary>Il macigno finale prende fuoco: fiamme e scintille che lasciano la scia, fumo nero, luce arancione.</summary>
+        void SetOnFire(Transform rock)
+        {
+            var glow = new GameObject("Luce del macigno in fiamme").AddComponent<Light>();
+            glow.transform.SetParent(rock, false);
+            glow.type = LightType.Point;
+            glow.color = new Color(1f, 0.5f, 0.15f);
+            glow.range = 30f;
+            glow.intensity = 6f;
+            if (fireMaterial != null)
+            {
+                var fire = MakeParticles("Fiamme del macigno", rock.position, fireMaterial);
+                fire.transform.SetParent(rock, true);
+                var main = fire.main;
+                main.loop = true;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 1.1f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.5f, 2f);
+                main.startSize = new ParticleSystem.MinMaxCurve(1.2f, 3f);
+                main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.8f, 0.4f, 0.9f), new Color(1f, 0.4f, 0.1f, 0.9f));
+                var em = fire.emission;
+                em.rateOverTime = 70f;
+                var sh = fire.shape;
+                sh.shapeType = ParticleSystemShapeType.Sphere;
+                sh.radius = 1.4f;
+                FadeOverLife(fire);
+                fire.Play();
+            }
+            if (dustMaterial != null)
+            {
+                var smokeTrail = MakeParticles("Fumo del macigno", rock.position, dustMaterial);
+                smokeTrail.transform.SetParent(rock, true);
+                var main = smokeTrail.main;
+                main.loop = true;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(2f, 4f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0f, 0.5f);
+                main.startSize = new ParticleSystem.MinMaxCurve(2.5f, 5f);
+                main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.08f, 0.07f, 0.06f, 0.8f), new Color(0.15f, 0.12f, 0.1f, 0.8f));
+                var em = smokeTrail.emission;
+                em.rateOverTime = 35f;
+                var sh = smokeTrail.shape;
+                sh.shapeType = ParticleSystemShapeType.Sphere;
+                sh.radius = 1.2f;
+                FadeOverLife(smokeTrail);
+                smokeTrail.Play();
+            }
         }
 
         IEnumerator JefPointsUp(float seconds)
@@ -1022,12 +1195,11 @@ namespace FantaLandia.Horror.Story
             if (tomLight != null) tomLight.enabled = false;
             if (creature != null) creature.gameObject.SetActive(false);
             if (rockFinal != null) rockFinal.gameObject.SetActive(false);
-            if (fpc != null) { fpc.knockdown = 0f; fpc.stagger = 0f; fpc.roll = 0f; if (fpc.IsSeated) fpc.StandUp(); }
+            if (fpc != null) { fpc.knockdown = 0f; fpc.stagger = 0f; fpc.roll = 0f; fpc.noRun = false; if (fpc.IsSeated) fpc.StandUp(); }
             if (stun != null) stun.ClearAll();
             yield return new WaitForSeconds(0.5f);
             TeleportPlayer(tvView);
             if (fpc != null) fpc.SetLook(tvView.eulerAngles.y, 12f);
-            sirenTarget = 0.12f;
             droneTarget = 0f;
             AudioListener.volume = 1f;
             if (tv != null) { tv.powered = true; tv.newsScene = 5; tv.SetChannel(TvChannel.Static); }
@@ -1214,7 +1386,9 @@ namespace FantaLandia.Horror.Story
             Destroy(ps.gameObject, 12f);
         }
 
-        ParticleSystem MakeParticles(string name, Vector3 at)
+        ParticleSystem MakeParticles(string name, Vector3 at) => MakeParticles(name, at, dustMaterial);
+
+        ParticleSystem MakeParticles(string name, Vector3 at, Material mat)
         {
             var go = new GameObject(name);
             go.transform.position = at;
@@ -1225,7 +1399,7 @@ namespace FantaLandia.Horror.Story
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             var r = go.GetComponent<ParticleSystemRenderer>();
-            r.sharedMaterial = dustMaterial;
+            r.sharedMaterial = mat;
             r.renderMode = ParticleSystemRenderMode.Billboard;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             r.receiveShadows = false;
@@ -1391,6 +1565,17 @@ namespace FantaLandia.Horror.Story
         {
             NpcActor.PlayerIndoors = PlayerInside;
             UpdateHints();
+            // claustrofobia: più si guarda la creatura, più la vista si stringe e il cuore batte
+            if (stun != null && creature != null && fpc != null && fpc.cam != null)
+            {
+                float want = 0f;
+                if (dreadOn && creature.gameObject.activeInHierarchy && creature.head != null)
+                {
+                    Vector3 to = (creature.head.position - fpc.cam.transform.position).normalized;
+                    want = Mathf.InverseLerp(0.6f, 0.97f, Vector3.Dot(fpc.cam.transform.forward, to));
+                }
+                stun.dread = Mathf.MoveTowards(stun.dread, want, Time.deltaTime * (want > stun.dread ? 0.35f : 1.2f));
+            }
 
             // le lampadine del generatore: oscillano sul filo e calano quando il motore perde colpi
             if (bulbPivots != null)
