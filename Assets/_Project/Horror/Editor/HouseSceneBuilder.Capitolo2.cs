@@ -415,6 +415,7 @@ namespace FantaLandia.Horror.EditorTools
             var col = gap.AddComponent<BoxCollider>();
             col.size = new Vector3(1.1f, 2.3f, 0.5f);
             col.enabled = false;
+            gap.layer = 2; // ferma il giocatore ma non i raggi (sangue, interazioni)
             d.frontBlocker = col;
             var porch = world.Find("Casa di Tom/Veranda");
             var roofParts = new List<GameObject>();

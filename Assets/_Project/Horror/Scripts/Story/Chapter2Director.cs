@@ -196,7 +196,7 @@ namespace FantaLandia.Horror.Story
             if (s >= (int)StartAt.Ritorno)
             {
                 // il fattorino non c'è più, il macigno blocca la porta
-                PlaceFrontRock();
+                PlaceFrontRock(true);
                 BloodFx.Spray(bloodMaterial, frontDoor.transform.position + new Vector3(0.45f, 1.2f, -1.2f), Vector3.back, 30, 5f, 160f);
                 droneTarget = 0.12f;
                 aftershocks = true;
@@ -212,20 +212,27 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(0.4f);
         }
 
-        void PlaceFrontRock()
+        /// <summary>Il masso al posto della porta. 'doorGone': l'anta è volata via (Muark l'aveva aperta).</summary>
+        void PlaceFrontRock(bool doorGone)
         {
             if (rockFront != null) rockFront.gameObject.SetActive(true);
             if (frontBlocker != null) frontBlocker.enabled = true;
             if (pizzaBoy != null) pizzaBoy.gameObject.SetActive(false);
             if (frontDoor != null)
             {
-                if (frontDoor.hinge != null) frontDoor.hinge.gameObject.SetActive(false); // l'anta è volata via
+                if (doorGone) HideDoorLeaf();
+                else if (frontDoor.IsOpen) frontDoor.Close();
                 frontDoor.locked = true;
                 frontDoor.lockedText = "Non si passa. C'è un masso enorme al posto della porta.";
                 frontDoor.enabled = false;
             }
             // il tetto del portico è venuto giù con il masso
             if (porchRoof != null) foreach (var go in porchRoof) if (go != null) go.SetActive(false);
+        }
+
+        void HideDoorLeaf()
+        {
+            if (frontDoor != null && frontDoor.hinge != null) frontDoor.hinge.gameObject.SetActive(false);
         }
 
         // ================================================================== 1. un'ora dopo
@@ -545,8 +552,9 @@ namespace FantaLandia.Horror.Story
 
             // l'impatto, con Muark a un metro e mezzo
             Vector3 boyChest = pizzaBoy != null ? pizzaBoy.transform.position + Vector3.up * 1.2f : land + Vector3.up;
+            HideDoorLeaf(); // l'anta vola via prima che arrivi il sangue (niente macchie sospese nel vuoto)
             Impact(land, boyChest, true);
-            PlaceFrontRock();
+            PlaceFrontRock(true);
             if (pizzaBox != null) { pizzaBox.gameObject.SetActive(false); }
             yield return ThrownBack(land);
         }
@@ -661,7 +669,7 @@ namespace FantaLandia.Horror.Story
             BloodFx.Pool(bloodMaterial, land + new Vector3(0.6f, 0f, 1.2f), 1.6f);
             DustBurst(land + Vector3.up * 0.5f, 0.8f);
             CeilingDust(0.8f);
-            PlaceFrontRock();
+            PlaceFrontRock(false);
             if (pizzaBox != null) pizzaBox.gameObject.SetActive(false);
             if (near && stun != null) stun.Hit(0.55f, 0);
             yield return new WaitForSeconds(1.5f);
