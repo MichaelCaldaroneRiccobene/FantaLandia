@@ -435,13 +435,13 @@ grande	large
 Andare ad aprire la porta	Go answer the door
 Fine del capitolo 1\n\n<size=22>Continua...</size>	End of chapter 1\n\n<size=22>To be continued...</size>
 <size=26>641</size>\n\n<size=18>presenta</size>	<size=26>641</size>\n\n<size=18>presents</size>
-<size=46><b>FantaLandia</b></size>\n\n<size=22>Capitolo 1 — La sera dell'esplosione</size>	<size=46><b>FantaLandia</b></size>\n\n<size=22>Chapter 1 — The Night of the Explosion</size>
+<size=46><b>Guys Night</b></size>\n\n<size=22>Capitolo 1 — La sera dell'esplosione</size>	<size=46><b>Guys Night</b></size>\n\n<size=22>Chapter 1 — The Night of the Explosion</size>
 <size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank e Martha Miller · Gary e Linda Kowalski</size>	<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank and Martha Miller · Gary and Linda Kowalski</size>
 <size=18>Nel prossimo capitolo...</size>\n\n<size=26>Non aprite a nessuno.</size>	<size=18>In the next chapter...</size>\n\n<size=26>Don't open the door to anyone.</size>
 <size=22>Grazie per aver giocato</size>	<size=22>Thanks for playing</size>
 Un'ora dopo...	One hour later...
 Fine del capitolo 2\n\n<size=22>Continua...</size>	End of chapter 2\n\n<size=22>To be continued...</size>
-<size=46><b>FantaLandia</b></size>\n\n<size=22>Capitolo 2 — Non aprite a nessuno</size>	<size=46><b>FantaLandia</b></size>\n\n<size=22>Chapter 2 — Don't Open the Door</size>
+<size=46><b>Guys Night</b></size>\n\n<size=22>Capitolo 2 — Non aprite a nessuno</size>	<size=46><b>Guys Night</b></size>\n\n<size=22>Chapter 2 — Don't Open the Door</size>
 <size=20>Muark · Tom · Roy · Jef</size>\n<size=16>e il ragazzo delle pizze, che ha fatto in tempo a dire grazie</size>	<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>and the pizza guy, who had just enough time to say thank you</size>
 <size=18>Nel prossimo capitolo...</size>\n\n<size=26>A nord.</size>	<size=18>In the next chapter...</size>\n\n<size=26>North.</size>
 Prendi la radio e sintonizzala	Pick up the radio and tune it
@@ -453,3 +453,20 @@ Non si passa. C'è un masso enorme al posto della porta.	No way through. There's
 Siediti sulla cassa	Sit on the crate
 Meglio restare qui sotto con gli altri.	Better stay down here with the others.
 Effetto retrò	Retro effect
+Venerdì sera · Capitolo 1	Friday night · Chapter 1
+Venerdì notte · Capitolo 2	Friday, late night · Chapter 2
+Torna all'ultimo punto	Last checkpoint
+Ricomincia da capo	Start over
+Gioco	Game
+Audio	Audio
+Video	Video
+A/D: cambia scheda	A/D: switch tab
+W/S o mouse: scegli  ·  A/D: cambia	W/S or mouse: choose  ·  A/D: change
+E o clic: conferma  ·  Esc: chiudi	E or click: confirm  ·  Esc: close
+muoviti	move
+corri	run
+abbassati	crouch
+interagisci	interact
+torcia	flashlight
+salta una battuta	skip a line
+il taccuino	the notebook

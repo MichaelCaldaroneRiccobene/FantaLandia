@@ -1249,7 +1249,7 @@ namespace FantaLandia.Horror.Story
             string[] cards =
             {
                 "<size=26>641</size>\n\n<size=18>presenta</size>",
-                "<size=46><b>FantaLandia</b></size>\n\n<size=22>Capitolo 2 — Non aprite a nessuno</size>",
+                "<size=46><b>Guys Night</b></size>\n\n<size=22>Capitolo 2 — Non aprite a nessuno</size>",
                 "<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>e il ragazzo delle pizze, che ha fatto in tempo a dire grazie</size>",
                 "<size=18>Nel prossimo capitolo...</size>\n\n<size=26>A nord.</size>",
                 "<size=22>Grazie per aver giocato</size>",
