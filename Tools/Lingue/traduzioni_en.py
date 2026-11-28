@@ -441,4 +441,5 @@ UI.update({
 "W/S o mouse: scegli  ·  A/D: cambia": "W/S or mouse: choose  ·  A/D: change", "E o clic: conferma  ·  Esc: chiudi": "E or click: confirm  ·  Esc: close",
 "muoviti": "move", "corri": "run", "abbassati": "crouch", "interagisci": "interact", "torcia": "flashlight",
 "salta una battuta": "skip a line", "il taccuino": "the notebook",
+"presenta": "presents",
 })

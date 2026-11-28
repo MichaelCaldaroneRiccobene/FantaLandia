@@ -594,7 +594,9 @@ namespace FantaLandia.Horror.Dialogue
             {
                 if (!b.overhead) continue;
                 Vector3 world = b.position + Vector3.up * 0.45f;
-                Vector3 sp = cam.WorldToScreenPoint(world);
+                // (dal viewport: con l'effetto retrò la camera disegna in un'immagine piccola e i pixel non sono quelli dello schermo)
+                Vector3 vp = cam.WorldToViewportPoint(world);
+                Vector3 sp = new Vector3(vp.x * Screen.width, vp.y * Screen.height, vp.z);
                 float dist = Vector3.Distance(cam.transform.position, world);
                 if (sp.z <= 0f || dist > MaxOverheadDistance) continue;
                 if (sp.x < 0f || sp.x > Screen.width || sp.y < 0f || sp.y > Screen.height) continue;

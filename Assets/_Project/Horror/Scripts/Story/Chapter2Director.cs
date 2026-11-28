@@ -162,7 +162,13 @@ namespace FantaLandia.Horror.Story
             StartCoroutine(BunkerChatter());
             StartCoroutine(Aftershocks());
             StartCoroutine(DistantRoars());
+            DialogueSystem.LineStarted += OnAnyLine;
         }
+
+        float quietUntil;
+
+        /// <summary>Qualcuno ha appena parlato (anche la radio): le chiacchiere di sottofondo aspettano il loro turno.</summary>
+        void OnAnyLine(Speaker who, string text) => quietUntil = Mathf.Max(quietUntil, Time.time + 2.5f + text.Length * 0.06f);
 
         bool distantRoars;
 
@@ -299,8 +305,8 @@ namespace FantaLandia.Horror.Story
             while (true)
             {
                 yield return new WaitForSeconds(Random.Range(4.5f, 7f));
-                if (!bunkerChatter || DialogueSystem.IsTalking || fade > 0.01f) continue;
-                if (radio != null && radio.InUse && i % 2 == 1) continue; // mentre Muark ascolta la radio parlano meno
+                if (!bunkerChatter || DialogueSystem.IsTalking || fade > 0.01f || Time.time < quietUntil) continue;
+                if (radio != null && radio.InUse) continue; // mentre Muark ascolta la radio stanno zitti
                 string line = Argue[i++ % Argue.Length];
                 int bar = line.IndexOf('|');
                 CharacterMotor m = line.StartsWith("tom") ? tom : roy;
@@ -336,7 +342,7 @@ namespace FantaLandia.Horror.Story
             // timer nascosto: un minuto dopo che Muark ha preso in mano la radio arrivano comunque i ruggiti
             // (il minuto conta solo mentre Muark ha la radio in mano: il menu o le pause non lo consumano)
             float used = 0f;
-            while (radio.HeardCount < 3 && used < 60f)
+            while (radio.HeardCount < 3 && used < 30f)
             {
                 if (radio.InUse && !NotebookMenu.IsOpen) used += Time.deltaTime;
                 if (reactions.Count > 0 && !DialogueSystem.IsTalking)
@@ -361,22 +367,23 @@ namespace FantaLandia.Horror.Story
 
         IEnumerator React(string station)
         {
+            while (Time.time < quietUntil) yield return null;
             switch (station)
             {
                 case "locale":
                     DialogueSystem.Bark(Speakers.Roy, "\"Oh mio Dio\"? Cosa ha visto?", Eye(roy));
                     yield return new WaitForSeconds(3f);
-                    DialogueSystem.Bark(Speakers.Tom, "Restare in casa. Come se avessimo scelta.", Eye(tom));
+                    DialogueSystem.Bark(Speakers.Tom, "Restare in casa. Come se avessimo scelta.", Eye(tom), true);
                     break;
                 case "radioamatore":
-                    DialogueSystem.Bark(Speakers.Roy, "Alto come un palazzo?! Ma che cazzo dice quello?", Eye(roy));
+                    DialogueSystem.Bark(Speakers.Roy, "Alto come un palazzo?! Ma che cazzo dice quello?", Eye(roy), true);
                     yield return new WaitForSeconds(3.2f);
-                    DialogueSystem.Bark(Speakers.Jef, "Dice la verità.", Eye(jef));
+                    DialogueSystem.Bark(Speakers.Jef, "Dice la verità.", Eye(jef), true);
                     break;
                 case "militare":
-                    DialogueSystem.Bark(Speakers.Roy, "Martello Sette? Che cazzo vuol dire Martello Sette?", Eye(roy));
+                    DialogueSystem.Bark(Speakers.Roy, "Martello Sette? Che cazzo vuol dire Martello Sette?", Eye(roy), true);
                     yield return new WaitForSeconds(3.2f);
-                    DialogueSystem.Bark(Speakers.Tom, "Evacuare a nord... e noi come ci arriviamo? A piedi?", Eye(tom));
+                    DialogueSystem.Bark(Speakers.Tom, "Evacuare a nord... e noi come ci arriviamo? A piedi?", Eye(tom), true);
                     break;
             }
             yield return new WaitForSeconds(3f);
@@ -393,9 +400,9 @@ namespace FantaLandia.Horror.Story
             Stand(tom);
             Stand(roy);
             LookOf(jef, null);
-            DialogueSystem.Bark(Speakers.Roy, "Che cazzo era quello?!", Eye(roy));
+            DialogueSystem.Bark(Speakers.Roy, "Che cazzo era quello?!", Eye(roy), true);
             yield return new WaitForSeconds(2.2f);
-            DialogueSystem.Bark(Speakers.Tom, "Zitti! State zitti!", Eye(tom));
+            DialogueSystem.Bark(Speakers.Tom, "Zitti! State zitti!", Eye(tom), true);
             yield return new WaitForSeconds(1.6f);
             yield return Quake(0.7f, 1);
             yield return new WaitForSeconds(2.5f);
@@ -403,7 +410,7 @@ namespace FantaLandia.Horror.Story
             if (radio != null) radio.PoweredOn = false;
             droneTarget = 0f;
             yield return new WaitForSeconds(4f);
-            DialogueSystem.Bark(Speakers.Jef, "...Se n'è andato.", Eye(jef));
+            DialogueSystem.Bark(Speakers.Jef, "...Se n'è andato.", Eye(jef), true);
             yield return new WaitForSeconds(8.5f); // 15 secondi di silenzio dopo l'ultima scossa, poi bussano
         }
 
@@ -417,6 +424,7 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(roar >= 0 ? 0.5f : 0f);
             HorrorAudio.Play2D(ProceduralAudio.Rumble(), 0.9f * strength);
             Shake(1.3f * strength, 2.6f * strength);
+            if (PlayerInBasement || !staring) StartCoroutine(FriendsLookUp(2.2f + 2f * strength));
             SwingBulbs(14f * strength);
             StartCoroutine(DimBulbs(1.6f * strength));
             CeilingDust(strength);
@@ -424,6 +432,28 @@ namespace FantaLandia.Horror.Story
                 foreach (var p in shelfPoints)
                     if (p != null) HorrorAudio.PlayAt(ProceduralAudio.CansClink(), p.position, 0.5f * strength, Random.Range(1.1f, 1.4f), 10f);
             yield return new WaitForSeconds(2.2f * strength);
+        }
+
+        /// <summary>Gli amici alzano gli occhi al soffitto, spaventati (solo chi non ha già lo sguardo bloccato dalla regia).</summary>
+        IEnumerator FriendsLookUp(float seconds)
+        {
+            var points = new List<(CharacterMotor m, Transform up)>();
+            foreach (var m in new[] { tom, roy, jef })
+            {
+                var sp = m != null ? m.GetComponent<NpcSpeaker>() : null;
+                if (sp == null || !m.gameObject.activeInHierarchy || sp.holdLook != null) continue;
+                var up = new GameObject("Il soffitto (sguardo)").transform;
+                up.position = Eye(m) + m.transform.forward * 0.5f + Vector3.up * 2.5f;
+                HoldLook(m, up, 1f);
+                points.Add((m, up));
+            }
+            yield return new WaitForSeconds(seconds);
+            foreach (var (m, up) in points)
+            {
+                var sp = m.GetComponent<NpcSpeaker>();
+                if (sp != null && sp.holdLook == up) HoldLook(m, null, 0f);
+                Destroy(up.gameObject);
+            }
         }
 
         /// <summary>In sottofondo, finché si è in casa: ogni tanto una scossa lontana, a volte con un ruggito.</summary>
@@ -740,9 +770,9 @@ namespace FantaLandia.Horror.Story
             }
             else if (PlayerInBasement)
             {
-                DialogueSystem.Bark(Speakers.Roy, "...L'ha preso.", Eye(roy));
+                DialogueSystem.Bark(Speakers.Roy, "...L'ha preso.", Eye(roy), true);
                 yield return new WaitForSeconds(2.6f);
-                DialogueSystem.Bark(Speakers.Tom, "Non c'era niente da fare. Niente.", Eye(tom));
+                DialogueSystem.Bark(Speakers.Tom, "Non c'era niente da fare. Niente.", Eye(tom), true);
             }
         }
 
@@ -753,7 +783,7 @@ namespace FantaLandia.Horror.Story
             aftershocks = true;
             droneTarget = 0.12f;
             Vector3 sofa = seatPlayer.FrontPosition;
-            bool NearSofa() => PlayerInBasement && Flat(player.position, sofa) < 1.5f;
+            bool NearSofa() => PlayerInBasement && Flat(player.position, sofa) < 4f;
             if (!NearSofa())
             {
                 StoryDirector.Objective = "Tornare in cantina dagli altri (Corri, cazzo)";
@@ -833,9 +863,9 @@ namespace FantaLandia.Horror.Story
             foreach (var b in cellarBulbs) if (b != null) b.enabled = false;
             HorrorAudio.Play2D(ProceduralAudio.PowerDown(), 0.5f, 0.8f);
             yield return new WaitForSeconds(1.2f);
-            DialogueSystem.Bark(Speakers.Roy, "No, no, no... non adesso!", Eye(roy));
+            DialogueSystem.Bark(Speakers.Roy, "No, no, no... non adesso!", Eye(roy), true);
             yield return new WaitForSeconds(2.2f);
-            DialogueSystem.Bark(Speakers.Tom, "Merda. Il generatore è a secco.", Eye(tom));
+            DialogueSystem.Bark(Speakers.Tom, "Merda. Il generatore è a secco.", Eye(tom), true);
             yield return new WaitForSeconds(2.6f);
         }
 
@@ -906,7 +936,7 @@ namespace FantaLandia.Horror.Story
             {
                 HorrorAudio.PlayAt(ProceduralAudio.Thud(), backDoor.transform.position + Vector3.up, 1f, 0.85f);
                 Shake(0.2f, 0.25f);
-                if (i == 0) DialogueSystem.Bark(Speakers.Tom, "Dai... dai, apriti!", Eye(tom));
+                if (i == 0) DialogueSystem.Bark(Speakers.Tom, "Dai... dai, apriti!", Eye(tom), true);
                 yield return new WaitForSeconds(1.3f);
             }
             backDoor.Unlock();
@@ -1012,10 +1042,10 @@ namespace FantaLandia.Horror.Story
             // urla lontane, a destra
             HorrorAudio.PlayAt(ProceduralAudio.DistantScreams(), screamsPoint.position, 1f, 1f, 160f);
             yield return new WaitForSeconds(1.2f);
-            DialogueSystem.Bark(Speakers.Roy, "Sentite? Da quella parte...", Eye(roy));
+            DialogueSystem.Bark(Speakers.Roy, "Sentite? Da quella parte...", Eye(roy), true);
             yield return new WaitForSeconds(2.4f);
             HorrorAudio.PlayAt(ProceduralAudio.DistantScreams(), screamsPoint.position + Vector3.forward * 20f, 0.8f, 0.9f, 160f);
-            DialogueSystem.Bark(Speakers.Tom, "Zitti.", Eye(tom));
+            DialogueSystem.Bark(Speakers.Tom, "Zitti.", Eye(tom), true);
             yield return new WaitForSeconds(1.5f);
 
             // la creatura si alza all'orizzonte: nessuno riesce a muoversi
@@ -1035,14 +1065,14 @@ namespace FantaLandia.Horror.Story
             yield return creature.Rise(7f);
             Vector3 head = creature.head != null ? creature.head.position : creature.transform.position + Vector3.up * 90f;
             yield return LookAt(head, 1.4f);
-            DialogueSystem.Bark(Speakers.Roy, "Oh... mio... Dio...", Eye(roy));
+            DialogueSystem.Bark(Speakers.Roy, "Oh... mio... Dio...", Eye(roy), true);
             yield return new WaitForSeconds(1.6f);
             StartCoroutine(creature.Roar(4.5f));
             yield return new WaitForSeconds(0.3f);
             HorrorAudio.Play2D(ProceduralAudio.Roar(2), 1f, 0.85f);
             Shake(1.1f, 4f);
             yield return new WaitForSeconds(4.5f);
-            DialogueSystem.Bark(Speakers.Tom, "Non muovetevi. Non... non respirate.", Eye(tom));
+            DialogueSystem.Bark(Speakers.Tom, "Non muovetevi. Non... non respirate.", Eye(tom), true);
             yield return new WaitForSeconds(3.4f);
 
             // il fischio dall'alto: Jef grida e indica il cielo, Muark si gira verso di lui...
@@ -1052,7 +1082,7 @@ namespace FantaLandia.Horror.Story
             var sky = new GameObject("Il cielo sopra il giardino").transform;
             sky.position = jef.transform.position + Vector3.up * 30f;
             HoldLook(jef, sky, 1f);
-            DialogueSystem.Bark(Speakers.Jef, "ATTENTI!", Eye(jef));
+            DialogueSystem.Bark(Speakers.Jef, "ATTENTI!", Eye(jef), true);
             StartCoroutine(JefPointsUp(5f));
             dreadOn = false;
             yield return LookAt(Eye(jef) + Vector3.up * 0.4f, 0.5f);
@@ -1068,7 +1098,7 @@ namespace FantaLandia.Horror.Story
             SetOnFire(rockFinal);
             Quaternion r0 = rockFinal.rotation;
             Vector3 end = cam + Vector3.up * 0.3f;
-            float seconds = 2.2f;
+            float seconds = 1.1f;
             for (float t = 0f; t < 1f; t += Time.deltaTime / seconds)
             {
                 rockFinal.position = Vector3.Lerp(from, end, t * t);
@@ -1235,7 +1265,7 @@ namespace FantaLandia.Horror.Story
                 .Do(() => Scene(5)));
             if (tv != null) tv.SetChannel(TvChannel.Static);
             yield return new WaitForSeconds(2.5f);
-            title = Loc.T("Fine del capitolo 2\n\n<size=22>Continua...</size>");
+            title = "<size=64>END?</size>";
             titleAlpha = 1f;
             for (float t = 0f; t < 1f; t += Time.deltaTime / 3f) { fade = t; yield return null; }
             fade = 1f;
@@ -1255,8 +1285,8 @@ namespace FantaLandia.Horror.Story
             yield return new WaitForSeconds(4f);
             string[] cards =
             {
-                "<size=26>641</size>\n\n<size=18>presenta</size>",
-                "<size=46><b>Guys Night</b></size>\n\n<size=22>Capitolo 2 — Non aprite a nessuno</size>",
+                "@logo",
+                "<size=96><b>Guys Night</b></size>",
                 "<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>e il ragazzo delle pizze, che ha fatto in tempo a dire grazie</size>",
                 "<size=18>Nel prossimo capitolo...</size>\n\n<size=26>A nord.</size>",
                 "<size=22>Grazie per aver giocato</size>",
@@ -1264,14 +1294,29 @@ namespace FantaLandia.Horror.Story
             foreach (var card in cards)
             {
                 for (float t = 0f; t < 1f; t += Time.deltaTime / 0.6f) { titleAlpha = 1f - t; yield return null; }
-                title = Loc.T(card);
+                showLogo = card == "@logo";
+                // il logo della 641 con "presenta" sotto, grande
+                title = !showLogo ? Loc.T(card)
+                      : logo != null ? "\n\n\n\n\n<size=40>" + Loc.T("presenta") + "</size>"
+                      : "<size=72>641</size>\n\n<size=40>" + Loc.T("presenta") + "</size>";
                 for (float t = 0f; t < 1f; t += Time.deltaTime / 0.8f) { titleAlpha = t; yield return null; }
                 titleAlpha = 1f;
                 yield return new WaitForSeconds(3.5f);
             }
-            // si potrà rigiocare il capitolo dal suo inizio
+            // si potrà rigiocare il capitolo dal suo inizio; due secondi dopo l'ultima scritta il gioco si chiude
             GameSettings.Checkpoint = CheckpointBase;
+            yield return new WaitForSeconds(2f);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
+
+        [Header("Titoli di coda")]
+        [Tooltip("Il logo della 641 (prima di \"presenta\")")]
+        public Texture2D logo;
+        bool showLogo;
 
         static void Checkpoint(StartAt at)
         {
@@ -1297,14 +1342,14 @@ namespace FantaLandia.Horror.Story
 
         void UpdateHints()
         {
-            if (hints.Count == 0 || Time.time < hintClock || DialogueSystem.IsTalking || fade > 0.01f) return;
+            if (hints.Count == 0 || Time.time < hintClock || DialogueSystem.IsTalking || fade > 0.01f || Time.time < quietUntil) return;
             if (radio != null && radio.InUse) { hintClock = Time.time + 10f; return; }
             hintClock = Time.time + 30f;
             for (int n = 0; n < hints.Count; n++)
             {
                 var h = hints[hintIndex++ % hints.Count];
                 if (h.who != null && !h.who.gameObject.activeInHierarchy) continue;
-                DialogueSystem.Bark(h.sp, h.text, h.who != null ? Eye(h.who) : (Vector3?)null);
+                DialogueSystem.Bark(h.sp, h.text, h.who != null ? Eye(h.who) : (Vector3?)null, h.who != null);
                 return;
             }
         }
@@ -1579,9 +1624,9 @@ namespace FantaLandia.Horror.Story
                 if (dreadOn && creature.gameObject.activeInHierarchy && creature.head != null)
                 {
                     Vector3 to = (creature.head.position - fpc.cam.transform.position).normalized;
-                    want = Mathf.InverseLerp(0.6f, 0.97f, Vector3.Dot(fpc.cam.transform.forward, to));
+                    want = 0.55f * Mathf.InverseLerp(0.6f, 0.97f, Vector3.Dot(fpc.cam.transform.forward, to));
                 }
-                stun.dread = Mathf.MoveTowards(stun.dread, want, Time.deltaTime * (want > stun.dread ? 0.35f : 1.2f));
+                stun.dread = Mathf.MoveTowards(stun.dread, want, Time.deltaTime * (want > stun.dread ? 0.05f : 0.6f));
             }
 
             // le lampadine del generatore: oscillano sul filo e calano quando il motore perde colpi
@@ -1639,6 +1684,7 @@ namespace FantaLandia.Horror.Story
 
         void OnDestroy()
         {
+            DialogueSystem.LineStarted -= OnAnyLine;
             SetTimeScale(1f);
             AudioListener.volume = 1f;
         }
@@ -1657,6 +1703,11 @@ namespace FantaLandia.Horror.Story
             if (!string.IsNullOrEmpty(title))
             {
                 GUI.color = new Color(1f, 1f, 1f, titleAlpha * fade);
+                if (showLogo && logo != null)
+                {
+                    float h = Screen.height * 0.32f, w = h * logo.width / Mathf.Max(1f, logo.height);
+                    GUI.DrawTexture(new Rect((Screen.width - w) * 0.5f, Screen.height * 0.5f - h * 0.75f, w, h), logo, ScaleMode.ScaleToFit);
+                }
                 GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), title, titleStyle);
             }
             GUI.color = Color.white;

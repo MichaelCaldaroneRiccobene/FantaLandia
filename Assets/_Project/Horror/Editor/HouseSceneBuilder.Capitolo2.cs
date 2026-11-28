@@ -499,6 +499,7 @@ namespace FantaLandia.Horror.EditorTools
             d.bloodMaterial = BloodMaterial();
             d.dustMaterial = SmokeMat("Polvere delle macerie", false, 0.8f, 0.55f);
             d.rockMaterial = rockMat;
+            d.logo = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Horror/UI/Logo641.png");
             d.fireMaterial = SmokeMat("Bagliore incendio", true, 0.9f, 0.45f);
 
             Reverb(world, "Eco cantina", new Vector3(0f, FB + 0.6f, (Z0 + Z1) * 0.5f), 3f, 4.5f, AudioReverbPreset.StoneCorridor);

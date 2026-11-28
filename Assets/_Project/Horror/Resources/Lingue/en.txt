@@ -470,3 +470,4 @@ interagisci	interact
 torcia	flashlight
 salta una battuta	skip a line
 il taccuino	the notebook
+presenta	presents
