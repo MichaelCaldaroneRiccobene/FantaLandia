@@ -336,32 +336,25 @@ namespace FantaLandia.Horror.Story
                  (tom, Speakers.Tom, "Gira piano, Muark. Le stazioni sono tra una tacca e l'altra."),
                  (roy, Speakers.Roy, "Prova più in alto, verso il cento."));
             if (radio == null) yield break;
-            var reactions = new Queue<string>();
-            System.Action<string> onHeard = id => reactions.Enqueue(id);
+            // l'evento dopo arriva in uno di questi due modi (il tempo conta solo con la radio in mano e il menu chiuso):
+            //  - Muark ascolta una trasmissione fino in fondo: gli amici la commentano e dopo 10 secondi arrivano i ruggiti
+            //  - dopo 15 secondi di radio in mano senza averne finita una, arrivano comunque
+            string heard = null;
+            System.Action<string> onHeard = id => { if (heard == null) heard = id; };
             radio.StationHeard += onHeard;
-            // timer nascosto: un minuto dopo che Muark ha preso in mano la radio arrivano comunque i ruggiti
-            // (il minuto conta solo mentre Muark ha la radio in mano: il menu o le pause non lo consumano)
             float used = 0f;
-            while (radio.HeardCount < 3 && used < 30f)
+            while (heard == null && used < 15f)
             {
                 if (radio.InUse && !NotebookMenu.IsOpen) used += Time.deltaTime;
-                if (reactions.Count > 0 && !DialogueSystem.IsTalking)
-                {
-                    yield return new WaitForSeconds(0.8f);
-                    yield return React(reactions.Dequeue());
-                    hintClock = Time.time + 30f;
-                    if (radio.HeardCount < 3)
-                        Goal((tom, Speakers.Tom, "Continua a cercare. Ci sarà qualcun altro."),
-                             (null, Speakers.Muark, "Ci dev'essere qualcun altro, su questa radio."));
-                }
                 yield return null;
             }
             radio.StationHeard -= onHeard;
             ClearGoal();
-            if (radio.HeardCount >= 3)
+            if (heard != null)
             {
-                while (reactions.Count > 0) { yield return new WaitForSeconds(0.8f); yield return React(reactions.Dequeue()); }
-                yield return new WaitForSeconds(2f);
+                float deadline = Time.time + 10f;
+                StartCoroutine(React(heard));
+                while (Time.time < deadline) yield return null;
             }
         }
 
