@@ -311,6 +311,7 @@ namespace FantaLandia.Horror.Story
         IEnumerator Bunker()
         {
             bunkerChatter = true;
+            if (radio != null) radio.usable = true; // la radio si può prendere subito (Tom poi lo chiede)
             yield return new WaitForSeconds(5f);
             yield return Talk(DialogueSystem.Conversation()
                 .Say(Speakers.Tom, "Muark. Quella radio funziona ancora?")
@@ -1648,6 +1649,7 @@ namespace FantaLandia.Horror.Story
 
         void OnGUI()
         {
+            GUI.depth = -40; // il nero delle dissolvenze e i titoli: sopra a quasi tutto (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (fade <= 0.001f && titleAlpha <= 0.001f) return;
             if (titleStyle == null) titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 42, alignment = TextAnchor.MiddleCenter, richText = true, font = UiStyle.Hand };
             GUI.color = new Color(0f, 0f, 0f, fade);

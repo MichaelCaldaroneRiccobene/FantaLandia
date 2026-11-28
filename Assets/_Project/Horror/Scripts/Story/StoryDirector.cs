@@ -1279,6 +1279,7 @@ namespace FantaLandia.Horror.Story
 
         void OnGUI()
         {
+            GUI.depth = -40; // il nero delle dissolvenze e i titoli: sopra a quasi tutto (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (fade <= 0.001f) return;
             if (titleStyle == null) titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 42, alignment = TextAnchor.MiddleCenter, richText = true, font = FantaLandia.Horror.UI.UiStyle.Hand };
             GUI.color = new Color(0f, 0f, 0f, fade);

@@ -206,6 +206,7 @@ namespace FantaLandia.Horror.World
 
         void OnGUI()
         {
+            GUI.depth = 0; // il sangue sulla lente: sopra la scena, sotto l'interfaccia (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (Event.current.type != EventType.Repaint) return;
             var old = GUI.color;
             Matrix4x4 m = GUI.matrix;

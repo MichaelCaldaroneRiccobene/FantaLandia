@@ -283,6 +283,7 @@ namespace FantaLandia.Horror.Player
 
         void OnGUI()
         {
+            GUI.depth = -5; // l'aiuto per alzarsi (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (!IsSeated || sitting || inputLocked || !canStandUp || DialogueSystem.IsTalking) return;
             var st = FantaLandia.Horror.UI.UiStyle.Text(18, TextAnchor.MiddleLeft, false);
             float x = Screen.width * 0.5f - 90f, y = Screen.height - 46f;

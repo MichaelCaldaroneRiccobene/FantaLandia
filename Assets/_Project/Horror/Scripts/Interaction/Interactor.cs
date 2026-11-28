@@ -84,6 +84,7 @@ namespace FantaLandia.Horror.Interaction
 
         void OnGUI()
         {
+            GUI.depth = -5; // il mirino e la scritta (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (DialogueSystem.IsBlocking || FantaLandia.Horror.UI.IntroSequence.Active || FantaLandia.Horror.UI.NotebookMenu.IsOpen) return;
             // mirino: un puntino morbido, che si allarga (con un anello) se c'è qualcosa da usare
             Vector2 center = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);

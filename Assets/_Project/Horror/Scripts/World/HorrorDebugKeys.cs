@@ -51,6 +51,7 @@ namespace FantaLandia.Horror.World
 
         void OnGUI()
         {
+            GUI.depth = -50; // aiuto per le prove (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (DialogueSystem.IsBlocking) return;
             GUI.Label(new Rect(10, 10, 600, 120),
                 "<b>Prova prima persona</b>\nWASD muovi · Shift corri · C abbassati · E interagisci · F torcia\n" +

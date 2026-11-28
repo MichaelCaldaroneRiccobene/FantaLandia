@@ -314,6 +314,7 @@ namespace FantaLandia.Horror.World
 
         void OnGUI()
         {
+            GUI.depth = -15; // la manopola: sopra la scena e sotto ai sottotitoli (sempre sopra all'immagine dell'effetto retrò, che sta a 100)
             if (!InUse) return;
             float s = Mathf.Clamp(Screen.height / 1080f, 0.6f, 2f);
             float w = 620f * s, h = 150f * s;
