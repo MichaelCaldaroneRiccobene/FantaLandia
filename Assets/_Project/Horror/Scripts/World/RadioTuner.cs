@@ -234,7 +234,7 @@ namespace FantaLandia.Horror.World
             }
 
             // la neve: piena tra le stazioni, quasi sparita quando si è sintonizzati
-            float wantNoise = PoweredOn ? volume * (0.55f - 0.48f * best) * fx : 0f;
+            float wantNoise = PoweredOn ? volume * (0.55f - 0.48f * best) * 0.3f * fx : 0f; // la neve: -70%
             noise.volume = Mathf.MoveTowards(noise.volume, wantNoise, Time.deltaTime * 2f);
             if (noise.volume > 0.001f && !noise.isPlaying) noise.Play();
             if (noise.volume <= 0.001f && noise.isPlaying) noise.Stop();

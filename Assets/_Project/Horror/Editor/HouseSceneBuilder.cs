@@ -124,6 +124,12 @@ namespace FantaLandia.Horror.EditorTools
             var tomTalk = tom.GetComponent<Talkable>();
             if (tomTalk != null) Object.DestroyImmediate(tomTalk);
             HorrorTestSceneBuilder.BuildPlayer(cast["muark"], ch2 ? new Vector3(-1.8f, FB + 0.05f, 5.3f) : new Vector3(0f, 0.08f, -9.8f), 0f);
+            if (ch2) Step("niente birra in mano", () =>
+            {
+                // nel capitolo 2 la birra è finita da un pezzo: Muark ha le mani libere
+                var it = Object.FindFirstObjectByType<Interactor>();
+                if (it != null && it.startHeld != null) { Object.DestroyImmediate(it.startHeld.gameObject); it.startHeld = null; }
+            });
             if (ch2) Step("personaggi (capitolo 2)", () => BuildCast2(world, cast));
             else Step("personaggi", () => BuildCast(world, cast));
             HorrorTestSceneBuilder.BuildNavMesh();
@@ -243,9 +249,13 @@ namespace FantaLandia.Horror.EditorTools
                     var menu = fpcPlayer.gameObject.AddComponent<FantaLandia.Horror.UI.NotebookMenu>();
                     menu.notebookPrefab = VoxelAssetLibrary.Load("Taccuino");
                     menu.handFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/_Project/Horror/UI/Fonts/Kalam-Regular.ttf");
+                    menu.openOnStart = !ch2; // il capitolo 2 parte subito, senza menu
                 }
-                var intro = new GameObject("Intro (logo 641)").AddComponent<FantaLandia.Horror.UI.IntroSequence>();
-                intro.logo = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Horror/UI/Logo641.png");
+                if (!ch2) // il logo solo all'avvio del gioco (capitolo 1)
+                {
+                    var intro = new GameObject("Intro (logo 641)").AddComponent<FantaLandia.Horror.UI.IntroSequence>();
+                    intro.logo = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Horror/UI/Logo641.png");
+                }
                 new GameObject("Impostazioni").AddComponent<FantaLandia.Horror.UI.SettingsApplier>();
             });
             if (!ch2) Step("suoni della casa", () =>

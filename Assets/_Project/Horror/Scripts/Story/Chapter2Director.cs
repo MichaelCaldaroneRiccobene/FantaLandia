@@ -149,6 +149,8 @@ namespace FantaLandia.Horror.Story
             if (blockedDoors != null) foreach (var d in blockedDoors) if (d != null) { d.locked = true; d.lockedText = "Bloccata. Dall'altra parte è crollato tutto."; }
             if (backDoor != null) { backDoor.locked = true; backDoor.lockedText = "Non si apre. È incastrata dalle macerie."; }
             if (frontDoor != null) { frontDoor.locked = true; frontDoor.knockable = false; frontDoor.lockedText = "Meglio non uscire..."; }
+            // dalla cantina non si sale finché non bussano alla porta
+            if (cellarDoor != null) { if (cellarDoor.IsOpen) cellarDoor.Close(); cellarDoor.locked = true; cellarDoor.lockedText = "Meglio restare qui sotto con gli altri."; }
             if (tv != null) { tv.powered = false; tv.cracked = true; tv.SetChannel(TvChannel.Off); }
             if (pizzaBoy != null) pizzaBoy.gameObject.SetActive(false);
             NpcActor.SharedLookTarget = null;
@@ -195,6 +197,7 @@ namespace FantaLandia.Horror.Story
 
             if (s >= (int)StartAt.Ritorno)
             {
+                if (cellarDoor != null) cellarDoor.Unlock();
                 // il fattorino non c'è più, il macigno blocca la porta
                 PlaceFrontRock(true);
                 BloodFx.Spray(bloodMaterial, frontDoor.transform.position + new Vector3(0.45f, 1.2f, -1.2f), Vector3.back, 30, 5f, 160f);
@@ -308,8 +311,11 @@ namespace FantaLandia.Horror.Story
             var reactions = new Queue<string>();
             System.Action<string> onHeard = id => reactions.Enqueue(id);
             radio.StationHeard += onHeard;
-            while (radio.HeardCount < 3)
+            // timer nascosto: un minuto dopo che Muark ha preso in mano la radio arrivano comunque i ruggiti
+            float deadline = float.MaxValue;
+            while (radio.HeardCount < 3 && Time.time < deadline)
             {
+                if (radio.InUse && deadline == float.MaxValue) deadline = Time.time + 60f;
                 if (reactions.Count > 0 && !DialogueSystem.IsTalking)
                 {
                     yield return new WaitForSeconds(0.8f);
@@ -322,9 +328,12 @@ namespace FantaLandia.Horror.Story
                 yield return null;
             }
             radio.StationHeard -= onHeard;
-            while (reactions.Count > 0) { yield return new WaitForSeconds(0.8f); yield return React(reactions.Dequeue()); }
             ClearGoal();
-            yield return new WaitForSeconds(2f);
+            if (radio.HeardCount >= 3)
+            {
+                while (reactions.Count > 0) { yield return new WaitForSeconds(0.8f); yield return React(reactions.Dequeue()); }
+                yield return new WaitForSeconds(2f);
+            }
         }
 
         IEnumerator React(string station)
@@ -371,7 +380,7 @@ namespace FantaLandia.Horror.Story
             droneTarget = 0f;
             yield return new WaitForSeconds(4f);
             DialogueSystem.Bark(Speakers.Jef, "...Se n'è andato.", Eye(jef));
-            yield return new WaitForSeconds(6f);
+            yield return new WaitForSeconds(8.5f); // 15 secondi di silenzio dopo l'ultima scossa, poi bussano
         }
 
         /// <summary>
@@ -433,6 +442,7 @@ namespace FantaLandia.Horror.Story
                 }, 10f, () => DialogueSystem.Insert((Speakers.Muark, "...Vado io. Non possiamo lasciarlo lì.")))
                 .Say(Speakers.Tom, "Apri, fallo entrare e chiudi subito. Subito, hai capito?"), tom, 9f);
             Job(tom, Actor(tom).WalkTo(stairsBottom.position + new Vector3(-0.6f, 0f, 0.8f)));
+            if (cellarDoor != null) { cellarDoor.Unlock(); cellarDoor.Open(1); }
         }
 
         IEnumerator Bang(Vector3 at, int times)
