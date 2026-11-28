@@ -197,8 +197,10 @@ namespace FantaLandia.Horror.UI
             Quaternion basis = Quaternion.Euler(0f, menuYaw, 0f);
             Vector3 fwd = basis * Vector3.forward, right = basis * Vector3.right;
             // dalla tasca (fianco destro, in basso) a davanti al petto
-            Vector3 pocket = root.position + Vector3.up * 0.9f + right * 0.25f + fwd * 0.1f;
-            Vector3 hold = root.position + Vector3.up * 1.38f + fwd * 0.5f;
+            // all'altezza degli occhi (in piedi 1.68 m, da seduti più in basso): il taccuino sta 30 cm sotto lo sguardo
+            float eye = Mathf.Clamp(fpc.cam.transform.position.y - root.position.y, 0.8f, 1.8f);
+            Vector3 pocket = root.position + Vector3.up * (eye - 0.78f) + right * 0.25f + fwd * 0.1f;
+            Vector3 hold = root.position + Vector3.up * (eye - 0.3f) + fwd * 0.5f;
             notebook.position = Vector3.Lerp(pocket, hold, e);
             notebook.rotation = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.Euler(Mathf.Lerp(-80f, -58f, e), 0f, Mathf.Lerp(-30f, 0f, e));
             notebook.localScale = Vector3.one * Mathf.Lerp(0.6f, 1f, e);

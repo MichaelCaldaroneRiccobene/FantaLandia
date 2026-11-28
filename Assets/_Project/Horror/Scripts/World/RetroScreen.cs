@@ -36,7 +36,8 @@ namespace FantaLandia.Horror.World
         {
             if (GameInput.RetroToggle) { FantaLandia.Horror.UI.GameSettings.Retro = !FantaLandia.Horror.UI.GameSettings.Retro; FantaLandia.Horror.UI.GameSettings.Save(); }
             FantaLandia.Horror.UI.GameSettings.Load();
-            retroEnabled = FantaLandia.Horror.UI.GameSettings.Retro;
+            // con il taccuino aperto l'immagine è piena: si legge bene e il mouse clicca nel punto giusto
+            retroEnabled = FantaLandia.Horror.UI.GameSettings.Retro && !FantaLandia.Horror.UI.NotebookMenu.IsOpen;
 
             if (!retroEnabled)
             {
