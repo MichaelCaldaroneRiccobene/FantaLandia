@@ -38,7 +38,13 @@ namespace FantaLandia.Horror.Dialogue
         public static readonly Speaker Gary = new Speaker("gary", "Gary", new Color(0.75f, 0.85f, 0.7f), 0.66f);
         public static readonly Speaker Linda = new Speaker("linda", "Linda", new Color(0.6f, 0.9f, 0.9f), 1.5f);
 
-        static readonly Speaker[] All = { Muark, Tom, Jef, Roy, NeighborMan, NeighborWoman, Tv, Frank, Martha, Gary, Linda };
+        // capitolo 2: le voci della radio e il fattorino della pizza
+        public static readonly Speaker Radio = new Speaker("radio", "Radio WMGR", new Color(0.85f, 0.85f, 0.7f), 0.9f);
+        public static readonly Speaker Ham = new Speaker("radioamatore", "Radioamatore", new Color(0.8f, 0.7f, 0.55f), 0.8f);
+        public static readonly Speaker Military = new Speaker("militare", "Militare", new Color(0.6f, 0.75f, 0.55f), 0.75f);
+        public static readonly Speaker PizzaBoy = new Speaker("fattorino", "Fattorino", new Color(1f, 0.85f, 0.55f), 1.1f);
+
+        static readonly Speaker[] All = { Muark, Tom, Jef, Roy, NeighborMan, NeighborWoman, Tv, Frank, Martha, Gary, Linda, Radio, Ham, Military, PizzaBoy };
 
         public static Speaker Find(string id)
         {
@@ -158,6 +164,17 @@ namespace FantaLandia.Horror.Dialogue
                                           overhead = overhead && position.HasValue, position = position ?? Vector3.zero });
             LineStarted?.Invoke(who, text);
             self.StartCoroutine(self.BarkVoice(who, text, position));
+        }
+
+        /// <summary>
+        /// Solo il sottotitolo, senza voce (la voce la fa chi la chiama: per esempio la radio, con il suo altoparlante).
+        /// Il testo si traduce come le altre battute.
+        /// </summary>
+        public static void Caption(Speaker who, string text, float seconds)
+        {
+            text = FantaLandia.Horror.UI.Loc.T(text);
+            Instance.barks.Add(new BarkLine { speaker = who, text = text, until = Time.time + seconds, overhead = false, position = Vector3.zero });
+            LineStarted?.Invoke(who, text);
         }
 
         // ------------------------------------------------------------------ stato

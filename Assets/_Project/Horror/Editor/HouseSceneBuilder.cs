@@ -25,9 +25,14 @@ namespace FantaLandia.Horror.EditorTools
     ///  - primo piano: corridoio, camera matrimoniale, cameretta, camera di Tom, bagno, ripostiglio
     ///  - cantina: generatore, scaffali, caldaia, lavatrice, banco da lavoro, scatoloni
     /// </summary>
-    public static class HouseSceneBuilder
+    public static partial class HouseSceneBuilder
     {
-        const string ScenePath = "Assets/_Project/Horror/Scenes/Casa_Tom.unity";
+        const string ScenePath1 = "Assets/_Project/Horror/Scenes/Casa_Tom.unity";
+        const string ScenePath2 = "Assets/_Project/Horror/Scenes/Casa_Tom_Capitolo2.unity";
+        static string ScenePath => ch2 ? ScenePath2 : ScenePath1;
+
+        /// <summary>Si sta costruendo la casa del capitolo 2 (primo piano strappato via, rifugio in cantina).</summary>
+        static bool ch2;
 
         const float F0 = 0.3f, H = 3.0f, S = 0.25f, F1 = F0 + H, F2 = F1 + H, FB = F0 - 2.8f;
         const float X0 = -7f, X1 = 7f, Z0 = 0f, Z1 = 11f, ET = 0.25f, IT = 0.15f;
@@ -48,6 +53,12 @@ namespace FantaLandia.Horror.EditorTools
         [MenuItem("FantaLandia Horror/Crea casa e quartiere")]
         public static void Build()
         {
+            ch2 = false;
+            BuildScene();
+        }
+
+        static void BuildScene()
+        {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             EditorAssetUtil.EnsureFolder("Assets/_Project/Horror/Scenes");
             VoxelAssetLibrary.BuildAll();
@@ -62,6 +73,7 @@ namespace FantaLandia.Horror.EditorTools
             cellarRadio = null;
             royMotor = jefMotor = null;
             torchPickup = null;
+            ResetChapter2();
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             HorrorTestSceneBuilder.SetupNight();
@@ -84,7 +96,7 @@ namespace FantaLandia.Horror.EditorTools
             Step("veranda", () => BuildPorch(house));
             Step("giardino", () => BuildYard(house));
             Step("pavimenti", () => BuildPatternFloors(house));
-            Step("dettagli esterni casa", () => HouseDressing.DecorateHouse(house, X0 - 0.04f, X1 + 0.04f, Z0 - 0.04f, Z1 + 0.04f, F2,
+            if (!ch2) Step("dettagli esterni casa", () => HouseDressing.DecorateHouse(house, X0 - 0.04f, X1 + 0.04f, Z0 - 0.04f, Z1 + 0.04f, F2,
                 Z0 - 0.45f, Z1 + 0.45f, X1 + 0.45f, F2 + 10 * 0.34f,
                 new[] { new HouseDressing.WindowSpec(-4.6f, 2f, F0 + 0.85f, F0 + 2.2f), new HouseDressing.WindowSpec(-4.6f, 2f, F1 + 0.85f, F1 + 2.15f),
                         new HouseDressing.WindowSpec(0.6f, 1f, F1 + 0.85f, F1 + 2.15f) },
@@ -111,8 +123,9 @@ namespace FantaLandia.Horror.EditorTools
             // nella storia Tom non si "interroga": parla quando lo decide la regia (niente domanda sulla birra dopo il blackout)
             var tomTalk = tom.GetComponent<Talkable>();
             if (tomTalk != null) Object.DestroyImmediate(tomTalk);
-            HorrorTestSceneBuilder.BuildPlayer(cast["muark"], new Vector3(0f, 0.08f, -9.8f), 0f);
-            Step("personaggi", () => BuildCast(world, cast));
+            HorrorTestSceneBuilder.BuildPlayer(cast["muark"], ch2 ? new Vector3(-1.8f, FB + 0.05f, 5.3f) : new Vector3(0f, 0.08f, -9.8f), 0f);
+            if (ch2) Step("personaggi (capitolo 2)", () => BuildCast2(world, cast));
+            else Step("personaggi", () => BuildCast(world, cast));
             HorrorTestSceneBuilder.BuildNavMesh();
 
             var power = new GameObject("Contatore della casa").AddComponent<HousePower>();
@@ -120,10 +133,14 @@ namespace FantaLandia.Horror.EditorTools
             power.tvs = new[] { tv };
             power.switches = new LightSwitch[0];
             power.glowRenderers = new Renderer[0];
+            if (ch2) power.powered = false; // la corrente è saltata dal capitolo 1
 
             Transform marks = Group("Punti della storia", world);
             Transform M2(string n, Vector3 p, float yaw = 0f) { var t = HorrorTestSceneBuilder.Marker(n, marks, p); t.rotation = Quaternion.Euler(0f, yaw, 0f); return t; }
-            var story = new GameObject("Regia della storia").AddComponent<StoryDirector>();
+            StoryDirector story = null;
+            if (!ch2)
+            {
+            story = new GameObject("Regia della storia").AddComponent<StoryDirector>();
             story.frontDoor = frontDoor;
             story.backDoor = backDoor;
             story.bathDoor = bathDoor;
@@ -167,11 +184,12 @@ namespace FantaLandia.Horror.EditorTools
             story.torchPickup = torchPickup;
             story.highlightMaterial = HighlightMaterial();
             story.cellarBulbs = cellarBulbs.ToArray();
+            }
 
             // l'esplosione: un edificio a qualche isolato, dietro i giardini, e altre case sullo sfondo
             SmokeColumn smokeCol = null;
             Step("sfondo e incendio", () => smokeCol = BuildBackground(world));
-            story.smoke = smokeCol;
+            if (story != null) story.smoke = smokeCol;
 
             // erba al vento (si piega quando ci si passa in mezzo)
             Material grassMat = EditorAssetUtil.WindMat("Erba al vento", Color.white, 0.06f, 0f, 1f, true);
@@ -186,11 +204,13 @@ namespace FantaLandia.Horror.EditorTools
                 field.seed = area.Item3;
             }
 
-            var amb = new GameObject("Ambiente notturno (audio)").AddComponent<AmbientSound>();
-            amb.clip = AmbientClip.Night;
-            amb.volume = 0.3f;
-
-            story.nightAmbience = amb;
+            if (!ch2)
+            {
+                var amb = new GameObject("Ambiente notturno (audio)").AddComponent<AmbientSound>();
+                amb.clip = AmbientClip.Night;
+                amb.volume = 0.3f;
+                story.nightAmbience = amb;
+            }
             Step("post-processing e atmosfera", () =>
             {
                 Transform fx = Group("Grafica", world);
@@ -201,9 +221,13 @@ namespace FantaLandia.Horror.EditorTools
                 HorrorVisuals.Dust(fx, "soggiorno", new Bounds(new Vector3(-4.4f, F0 + 1.4f, 3f), new Vector3(4.6f, 2.6f, 5.6f)), 260);
                 HorrorVisuals.Dust(fx, "cucina", new Bounds(new Vector3(2.5f, F0 + 1.4f, 8.5f), new Vector3(8f, 2.6f, 4.6f)), 200);
                 HorrorVisuals.Dust(fx, "cantina", new Bounds(cellar.center, cellar.size - new Vector3(0.4f, 0.3f, 0.4f)), 700);
-                HorrorVisuals.Dust(fx, "corridoio sopra", new Bounds(new Vector3(0.5f, F1 + 1.4f, 4f), new Vector3(4.5f, 2.6f, 6f)), 160);
+                if (!ch2) HorrorVisuals.Dust(fx, "corridoio sopra", new Bounds(new Vector3(0.5f, F1 + 1.4f, 4f), new Vector3(4.5f, 2.6f, 6f)), 160);
+                else HorrorVisuals.Dust(fx, "macerie", new Bounds(new Vector3(0f, F0 + 1.6f, 5.5f), new Vector3(13f, 3f, 10f)), 900);
             });
-            Step("corrente del quartiere", () => story.neighborhood = BuildNeighborhoodPower(world, tv));
+            NeighborhoodPower hoodPower = null;
+            Step("corrente del quartiere", () => hoodPower = BuildNeighborhoodPower(world, tv));
+            if (story != null) story.neighborhood = hoodPower;
+            if (ch2) Step("regia del capitolo 2", () => BuildChapter2Director(world, marks, frontDoor, tv, tom, smokeCol, hoodPower));
 
             // controllo finale: oggetti senza mesh (se ce ne sono, qualcosa è andato storto nella creazione dei prefab)
             int missing = 0;
@@ -224,7 +248,7 @@ namespace FantaLandia.Horror.EditorTools
                 intro.logo = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Horror/UI/Logo641.png");
                 new GameObject("Impostazioni").AddComponent<FantaLandia.Horror.UI.SettingsApplier>();
             });
-            Step("suoni della casa", () =>
+            if (!ch2) Step("suoni della casa", () =>
             {
                 var amb2 = new GameObject("Suoni della casa").AddComponent<HouseAmbience>();
                 amb2.fridge = HorrorTestSceneBuilder.Marker("Ronzio del frigo", world, new Vector3(6.3f, F0 + 1f, 10.3f));
@@ -241,7 +265,9 @@ namespace FantaLandia.Horror.EditorTools
             // la scena nelle Build Settings: serve per "Ricomincia" dal taccuino e per la build del gioco
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             scenes.RemoveAll(sc => sc.path == ScenePath);
-            scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
+            // il capitolo 1 è la prima scena (quella che parte), il capitolo 2 subito dopo
+            if (ch2) scenes.Insert(scenes.Count > 0 && scenes[0].path == ScenePath1 ? 1 : scenes.Count, new EditorBuildSettingsScene(ScenePath, true));
+            else scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
             EditorBuildSettings.scenes = scenes.ToArray();
             Debug.Log("[FantaLandia Horror] Casa e quartiere creati: " + ScenePath);
         }
@@ -468,6 +494,7 @@ namespace FantaLandia.Horror.EditorTools
             railing = MT("Ringhiera", "#efede6", ProceduralTextures.Kind.WoodGrain, 1f, 0.2f, 0.05f);
             stairSide = MT("Fianco scala", "#5a3c26", ProceduralTextures.Kind.WoodGrain, 1f, 0.2f);
             stairTread = MT("Pedata scala", "#8a6040", ProceduralTextures.Kind.WoodGrain, 1f, 0.35f);
+            if (ch2) DustyMaterials();
             AssetDatabase.SaveAssets();
         }
 
@@ -537,11 +564,14 @@ namespace FantaLandia.Horror.EditorTools
             foreach (Transform t in s) if (t.name.StartsWith("Pavimento piano terra")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Wood;
             Hidden(Floor("Piastrelle cucina", s, new Vector3(-1f, F0, 6.075f), new Vector3(6.75f, F0 + 0.01f, 10.75f), kitchenTiles, Surface.Concrete));
             Hidden(Floor("Piastrelle bagno", s, new Vector3(3.575f, F0, 0.25f), new Vector3(6.75f, F0 + 0.01f, 2.925f), bathTiles, Surface.Concrete));
-            Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(2.1f, 1.5f, 1.325f, 4.2f));
-            // al primo piano c'è la moquette: passi ovattati
-            foreach (Transform t in s) if (t.name.StartsWith("Pavimento primo piano")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Carpet;
-            Hidden(Floor("Piastrelle bagno sopra", s, new Vector3(3.575f, F1, 0.25f), new Vector3(6.75f, F1 + 0.01f, 3.925f), bathTiles, Surface.Concrete));
-            Box("Soffitto primo piano", s, new Vector3(X0, F2 - S, Z0), new Vector3(X1, F2, Z1), trim);
+            if (!ch2) // nel capitolo 2 il primo piano non c'è più
+            {
+                Slab(s, "Pavimento primo piano", X0, X1, Z0, Z1, F1 - S, F1, wood, new Rect(2.1f, 1.5f, 1.325f, 4.2f));
+                // al primo piano c'è la moquette: passi ovattati
+                foreach (Transform t in s) if (t.name.StartsWith("Pavimento primo piano")) t.gameObject.AddComponent<FootstepSurface>().surface = Surface.Carpet;
+                Hidden(Floor("Piastrelle bagno sopra", s, new Vector3(3.575f, F1, 0.25f), new Vector3(6.75f, F1 + 0.01f, 3.925f), bathTiles, Surface.Concrete));
+                Box("Soffitto primo piano", s, new Vector3(X0, F2 - S, Z0), new Vector3(X1, F2, Z1), trim);
+            }
 
             // cantina
             Floor("Pavimento cantina", s, new Vector3(X0, FB - 0.3f, Z0), new Vector3(X1, FB, Z1), concrete, Surface.Concrete);
@@ -556,8 +586,11 @@ namespace FantaLandia.Horror.EditorTools
 
             // scala per il primo piano (nell'ingresso, sale verso +Z)
             // contro il muro destro dell'ingresso, lasciando libero lo spazio davanti alla porta
-            Stairs(s, "Scala", false, 1.5f, 1, 2.1f, 3.425f, F0, 15, 0.2f, 0.28f, F0, stairSide, Surface.Wood);
-            StairDetails(s);
+            if (!ch2)
+            {
+                Stairs(s, "Scala", false, 1.5f, 1, 2.1f, 3.425f, F0, 15, 0.2f, 0.28f, F0, stairSide, Surface.Wood);
+                StairDetails(s);
+            }
 
             // muri esterni: nucleo (colore interno) + rivestimento esterno (azzurro) con le stesse aperture
             var front0 = new[] { new Opening(-0.47f, 0.47f, F0, F0 + 2.15f, OpeningKind.Door), Window(-4.6f, 2f, F0 + 0.85f, F0 + 2.2f), Window(5.2f, 0.8f, F0 + 1.5f, F0 + 2.1f) };
@@ -570,13 +603,13 @@ namespace FantaLandia.Horror.EditorTools
             var right1 = new[] { Window(9f, 1.6f) };
 
             ExteriorWall(s, "Fronte terra", true, Z0 + ET * 0.5f, -1f, X0, X1, 0f, F1, front0);
-            ExteriorWall(s, "Fronte sopra", true, Z0 + ET * 0.5f, -1f, X0, X1, F1, H, front1);
+            if (!ch2) ExteriorWall(s, "Fronte sopra", true, Z0 + ET * 0.5f, -1f, X0, X1, F1, H, front1);
             ExteriorWall(s, "Retro terra", true, Z1 - ET * 0.5f, 1f, X0, X1, 0f, F1, back0);
-            ExteriorWall(s, "Retro sopra", true, Z1 - ET * 0.5f, 1f, X0, X1, F1, H, back1);
+            if (!ch2) ExteriorWall(s, "Retro sopra", true, Z1 - ET * 0.5f, 1f, X0, X1, F1, H, back1);
             ExteriorWall(s, "Lato sx terra", false, X0 + ET * 0.5f, -1f, Z0 + ET, Z1 - ET, 0f, F1, left0);
-            ExteriorWall(s, "Lato sx sopra", false, X0 + ET * 0.5f, -1f, Z0 + ET, Z1 - ET, F1, H, left1);
+            if (!ch2) ExteriorWall(s, "Lato sx sopra", false, X0 + ET * 0.5f, -1f, Z0 + ET, Z1 - ET, F1, H, left1);
             ExteriorWall(s, "Lato dx terra", false, X1 - ET * 0.5f, 1f, Z0 + ET, Z1 - ET, 0f, F1, right0);
-            ExteriorWall(s, "Lato dx sopra", false, X1 - ET * 0.5f, 1f, Z0 + ET, Z1 - ET, F1, H, right1);
+            if (!ch2) ExteriorWall(s, "Lato dx sopra", false, X1 - ET * 0.5f, 1f, Z0 + ET, Z1 - ET, F1, H, right1);
 
             // muri interni piano terra
             float ih = F1 - S - F0;
@@ -589,6 +622,8 @@ namespace FantaLandia.Horror.EditorTools
 
             // muri interni primo piano
             float uh = F2 - S - F1;
+            if (!ch2)
+            {
             Wall(s, "Muro camere", false, -2f, Z0 + ET, Z1 - ET, F1, uh, IT, interiorUp,
                  new[] { HouseKit.Door(4.6f, 0.84f), HouseKit.Door(6.5f, 0.84f) }, null, trim);
             Wall(s, "Muro matrimoniale-cameretta", true, 6f, X0 + ET, -2f, F1, uh, IT, interiorUp, null);
@@ -599,6 +634,7 @@ namespace FantaLandia.Horror.EditorTools
 
             // tetto a gradoni (colmo lungo X) con timpani
             SteppedRoof(s, "Tetto", X0 - 0.45f, X1 + 0.45f, Z0 - 0.45f, Z1 + 0.45f, F2, 10, 0.34f, true, roof, siding);
+            }
 
             // porte
             HorrorDoor front = DoorAt(s, "Porta d'ingresso", VoxelAssetLibrary.Load("Porta"), new Vector3(-0.45f, F0, Z0 + ET * 0.5f), 0f);
@@ -610,10 +646,11 @@ namespace FantaLandia.Horror.EditorTools
             backDoor = DoorAt(s, "Porta sul retro", VoxelAssetLibrary.Load("Porta"), new Vector3(-1.05f, F0, Z1 - ET * 0.5f), 180f);
             GameObject inner = VoxelFurniture.Get("Porta interna");
             HorrorDoor bath = bathDoor = DoorAt(s, "Porta bagno (Jef)", inner, new Vector3(3.5f, F0, 0.82f + 0.4f), 90f);
-            bath.locked = true;
+            bath.locked = !ch2;
             bath.lockedText = "È occupato...";
             cellarDoor = DoorAt(s, "Porta cantina", inner, new Vector3(4.42f + 0.4f, F0, 6f), 180f); // dalla cucina verso la scala della cantina
-            DoorAt(s, "Porta garage", inner, new Vector3(X1 - ET * 0.5f, F0, 5.85f), 90f);
+            garageDoor = DoorAt(s, "Porta garage", inner, new Vector3(X1 - ET * 0.5f, F0, 5.85f), 90f);
+            if (ch2) { BuildRuins(s); return front; } // niente porte di sopra, niente plafoniere: il soffitto non c'è più
             DoorAt(s, "Porta camera matrimoniale", inner, new Vector3(-2f, F1, 4.6f - 0.4f), -90f);
             DoorAt(s, "Porta cameretta", inner, new Vector3(-2f, F1, 6.5f - 0.4f), -90f);
             DoorAt(s, "Porta camera Tom", inner, new Vector3(0.7f - 0.4f, F1, 7f), 0f);
@@ -712,7 +749,7 @@ namespace FantaLandia.Horror.EditorTools
             });
 
             // primo piano
-            HouseDressing.PatternFloor(f, "primo piano", ix0, ix1, iz0, iz1, F1, c, (i, k, x, z) =>
+            if (!ch2) HouseDressing.PatternFloor(f, "primo piano", ix0, ix1, iz0, iz1, F1, c, (i, k, x, z) =>
             {
                 if (In(x, z, 2.1f, 3.425f, 1.5f, 5.7f)) return null;                         // buco scala
                 if (In(x, z, 3.5f, 7f, 0f, 3.925f)) return ((i + k) % 2 == 0) ? "#a9c2c8" : "#dfe8ea";
@@ -778,12 +815,22 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Tappeto"), f, new Vector3(-4.35f, F0, 3.05f), 94f);     // un po' storto, come sempre
             Place(VoxelAssetLibrary.Load("Mobile TV"), f, new Vector3(-6.45f, F0, 3f), 90f);
             CrtTv tv = BuildTv(f, new Vector3(-6.42f, F0 + 0.5f, 3f), 90f);
-            Place(VoxelFurniture.Get("Divano"), f, new Vector3(-2.75f, F0, 3f), -90f);
-            Place(VoxelFurniture.Get("Tavolino"), f, new Vector3(-4.4f, F0, 2.95f), 97f);
-            armchair = Place(VoxelAssetLibrary.Load("Poltrona"), f, new Vector3(-4.7f, F0, 5.1f), -136f).transform;
-            Place(VoxelAssetLibrary.Load("Lampada stelo"), f, new Vector3(-6.35f, F0, 5.45f), 0f);
-            GameObject shade = Place(VoxelAssetLibrary.Load("Lampada paralume"), f, new Vector3(-6.35f, F0 + 1.44f, 5.45f), 0f);
-            houseLights.Add(PointLight(shade.transform, "Luce lampada", new Vector3(0f, 0.1f, 0f), 4.5f, 1.1f, new Color(1f, 0.7f, 0.42f), true));
+            armchair = null;
+            if (!ch2)
+            {
+                Place(VoxelFurniture.Get("Divano"), f, new Vector3(-2.75f, F0, 3f), -90f);
+                Place(VoxelFurniture.Get("Tavolino"), f, new Vector3(-4.4f, F0, 2.95f), 97f);
+                armchair = Place(VoxelAssetLibrary.Load("Poltrona"), f, new Vector3(-4.7f, F0, 5.1f), -136f).transform;
+                Place(VoxelAssetLibrary.Load("Lampada stelo"), f, new Vector3(-6.35f, F0, 5.45f), 0f);
+                GameObject shade = Place(VoxelAssetLibrary.Load("Lampada paralume"), f, new Vector3(-6.35f, F0 + 1.44f, 5.45f), 0f);
+                houseLights.Add(PointLight(shade.transform, "Luce lampada", new Vector3(0f, 0.1f, 0f), 4.5f, 1.1f, new Color(1f, 0.7f, 0.42f), true));
+            }
+            else
+            {
+                // la lampada a stelo per terra, il paralume rotolato via (divano e poltrona sono giù in cantina)
+                Tilt(Place(VoxelAssetLibrary.Load("Lampada stelo"), f, new Vector3(-5.6f, F0 + 0.06f, 5.2f), 30f), 0f, 0f, 86f);
+                Tilt(Place(VoxelAssetLibrary.Load("Lampada paralume"), f, new Vector3(-4.3f, F0, 5.6f), 0f), 70f, 0f, 20f);
+            }
             Place(VoxelFurniture.Get("Libreria"), f, new Vector3(-3f, F0, 0.4f), 0f);
             // vita vissuta: pianta nell'angolo, zaino di qualcuno buttato accanto al divano, quadro sul muro
             Place(VoxelFurniture.Get("Pianta"), f, new Vector3(-6.35f, F0, 0.65f), 20f);
@@ -797,8 +844,10 @@ namespace FantaLandia.Horror.EditorTools
             // sala da pranzo
             Place(VoxelFurniture.Get("Tavolo"), f, new Vector3(-4.2f, F0, 8.5f), 0f);
             // sedie non allineate: una tirata fuori e girata, una con la giacca sullo schienale
-            Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-5.05f, F0, 7.55f), -6f);
-            Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-3.3f, F0, 7.25f), 24f);
+            if (ch2) Tilt(Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-5.3f, F0 + 0.22f, 7.2f), -36f), 90f, 0f, 0f); // rovesciata
+            else Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-5.05f, F0, 7.55f), -6f);
+            if (ch2) Tilt(Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-2.9f, F0 + 0.22f, 7.0f), 64f), 0f, 0f, -90f);
+            else Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-3.3f, F0, 7.25f), 24f);
             Place(VoxelFurniture.Get("Sedia con giacca"), f, new Vector3(-4.95f, F0, 9.45f), 187f);
             Place(VoxelFurniture.Get("Sedia"), f, new Vector3(-3.45f, F0, 9.5f), 172f);
             Place(VoxelFurniture.Get("Pianta"), f, new Vector3(-6.35f, F0, 10.4f), -40f);
@@ -824,18 +873,23 @@ namespace FantaLandia.Horror.EditorTools
             stand.localPosition = new Vector3(-0.2f, 0f, -0.95f);
             island.standPoint = stand;
             Place(VoxelFurniture.Get("Telefono"), f, counter.transform.localPosition + new Vector3(-0.5f, 0.9f, 0.05f), 180f);
-            GameObject torch = Place(VoxelAssetLibrary.Load("Torcia"), f, counter.transform.localPosition + new Vector3(0.4f, 0.9f, 0f), 60f);
-            torchPickup = torch.AddComponent<FlashlightPickup>();
-            // la torcia è piccola: una zona più grande (solo per mirarla con E) così si prende facilmente
-            var grab = torch.AddComponent<BoxCollider>();
-            grab.isTrigger = true;
-            grab.size = new Vector3(0.3f, 0.2f, 0.4f);
+            if (!ch2) // nel capitolo 2 la torcia ce l'ha Tom, giù in cantina
+            {
+                GameObject torch = Place(VoxelAssetLibrary.Load("Torcia"), f, counter.transform.localPosition + new Vector3(0.4f, 0.9f, 0f), 60f);
+                torchPickup = torch.AddComponent<FlashlightPickup>();
+                // la torcia è piccola: una zona più grande (solo per mirarla con E) così si prende facilmente
+                var grab = torch.AddComponent<BoxCollider>();
+                grab.isTrigger = true;
+                grab.size = new Vector3(0.3f, 0.2f, 0.4f);
+            }
 
             // bagnetto (Jef è chiuso dentro)
             Place(VoxelFurniture.Get("WC"), f, new Vector3(6.3f, F0, 1.2f), -90f);
             Place(VoxelFurniture.Get("Lavandino"), f, new Vector3(5f, F0, 0.25f), 0f);
 
-            // primo piano
+            // primo piano (nel capitolo 2 non c'è più: qualche mobile è caduto giù tra le macerie)
+            if (ch2) FallenFurniture(f);
+            else {
             Place(VoxelFurniture.Get("Letto matrimoniale"), f, new Vector3(-4.4f, F1, 0.25f + 1.1f), 0f);
             Place(VoxelFurniture.Get("Comodino"), f, new Vector3(-5.6f, F1, 0.5f), 0f);
             Place(VoxelFurniture.Get("Comodino"), f, new Vector3(-3.2f, F1, 0.5f), 0f);
@@ -853,6 +907,7 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("WC"), f, new Vector3(6.35f, F1, 3.25f), -90f);
             Place(VoxelFurniture.Get("Lavandino"), f, new Vector3(4.4f, F1, 3.92f), 180f);
             Place(VoxelFurniture.Get("Scaffale"), f, new Vector3(6.45f, F1, 5.5f), -90f);
+            }
 
             // cantina: sporca e piena di roba, luce spenta (la accenderà il generatore)
             Transform b = Group("Cantina", f);
@@ -877,11 +932,23 @@ namespace FantaLandia.Horror.EditorTools
             Place(VoxelFurniture.Get("Lavatrice"), b, new Vector3(3.6f, FB, 10.3f), 180f);
             Place(VoxelFurniture.Get("Banco da lavoro"), b, new Vector3(0.2f, FB, 10.4f), 180f);
             BuildCellarClutter(b);
+            if (ch2) BuildBunker(b);
             foreach (Vector3 p in new[] { new Vector3(-3f, F0 - S, 3f), new Vector3(0f, F0 - S, 8f), new Vector3(4.5f, F0 - S, 7f) })
             {
-                Place(VoxelFurniture.Get("Lampadina"), b, p, 0f);
-                var bulb = PointLight(b, "Luce cantina (spenta)", p + Vector3.down * 0.5f, 6f, 1.1f, new Color(1f, 0.8f, 0.52f), true);
-                bulb.enabled = false;
+                // nel capitolo 2 la lampadina pende da un filo (oscilla con le scosse) ed è accesa: va il generatore
+                Transform hang = b;
+                Vector3 at = p;
+                if (ch2)
+                {
+                    hang = new GameObject("Filo lampadina").transform;
+                    hang.SetParent(b, false);
+                    hang.localPosition = p;
+                    at = Vector3.zero;
+                    bulbPivots.Add(hang);
+                }
+                Place(VoxelFurniture.Get("Lampadina"), hang, at, 0f);
+                var bulb = PointLight(hang, ch2 ? "Luce cantina" : "Luce cantina (spenta)", at + Vector3.down * 0.5f, 6f, ch2 ? 0.95f : 1.1f, new Color(1f, 0.8f, 0.52f), true);
+                bulb.enabled = ch2;
                 cellarBulbs.Add(bulb);
             }
             return tv;
@@ -923,8 +990,11 @@ namespace FantaLandia.Horror.EditorTools
             Box("Materasso", b, new Vector3(6.45f, FB, 6.3f), new Vector3(6.68f, FB + 1.9f, 7.25f), mattress);
             Place(VoxelFurniture.Get("Tanica"), b, new Vector3(-3.9f, FB, 10.35f), -10f);
             // una vecchia radio per terra, girata verso la scala (a volte si accende da sola...)
-            GameObject radio = Place(VoxelFurniture.Get("Radio"), b, new Vector3(-0.8f, FB, 8.6f), 200f);
-            if (radio != null) cellarRadio = radio.transform;
+            if (!ch2)
+            {
+                GameObject radio = Place(VoxelFurniture.Get("Radio"), b, new Vector3(-0.8f, FB, 8.6f), 200f);
+                if (radio != null) cellarRadio = radio.transform;
+            }
 
             // pile di scatoloni lungo i muri (non sul passaggio scala → generatore e non davanti alle cose)
             Vector2 stairFoot = new Vector2(4.4f, 3.0f), genFront = new Vector2(-5.3f, 8.9f);
@@ -943,6 +1013,7 @@ namespace FantaLandia.Horror.EditorTools
                 if (DistToSegment(p, stairFoot, genFront) < 1.3f) continue;                    // il passaggio
                 if (p.x > 3.4f && p.x < 5.6f && p.y > 1.8f && p.y < 6.2f) continue;            // la scala
                 if (Vector2.Distance(p, genFront) < 1.4f) continue;                            // davanti al generatore
+                if (ch2 && p.x > -5.4f && p.x < 2.4f && p.y > 3.2f && p.y < 7.8f) continue;     // il rifugio (capitolo 2)
                 bool clash = false;
                 foreach (var q in taken) if (Vector2.Distance(p, q) < 0.75f) { clash = true; break; }
                 if (clash) continue;

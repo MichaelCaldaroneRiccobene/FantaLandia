@@ -16,10 +16,14 @@ FILES = [
     ("Richiami quando ti allontani", "Assets/_Project/Horror/Scripts/Dialogue/DialogueSystem.cs"),
     ("Quando stai addosso a qualcuno", "Assets/_Project/Horror/Scripts/Story/NpcActor.cs"),
     ("Generatore", "Assets/_Project/Horror/Scripts/Interaction/GeneratorStarter.cs"),
+    ("Capitolo 2 - la storia", "Assets/_Project/Horror/Scripts/Story/Chapter2Director.cs"),
+    ("Capitolo 2 - la radio in cantina", "Assets/_Project/Horror/Scripts/World/RadioTuner.cs"),
 ]
 NAMES = {"muark": "Muark", "tom": "Tom", "jef": "Jef", "roy": "Roy", "tv": "TV", "frank": "Frank", "martha": "Martha", "gary": "Gary",
-         "linda": "Linda", "vicino": "Vicino", "vicina": "Vicina", "lucia": "Lucia", "tasso": "Tasso", "gufo": "Gufo", "rana": "Rana"}
-FIELD = {"Muark": "muark", "Tom": "tom", "Jef": "jef", "Roy": "roy", "Tv": "tv", "Frank": "frank", "Martha": "martha", "Gary": "gary", "Linda": "linda"}
+         "linda": "Linda", "vicino": "Vicino", "vicina": "Vicina", "lucia": "Lucia", "tasso": "Tasso", "gufo": "Gufo", "rana": "Rana",
+         "radio": "Radio", "radioamatore": "Radioamatore", "militare": "Militare", "fattorino": "Fattorino"}
+FIELD = {"Muark": "muark", "Tom": "tom", "Jef": "jef", "Roy": "roy", "Tv": "tv", "Frank": "frank", "Martha": "martha", "Gary": "gary", "Linda": "linda",
+         "Radio": "radio", "Ham": "radioamatore", "Military": "militare", "PizzaBoy": "fattorino"}
 STR = r'"((?:[^"\\]|\\.)*)"'
 
 def unesc(s): return s.replace('\\"', '"').replace("\\n", " / ")
@@ -52,7 +56,7 @@ def scan(path):
 
 def main():
     index, lines, n = [], [], 0
-    lines.append("BATTUTE DI FANTALANDIA - capitolo 1")
+    lines.append("BATTUTE DI FANTALANDIA - capitoli 1 e 2")
     lines.append("Cambia solo il testo dopo i due punti. Lascia il numero [..] e il nome. Le righe che non tocchi restano uguali.")
     lines.append("SCELTA = una risposta che il giocatore sceglie (la dice Muark). OBIETTIVO = cosa è scritto nel taccuino.")
     lines.append("")

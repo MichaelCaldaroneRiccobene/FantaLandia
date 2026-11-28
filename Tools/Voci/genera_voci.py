@@ -23,7 +23,8 @@ SCRIPTS = os.path.join(ROOT, "Assets/_Project/Horror/Scripts")
 OUT = os.path.join(ROOT, "Assets/_Project/Horror/Resources/Voci")
 
 FIELD_TO_ID = {"Muark": "muark", "Tom": "tom", "Jef": "jef", "Roy": "roy", "Tv": "tv", "Frank": "frank", "Martha": "martha",
-               "Gary": "gary", "Linda": "linda", "NeighborMan": "vicino", "NeighborWoman": "vicina"}
+               "Gary": "gary", "Linda": "linda", "NeighborMan": "vicino", "NeighborWoman": "vicina",
+               "Radio": "radio", "Ham": "radioamatore", "Military": "militare", "PizzaBoy": "fattorino"}
 
 # tutti parlano un po' più svelti del modello (che di suo è lento e scandito)
 GLOBAL_SPEED = 1.22
@@ -51,6 +52,11 @@ VOICES = {
     "rana":   ("female", 1.18, 1.10, "highpass=f=250,lowpass=f=4000"),
     "tasso":  ("male",   0.86, 0.98, "highpass=f=250,lowpass=f=4000"),
     "gufo":   ("male",   0.80, 0.90, "highpass=f=250,lowpass=f=4000"),
+    # capitolo 2: le voci della radio (altoparlante piccolo e vecchio) e il fattorino della pizza
+    "radio":        ("male", 0.96, 1.00, "highpass=f=400,lowpass=f=3200,acompressor=threshold=0.1:ratio=5,volume=-6dB"),
+    "radioamatore": ("male", 0.90, 1.04, "highpass=f=500,lowpass=f=2600,acrusher=bits=8:mix=0.25,volume=-5dB"),
+    "militare":     ("male", 0.84, 0.95, "highpass=f=450,lowpass=f=3000,acompressor=threshold=0.08:ratio=6,volume=-6dB"),
+    "fattorino":    ("male", 1.14, 1.10, ""),
 }
 IDS = "|".join(VOICES.keys())
 
@@ -72,6 +78,10 @@ EN_VOICES = {
     "rana":   ("p341", 1.12, 1.05, "highpass=f=250,lowpass=f=4000"),
     "tasso":  ("p258", 0.95, 1.0, "highpass=f=250,lowpass=f=4000"),
     "gufo":   ("p285", 0.92, 0.92, "highpass=f=250,lowpass=f=4000"),
+    "radio":        ("p311", 1.00, 1.02, "highpass=f=400,lowpass=f=3200,acompressor=threshold=0.1:ratio=5,volume=-6dB"),
+    "radioamatore": ("p360", 0.97, 1.05, "highpass=f=500,lowpass=f=2600,acrusher=bits=8:mix=0.25,volume=-5dB"),
+    "militare":     ("p363", 0.94, 0.98, "highpass=f=450,lowpass=f=3000,acompressor=threshold=0.08:ratio=6,volume=-6dB"),
+    "fattorino":    ("p334", 1.06, 1.12, ""),
 }
 
 def english_table():

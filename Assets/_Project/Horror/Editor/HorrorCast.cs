@@ -28,6 +28,7 @@ namespace FantaLandia.Horror.EditorTools
                 ["martha"] = Build(Martha()),
                 ["gary"] = Build(Gary()),
                 ["linda"] = Build(Linda()),
+                ["fattorino"] = Build(PizzaBoy()),
             };
             Debug.Log("[FantaLandia Horror] Personaggi creati in " + Folder);
             return d;
@@ -99,6 +100,28 @@ namespace FantaLandia.Horror.EditorTools
                 bottom = Bottom.Jeans, bottomColor = C("#2e4466"),
                 shoes = Shoes.HighTops, shoeColor = C("#f2f2ee"), shoeColor2 = C("#2a4aa0"),
                 hat = Hat.CapBackwards, hatColor = C("#c0392b"),
+            };
+            return s;
+        }
+
+        /// <summary>
+        /// Il fattorino della pizza (capitolo 2): un ragazzino magro, cappellino rosso della pizzeria, polo rossa con il
+        /// colletto bianco, jeans sporchi, scarpe da ginnastica consumate. Pallido dalla paura.
+        /// </summary>
+        public static Shape PizzaBoy()
+        {
+            Shape s = Male();
+            s.id = "Personaggio_Fattorino"; s.displayName = "Fattorino";
+            s.skin = C("#e2c2a6"); s.hair = C("#6a4a2a"); s.pupil = C("#4a3a2a");
+            s.hairStyle = HairStyle.Short; s.beard = BeardStyle.None;
+            s.thighLen -= 0.02f; s.shinLen -= 0.02f;
+            s.chestW *= 0.9f; s.absW *= 0.9f; s.upperArmW *= 0.9f; s.forearmW *= 0.9f;
+            s.outfit = new Outfit
+            {
+                top = Top.TShirt, topColor = C("#b8262a"), topColor2 = C("#f4f0e6"),
+                bottom = Bottom.Jeans, bottomColor = C("#4a5a72"),
+                shoes = Shoes.Sneakers, shoeColor = C("#c8c4b8"), shoeColor2 = C("#7a2a2a"),
+                hat = Hat.Cap, hatColor = C("#c0302a"),
             };
             return s;
         }

@@ -357,7 +357,10 @@ namespace FantaLandia.Horror.UI
             FantaLandia.Horror.Story.StoryDirector.PendingStart = startAt;
             IntroSequence.SkipLogo = true;
             IsOpen = false;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex >= 0 ? SceneManager.GetActiveScene().buildIndex : 0);
+            // i punti dal 100 in su sono del capitolo 2 (un'altra scena); gli altri del capitolo 1
+            string scene = startAt >= FantaLandia.Horror.Story.Chapter2Director.CheckpointBase ? FantaLandia.Horror.Story.Chapter2Director.SceneName : "Casa_Tom";
+            if (Application.CanStreamedLevelBeLoaded(scene)) SceneManager.LoadScene(scene);
+            else SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex >= 0 ? SceneManager.GetActiveScene().buildIndex : 0);
         }
 
         void Quit()

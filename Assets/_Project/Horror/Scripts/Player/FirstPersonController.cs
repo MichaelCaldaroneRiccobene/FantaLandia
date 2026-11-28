@@ -39,6 +39,23 @@ namespace FantaLandia.Horror.Player
         /// <summary>Bloccato da scene e dialoghi.</summary>
         public bool inputLocked;
 
+        [Header("Colpi e stordimento (capitolo 2)")]
+        [Tooltip("0..1: si barcolla (il passo sbanda, la visuale ondeggia)")]
+        [Range(0f, 1f)] public float stagger;
+        [Tooltip("0..1: a terra (1 = sdraiato sul pavimento, la camera bassa e girata)")]
+        [Range(0f, 1f)] public float knockdown;
+        [Tooltip("Rollio della camera in gradi (si somma all'ondeggiare)")]
+        public float roll;
+
+        /// <summary>Una spinta improvvisa (un'esplosione, un colpo): si vola all'indietro e la spinta si smorza da sola.</summary>
+        public void Push(Vector3 impulse)
+        {
+            velocity += impulse;
+            pushT = 1f;
+        }
+
+        float pushT;
+
         public bool IsCrouching { get; private set; }
         /// <summary>Seduto su un divano o una poltrona.</summary>
         public bool IsSeated { get; private set; }
@@ -120,8 +137,18 @@ namespace FantaLandia.Horror.Player
             float speed = IsCrouching ? crouchSpeed : IsRunning ? runSpeed : walkSpeed;
             Vector3 wish = (transform.forward * input.y + transform.right * input.x);
             if (wish.sqrMagnitude > 1f) wish.Normalize();
+            if (stagger > 0.001f)
+            {
+                // stordito: il passo sbanda di lato e rallenta, niente corsa
+                IsRunning = false;
+                speed = walkSpeed * (1f - 0.45f * stagger);
+                if (wish.sqrMagnitude > 0.01f)
+                    wish = (wish + transform.right * (Mathf.PerlinNoise(Time.time * 0.6f, 3.1f) - 0.5f) * 1.6f * stagger).normalized;
+            }
             Vector3 horizontal = new Vector3(velocity.x, 0f, velocity.z);
-            horizontal = Vector3.MoveTowards(horizontal, wish * speed, acceleration * dt);
+            // dopo una spinta si scivola via (si frena piano), poi si torna a camminare normalmente
+            pushT = Mathf.MoveTowards(pushT, 0f, dt * 0.9f);
+            horizontal = Vector3.MoveTowards(horizontal, wish * speed, acceleration * dt * (1f - 0.75f * pushT));
             velocity.x = horizontal.x;
             velocity.z = horizontal.z;
 
@@ -153,8 +180,10 @@ namespace FantaLandia.Horror.Player
             Vector3 head = transform.TransformPoint(new Vector3(0f, eye + bob - down * 0.05f, 0f));
             if (Physics.SphereCast(head, 0.1f, transform.forward, out RaycastHit block, forward + 0.06f, ~((1 << 2) | (1 << 7)), QueryTriggerInteraction.Ignore))
                 forward = Mathf.Max(0f, block.distance - 0.06f);
-            cam.transform.localPosition = new Vector3(0f, eye + bob - down * 0.05f, forward);
-            cam.transform.localRotation = Quaternion.Euler(pitch, Mathf.DeltaAngle(bodyYaw, yaw), 0f);
+            float kd = knockdown * knockdown * (3f - 2f * knockdown);
+            float sway = stagger > 0.001f ? (Mathf.PerlinNoise(Time.time * 0.45f, 7.7f) - 0.5f) * 14f * stagger : 0f;
+            cam.transform.localPosition = new Vector3(0f, Mathf.Lerp(eye + bob - down * 0.05f, 0.3f, kd), forward * (1f - kd));
+            cam.transform.localRotation = Quaternion.Euler(pitch + sway * 0.3f, Mathf.DeltaAngle(bodyYaw, yaw), roll + sway + kd * 62f);
 
             // --- il corpo segue
             if (animator != null)

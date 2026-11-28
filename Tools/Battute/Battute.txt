@@ -1,4 +1,4 @@
-BATTUTE DI FANTALANDIA - capitolo 1
+BATTUTE DI FANTALANDIA - capitoli 1 e 2
 Cambia solo il testo dopo i due punti. Lascia il numero [..] e il nome. Le righe che non tocchi restano uguali.
 SCELTA = una risposta che il giocatore sceglie (la dice Muark). OBIETTIVO = cosa è scritto nel taccuino.
 
@@ -264,4 +264,145 @@ GENERATORE
 [237] Muark: Dai...
 [238] Muark: Avanti, parti!
 [239] Muark: Ti prego, ti prego...
+
+======================================================================
+CAPITOLO 2 - LA STORIA
+======================================================================
+[240] Roy: Te l'avevo detto di chiamare qualcuno.
+[241] Tom: E chi? I telefoni sono morti, Roy.
+[242] Roy: Potevamo andare via in macchina. Subito.
+[243] Tom: In macchina dove? Hai visto il cielo?
+[244] Roy: Meglio che stare chiusi qui sotto come topi.
+[245] Tom: Abbassa la voce.
+[246] Roy: Abbassala tu.
+[247] Tom: Quando finisce la benzina del generatore restiamo al buio. Lo sai, vero?
+[248] Roy: Grazie, Tom. Molto rassicurante.
+[249] Tom: Muark. Quella radio funziona ancora?
+[250] Muark (SCELTA): Proviamo.
+[251] Muark (SCELTA): Se non l'hai rotta tu, sì.
+[252] Tom: Molto divertente. Accendila.
+[253] Tom: Trova qualcuno. Chiunque. Dobbiamo sapere cosa succede là fuori.
+[254] Taccuino (OBIETTIVO): Sintonizzare la radio (Gira la manopola, genio)
+[255] Muark: La radio... devo trovare una stazione.
+[256] Tom: Gira piano, Muark. Le stazioni sono tra una tacca e l'altra.
+[257] Roy: Prova più in alto, verso il cento.
+[258] Tom: Continua a cercare. Ci sarà qualcun altro.
+[259] Muark: Ci dev'essere qualcun altro, su questa radio.
+[260] Roy: "Oh mio Dio"? Cosa ha visto?
+[261] Tom: Restare in casa. Come se avessimo scelta.
+[262] Roy: Alto come un palazzo?! Ma che cazzo dice quello?
+[263] Jef: Dice la verità.
+[264] Roy: Martello Sette? Che cazzo vuol dire Martello Sette?
+[265] Tom: Evacuare a nord... e noi come ci arriviamo? A piedi?
+[266] Roy: Che cazzo era quello?!
+[267] Tom: Zitti! State zitti!
+[268] Jef: ...Se n'è andato.
+[269] Fattorino: AIUTO!! APRITE!!
+[270] Fattorino: Vi prego! C'è qualcuno?! Aprite!
+[271] Roy: C'è qualcuno alla porta...
+[272] Tom: Non aprite a nessuno. L'ha detto la TV.
+[273] Roy: È un ragazzo, Tom! È solo un ragazzo!
+[274] Tom: E allora vai tu, Roy. Vai su tu.
+[275] Roy: Io? Sei matto?
+[276] Jef: Io non ci vado.
+[277] Muark (SCELTA): Vado io.
+[278] Muark (SCELTA): Cazzo... vado io.
+[279] Tom: Muark, no! Sei impazzito?
+[280] Roy: Muark... stai attento, ok?
+[281] Muark: ...Vado io. Non possiamo lasciarlo lì.
+[282] Tom: Apri, fallo entrare e chiudi subito. Subito, hai capito?
+[283] Taccuino (OBIETTIVO): Aprire la porta d'ingresso (Il coraggioso del gruppo)
+[284] Muark: La porta d'ingresso... devo aprirgli.
+[285] Roy: Muark! Il ragazzo! Sbrigati!
+[286] Fattorino: Per favore! Mi sentite?!
+[287] Fattorino: Aprite! Vi prego, aprite!
+[288] Fattorino: Sono il fattorino! Le pizze! Vi prego!
+[289] Fattorino: Sta arrivando qualcosa... APRITE!
+[290] Muark: Oh, cazzo... la casa...
+[291] Muark: Il piano di sopra... non c'è più.
+[292] Fattorino: Grazie! Grazie, cazzo... pensavo che nessuno...
+[293] Fattorino: Le avete ordinate voi, le pizze? Ho girato tutta la sera...
+[294] Fattorino: Là fuori c'è qualcosa. Dovete farmi entrare, subito, prima che...
+[295] Fattorino: ...Cos'è questo rumore?
+[296] Muark: ...Cosa... cos'è successo...
+[297] Muark: Il ragazzo... dov'è il ragazzo...
+[298] Muark: Devo... devo tornare giù.
+[299] Fattorino: No... no, no! NO!
+[300] Muark: No... no, no, no!
+[301] Muark: Era lì fuori... e io... devo tornare giù.
+[302] Roy: ...L'ha preso.
+[303] Tom: Non c'era niente da fare. Niente.
+[304] Taccuino (OBIETTIVO): Tornare in cantina dagli altri (Corri, cazzo)
+[305] Muark: Devo tornare giù dagli altri.
+[306] Tom: Muark?! MUARK! Rispondi!
+[307] Tom: Muark! Cristo santo... sei coperto di sangue!
+[308] Roy: Di chi è quel sangue? Muark? Di chi è?
+[309] Muark: Il ragazzo... era lì, mi ha detto grazie... e poi... un masso enorme... dal cielo...
+[310] Muark: Non c'è più. Non c'è più niente.
+[311] Roy: Muark! Hai sentito quel botto?
+[312] Muark: Il ragazzo... non ho fatto in tempo...
+[313] Jef: Non c'è più.
+[314] Jef: Siediti, Muark. Siediti.
+[315] Tom: Respira. Respira, ok? Sei qui con noi.
+[316] Roy: Ok... ok, e adesso? Adesso che facciamo?
+[317] Tom: La radio. Fammi provare.
+[318] Militare: ...a tutti i civili ancora presenti nella zona di Maple Grove.
+[319] Militare: Abbandonate immediatamente l'area. Ripeto: abbandonate immediatamente l'area.
+[320] Militare: Questa zona non è sicura. Non è sic...
+[321] Tom: No, no, no! Torna su! Cazzo!
+[322] Roy: Abbandonare l'area? E come? Là fuori ci sono quelle cose!
+[323] Tom: Restare qui sotto è peggio, Roy!
+[324] Roy: E Muark? L'hai visto com'è ridotto?
+[325] Jef: Smettetela.
+[326] Roy: No, no, no... non adesso!
+[327] Tom: Merda. Il generatore è a secco.
+[328] Tom: Ascoltatemi. Ce ne andiamo. Adesso.
+[329] Tom: Prendiamo la macchina di mia madre e andiamo a nord, come ha detto la radio.
+[330] Roy: ...Ok. Ok.
+[331] Tom: State dietro di me. Muark, ce la fai a camminare?
+[332] Muark (SCELTA): Sì... credo.
+[333] Muark (SCELTA): Non ho scelta, no?
+[334] Tom: No. Nessuno di noi ce l'ha.
+[335] Taccuino (OBIETTIVO): Seguire Tom (Resta vicino alla luce)
+[336] Tom: Muark, di qua! Stammi dietro!
+[337] Roy: Muark, dai! Non restare indietro al buio!
+[338] Tom: Non si passa... c'è quel masso al posto della porta!
+[339] Roy: Il ragazzo è lì sotto. Vero, Muark? È lì sotto.
+[340] Roy: Cristo... il ragazzo era lì.
+[341] Tom: Dal retro. Usciamo in giardino e giriamo dal lato della casa.
+[342] Tom: Dai... dai, apriti!
+[343] Taccuino (OBIETTIVO): Uscire in giardino con gli altri
+[344] Roy: Sentite? Da quella parte...
+[345] Tom: Zitti.
+[346] Roy: Oh... mio... Dio...
+[347] Tom: Non muovetevi. Non... non respirate.
+[348] Jef: ATTENTI!
+[349] TV: ...continua la nostra edizione straordinaria. Sono le sei del mattino.
+[350] TV: Questa notte, poco dopo le nove, qualcosa è uscito dal sottosuolo, sotto la vecchia centrale elettrica di Maple Grove.
+[351] TV: Queste immagini sono state riprese da un nostro elicottero, poco prima che perdessimo il contatto.
+[352] TV: La creatura, alta più di sessanta metri, ha attraversato la città da est a ovest, scagliando detriti per chilometri.
+[353] TV: Con lei, dalle fognature, sono uscite centinaia di creature più piccole.
+[354] TV: L'esercito ha istituito una zona di esclusione di quindici chilometri.
+[355] TV: Chi si trova ancora all'interno deve dirigersi verso nord, lungo la Route 9, fino a Fort Jackson.
+[356] TV: Le operazioni militari sono in corso. Il Pentagono non ha rilasciato dichiarazioni.
+[357] TV: Non abbiamo ancora un numero delle vittime. Si parla di migliaia di dispersi.
+[358] TV: Se ci state ascoltando... non restate dove siete. Andate a nord.
+[359] TV: Ripetiamo: andate a n...
+
+======================================================================
+CAPITOLO 2 - LA RADIO IN CANTINA
+======================================================================
+[360] Radio: ...WMGR, novantasei e sette. Edizione straordinaria.
+[361] Radio: Ripetiamo: le autorità chiedono a tutti i residenti di Maple Grove di restare in casa.
+[362] Radio: Non uscite. Non usate le auto. Le strade verso est sono chiuse.
+[363] Radio: Vi terremo aggiornati appena... un momento. Cos'è questo rumore? Cosa... Oh mio Dio...
+[364] Radioamatore: ...qualcuno mi sente? Qui radioamatore, Maple Grove nord. Qualcuno mi sente?
+[365] Radioamatore: L'ho visto dalla finestra. Vicino alla vecchia centrale. Una cosa alta come un palazzo.
+[366] Radioamatore: Si muove. Cammina. Giuro su Dio, cammina.
+[367] Radioamatore: E dalle fogne escono cose più piccole. Tante. Corrono a quattro zampe.
+[368] Radioamatore: Se mi sentite, spegnete le luci. Non fate rumore. Non...
+[369] Militare: ...a tutte le unità, qui Comando Nord. Codice Martello Sette. Ripeto: Martello Sette.
+[370] Militare: Settore Maple Grove: perimetro compromesso.
+[371] Militare: Evacuazione dei civili verso nord, Route 9. Punto di raccolta: Fort Jackson.
+[372] Militare: Fine messaggio. Il messaggio si ripete.
 

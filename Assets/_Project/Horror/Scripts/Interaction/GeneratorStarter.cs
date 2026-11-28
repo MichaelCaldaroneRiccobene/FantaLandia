@@ -80,6 +80,40 @@ namespace FantaLandia.Horror.Interaction
             busy = false;
         }
 
+        /// <summary>Già acceso all'inizio della scena (capitolo 2: il generatore gira da un'ora).</summary>
+        public void StartRunning()
+        {
+            if (Running) return;
+            Running = true;
+            Pulls = pullsToStart;
+            engine = HorrorAudio.CreateLoop(transform, ProceduralAudio.EngineLoop(), engineVolume * FantaLandia.Horror.UI.GameSettings.Effects, true, 14f);
+            engine.Play();
+        }
+
+        /// <summary>Il carburante finisce: il motore tossisce, rallenta e si spegne (non si riaccende più).</summary>
+        public IEnumerator Die(float seconds = 2.5f)
+        {
+            if (!Running) yield break;
+            armed = false;
+            HorrorAudio.PlayAt(ProceduralAudio.Sputter(0), transform.position, 0.9f);
+            float v0 = engine != null ? engine.volume : 0f;
+            for (float t = 0f; t < 1f; t += Time.deltaTime / seconds)
+            {
+                if (engine != null)
+                {
+                    engine.pitch = Mathf.Lerp(1f, 0.45f, t) * (1f + Mathf.Sin(t * 40f) * 0.08f * (1f - t));
+                    engine.volume = v0 * (1f - t * t);
+                }
+                if (t > 0.5f && t - Time.deltaTime / seconds <= 0.5f) HorrorAudio.PlayAt(ProceduralAudio.Sputter(1), transform.position, 0.7f, 0.8f);
+                yield return null;
+            }
+            if (engine != null) { engine.Stop(); Destroy(engine); engine = null; }
+            Running = false;
+            enabled = false; // niente più spia né corda: è a secco
+            if (indicator != null) indicator.enabled = false;
+            if (indicatorLamp != null && lampOff != null) indicatorLamp.sharedMaterial = lampOff;
+        }
+
         /// <summary>La spia lampeggia piano da spento, resta accesa fissa quando il motore gira.</summary>
         void Update()
         {

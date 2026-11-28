@@ -233,10 +233,147 @@ Mi stai addosso, amico.	You're all over me, man.
 Dai...	Come on...
 Avanti, parti!	Come on, start!
 Ti prego, ti prego...	Please, please...
+Te l'avevo detto di chiamare qualcuno.	I told you we should've called someone.
+E chi? I telefoni sono morti, Roy.	Who? The phones are dead, Roy.
+Potevamo andare via in macchina. Subito.	We could've left in the car. Right away.
+In macchina dove? Hai visto il cielo?	Left for where? Did you see the sky?
+Meglio che stare chiusi qui sotto come topi.	Better than hiding down here like rats.
+Abbassa la voce.	Keep your voice down.
+Abbassala tu.	You keep yours down.
+Quando finisce la benzina del generatore restiamo al buio. Lo sai, vero?	When the generator runs out of gas, we're in the dark. You know that, right?
+Grazie, Tom. Molto rassicurante.	Thanks, Tom. Very reassuring.
+Muark. Quella radio funziona ancora?	Muark. Does that radio still work?
+Proviamo.	Let's find out.
+Se non l'hai rotta tu, sì.	If you didn't break it, yeah.
+Molto divertente. Accendila.	Very funny. Turn it on.
+Trova qualcuno. Chiunque. Dobbiamo sapere cosa succede là fuori.	Find somebody. Anybody. We need to know what's going on out there.
+Sintonizzare la radio (Gira la manopola, genio)	Tune the radio (Turn the dial, genius)
+La radio... devo trovare una stazione.	The radio... I need to find a station.
+Gira piano, Muark. Le stazioni sono tra una tacca e l'altra.	Turn it slowly, Muark. The stations are between the notches.
+Prova più in alto, verso il cento.	Try higher up, around a hundred.
+Continua a cercare. Ci sarà qualcun altro.	Keep looking. There has to be someone else.
+Ci dev'essere qualcun altro, su questa radio.	There's got to be someone else on this radio.
+"Oh mio Dio"? Cosa ha visto?	"Oh my God"? What did he see?
+Restare in casa. Come se avessimo scelta.	Stay indoors. Like we have a choice.
+Alto come un palazzo?! Ma che cazzo dice quello?	Tall as a building?! What the fuck is he talking about?
+Dice la verità.	He's telling the truth.
+Martello Sette? Che cazzo vuol dire Martello Sette?	Hammer Seven? What the fuck does Hammer Seven mean?
+Evacuare a nord... e noi come ci arriviamo? A piedi?	Evacuate north... and how do we get there? On foot?
+Che cazzo era quello?!	What the fuck was that?!
+Zitti! State zitti!	Quiet! Shut up!
+...Se n'è andato.	...It's gone.
+AIUTO!! APRITE!!	HELP!! OPEN UP!!
+Vi prego! C'è qualcuno?! Aprite!	Please! Is anybody in there?! Open up!
+C'è qualcuno alla porta...	Someone's at the door...
+Non aprite a nessuno. L'ha detto la TV.	Don't open the door to anyone. The TV said so.
+È un ragazzo, Tom! È solo un ragazzo!	It's a kid, Tom! It's just a kid!
+E allora vai tu, Roy. Vai su tu.	Then you go, Roy. You go up there.
+Io? Sei matto?	Me? Are you crazy?
+Io non ci vado.	I'm not going.
+Vado io.	I'll go.
+Cazzo... vado io.	Fuck... I'll go.
+Muark, no! Sei impazzito?	Muark, no! Are you insane?
+Muark... stai attento, ok?	Muark... be careful, okay?
+...Vado io. Non possiamo lasciarlo lì.	...I'll go. We can't just leave him out there.
+Apri, fallo entrare e chiudi subito. Subito, hai capito?	Open it, let him in and shut it right away. Right away, you hear me?
+Aprire la porta d'ingresso (Il coraggioso del gruppo)	Open the front door (The brave one of the group)
+La porta d'ingresso... devo aprirgli.	The front door... I have to let him in.
+Muark! Il ragazzo! Sbrigati!	Muark! The kid! Hurry up!
+Per favore! Mi sentite?!	Please! Can you hear me?!
+Aprite! Vi prego, aprite!	Open up! Please, open up!
+Sono il fattorino! Le pizze! Vi prego!	I'm the delivery guy! The pizzas! Please!
+Sta arrivando qualcosa... APRITE!	Something's coming... OPEN UP!
+Oh, cazzo... la casa...	Oh, fuck... the house...
+Il piano di sopra... non c'è più.	The upstairs... it's gone.
+Grazie! Grazie, cazzo... pensavo che nessuno...	Thank you! Thank you, fuck... I thought nobody...
+Le avete ordinate voi, le pizze? Ho girato tutta la sera...	You guys ordered the pizzas? I've been driving around all night...
+Là fuori c'è qualcosa. Dovete farmi entrare, subito, prima che...	There's something out there. You have to let me in, now, before...
+...Cos'è questo rumore?	...What's that sound?
+...Cosa... cos'è successo...	...What... what happened...
+Il ragazzo... dov'è il ragazzo...	The kid... where's the kid...
+Devo... devo tornare giù.	I have to... I have to go back down.
+No... no, no! NO!	No... no, no! NO!
+No... no, no, no!	No... no, no, no!
+Era lì fuori... e io... devo tornare giù.	He was right outside... and I... I have to go back down.
+...L'ha preso.	...It got him.
+Non c'era niente da fare. Niente.	There was nothing we could do. Nothing.
+Tornare in cantina dagli altri (Corri, cazzo)	Go back down to the others (Run, dammit)
+Devo tornare giù dagli altri.	I have to go back down to the others.
+Muark?! MUARK! Rispondi!	Muark?! MUARK! Answer me!
+Muark! Cristo santo... sei coperto di sangue!	Muark! Jesus Christ... you're covered in blood!
+Di chi è quel sangue? Muark? Di chi è?	Whose blood is that? Muark? Whose is it?
+Il ragazzo... era lì, mi ha detto grazie... e poi... un masso enorme... dal cielo...	The kid... he was right there, he said thank you... and then... a huge rock... from the sky...
+Non c'è più. Non c'è più niente.	He's gone. There's nothing left.
+Muark! Hai sentito quel botto?	Muark! Did you hear that crash?
+Il ragazzo... non ho fatto in tempo...	The kid... I didn't make it in time...
+Non c'è più.	He's gone.
+Siediti, Muark. Siediti.	Sit down, Muark. Sit down.
+Respira. Respira, ok? Sei qui con noi.	Breathe. Just breathe, okay? You're here with us.
+Ok... ok, e adesso? Adesso che facciamo?	Okay... okay, so now what? What do we do now?
+La radio. Fammi provare.	The radio. Let me try.
+...a tutti i civili ancora presenti nella zona di Maple Grove.	...to all civilians still in the Maple Grove area.
+Abbandonate immediatamente l'area. Ripeto: abbandonate immediatamente l'area.	Leave the area immediately. I repeat: leave the area immediately.
+Questa zona non è sicura. Non è sic...	This zone is not safe. It is not sa...
+No, no, no! Torna su! Cazzo!	No, no, no! Come back! Fuck!
+Abbandonare l'area? E come? Là fuori ci sono quelle cose!	Leave the area? How? Those things are out there!
+Restare qui sotto è peggio, Roy!	Staying down here is worse, Roy!
+E Muark? L'hai visto com'è ridotto?	And Muark? Did you see what shape he's in?
+Smettetela.	Stop it.
+No, no, no... non adesso!	No, no, no... not now!
+Merda. Il generatore è a secco.	Shit. The generator's out of gas.
+Ascoltatemi. Ce ne andiamo. Adesso.	Listen to me. We're leaving. Now.
+Prendiamo la macchina di mia madre e andiamo a nord, come ha detto la radio.	We take my mom's car and head north, like the radio said.
+...Ok. Ok.	...Okay. Okay.
+State dietro di me. Muark, ce la fai a camminare?	Stay behind me. Muark, can you walk?
+Sì... credo.	Yeah... I think so.
+Non ho scelta, no?	I don't have a choice, do I?
+No. Nessuno di noi ce l'ha.	No. None of us do.
+Seguire Tom (Resta vicino alla luce)	Follow Tom (Stay close to the light)
+Muark, di qua! Stammi dietro!	Muark, this way! Stay behind me!
+Muark, dai! Non restare indietro al buio!	Muark, come on! Don't fall behind in the dark!
+Non si passa... c'è quel masso al posto della porta!	We can't get through... that rock is where the door used to be!
+Il ragazzo è lì sotto. Vero, Muark? È lì sotto.	The kid's under there. Right, Muark? He's under there.
+Cristo... il ragazzo era lì.	Jesus... the kid was right there.
+Dal retro. Usciamo in giardino e giriamo dal lato della casa.	Out the back. We go through the yard and around the side of the house.
+Dai... dai, apriti!	Come on... come on, open!
+Uscire in giardino con gli altri	Go out into the yard with the others
+Sentite? Da quella parte...	You hear that? Over there...
+Zitti.	Quiet.
+Oh... mio... Dio...	Oh... my... God...
+Non muovetevi. Non... non respirate.	Don't move. Don't... don't breathe.
+ATTENTI!	LOOK OUT!
+...continua la nostra edizione straordinaria. Sono le sei del mattino.	...our special report continues. It is six in the morning.
+Questa notte, poco dopo le nove, qualcosa è uscito dal sottosuolo, sotto la vecchia centrale elettrica di Maple Grove.	Last night, shortly after nine, something emerged from underground, beneath the old Maple Grove power plant.
+Queste immagini sono state riprese da un nostro elicottero, poco prima che perdessimo il contatto.	These images were filmed by our news helicopter, shortly before we lost contact.
+La creatura, alta più di sessanta metri, ha attraversato la città da est a ovest, scagliando detriti per chilometri.	The creature, over two hundred feet tall, crossed the town from east to west, hurling debris for miles.
+Con lei, dalle fognature, sono uscite centinaia di creature più piccole.	Along with it, hundreds of smaller creatures came out of the sewers.
+L'esercito ha istituito una zona di esclusione di quindici chilometri.	The army has set up a ten-mile exclusion zone.
+Chi si trova ancora all'interno deve dirigersi verso nord, lungo la Route 9, fino a Fort Jackson.	Anyone still inside must head north, along Route 9, to Fort Jackson.
+Le operazioni militari sono in corso. Il Pentagono non ha rilasciato dichiarazioni.	Military operations are underway. The Pentagon has not released a statement.
+Non abbiamo ancora un numero delle vittime. Si parla di migliaia di dispersi.	We still have no casualty figures. Thousands are reported missing.
+Se ci state ascoltando... non restate dove siete. Andate a nord.	If you can hear us... don't stay where you are. Go north.
+Ripetiamo: andate a n...	We repeat: go n...
+...WMGR, novantasei e sette. Edizione straordinaria.	...WMGR, ninety-six point seven. Special report.
+Ripetiamo: le autorità chiedono a tutti i residenti di Maple Grove di restare in casa.	We repeat: authorities are asking all Maple Grove residents to stay indoors.
+Non uscite. Non usate le auto. Le strade verso est sono chiuse.	Don't go outside. Don't use your cars. The roads to the east are closed.
+Vi terremo aggiornati appena... un momento. Cos'è questo rumore? Cosa... Oh mio Dio...	We'll keep you updated as soon as... hold on. What's that noise? What... Oh my God...
+...qualcuno mi sente? Qui radioamatore, Maple Grove nord. Qualcuno mi sente?	...can anybody hear me? This is a ham operator, north Maple Grove. Can anybody hear me?
+L'ho visto dalla finestra. Vicino alla vecchia centrale. Una cosa alta come un palazzo.	I saw it from my window. Near the old power plant. Something as tall as a building.
+Si muove. Cammina. Giuro su Dio, cammina.	It moves. It walks. I swear to God, it walks.
+E dalle fogne escono cose più piccole. Tante. Corrono a quattro zampe.	And smaller things are coming out of the sewers. Lots of them. Running on all fours.
+Se mi sentite, spegnete le luci. Non fate rumore. Non...	If you can hear me, turn off your lights. Don't make a sound. Don't...
+...a tutte le unità, qui Comando Nord. Codice Martello Sette. Ripeto: Martello Sette.	...to all units, this is Northern Command. Code Hammer Seven. I repeat: Hammer Seven.
+Settore Maple Grove: perimetro compromesso.	Maple Grove sector: perimeter compromised.
+Evacuazione dei civili verso nord, Route 9. Punto di raccolta: Fort Jackson.	Evacuate civilians north, Route 9. Rally point: Fort Jackson.
+Fine messaggio. Il messaggio si ripete.	End of message. This message will repeat.
 Carta! Carta batte sasso. Ho vinto!	Paper! Paper beats rock. I win!
 Forbice! Forbice batte carta. Ho vinto!	Scissors! Scissors beat paper. I win!
 Vicino	Neighbor
 Vicina	Neighbor
+Radio WMGR	WMGR Radio
+Radioamatore	Ham operator
+Militare	Soldier
+Fattorino	Delivery guy
 salta	skip
 Spazio	Space
 per alzarti	to stand up
@@ -302,3 +439,15 @@ Fine del capitolo 1\n\n<size=22>Continua...</size>	End of chapter 1\n\n<size=22>
 <size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank e Martha Miller · Gary e Linda Kowalski</size>	<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>Frank and Martha Miller · Gary and Linda Kowalski</size>
 <size=18>Nel prossimo capitolo...</size>\n\n<size=26>Non aprite a nessuno.</size>	<size=18>In the next chapter...</size>\n\n<size=26>Don't open the door to anyone.</size>
 <size=22>Grazie per aver giocato</size>	<size=22>Thanks for playing</size>
+Un'ora dopo...	One hour later...
+Fine del capitolo 2\n\n<size=22>Continua...</size>	End of chapter 2\n\n<size=22>To be continued...</size>
+<size=46><b>FantaLandia</b></size>\n\n<size=22>Capitolo 2 — Non aprite a nessuno</size>	<size=46><b>FantaLandia</b></size>\n\n<size=22>Chapter 2 — Don't Open the Door</size>
+<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>e il ragazzo delle pizze, che ha fatto in tempo a dire grazie</size>	<size=20>Muark · Tom · Roy · Jef</size>\n<size=16>and the pizza guy, who had just enough time to say thank you</size>
+<size=18>Nel prossimo capitolo...</size>\n\n<size=26>A nord.</size>	<size=18>In the next chapter...</size>\n\n<size=26>North.</size>
+Prendi la radio e sintonizzala	Pick up the radio and tune it
+Muovi il mouse per girare la manopola · E per posare la radio	Move the mouse to turn the dial · E to put the radio down
+Bloccata. Dall'altra parte è crollato tutto.	Blocked. Everything collapsed on the other side.
+Non si apre. È incastrata dalle macerie.	It won't open. It's jammed by the rubble.
+Meglio non uscire...	Better not go out...
+Non si passa. C'è un masso enorme al posto della porta.	No way through. There's a huge boulder where the door was.
+Siediti sulla cassa	Sit on the crate

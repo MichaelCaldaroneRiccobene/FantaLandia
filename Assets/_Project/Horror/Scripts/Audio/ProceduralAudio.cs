@@ -563,6 +563,152 @@ namespace FantaLandia.Horror.Audio
             }, 410 + variant);
         }
 
+        // ------------------------------------------------------------------ capitolo 2: la creatura e i macigni
+
+        /// <summary>Ruggito della creatura gigante: un ringhio bassissimo che sale, armoniche ruvide, eco lunga (variant 0..2).</summary>
+        public static AudioClip Roar(int variant)
+        {
+            return Build($"ruggito_{variant}", 4.5f, (d, r) =>
+            {
+                float ph = 0f, len = d.Length / (float)Rate;
+                var rough = new float[d.Length];
+                for (int i = 0; i < rough.Length; i++) rough[i] = Noise(r);
+                LowPass(rough, 400f);
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float env = Mathf.Clamp01(t / 0.6f) * Mathf.Clamp01((len - t) / 1.6f);
+                    float f = 38f + variant * 6f + 30f * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / 2.6f)) + 3f * Mathf.Sin(t * 23f);
+                    ph += f / Rate;
+                    float saw = (ph % 1f) * 2f - 1f;
+                    float growl = saw * (0.7f + 0.3f * Mathf.Sin(2f * Mathf.PI * 31f * t)) + Mathf.Sin(2f * Mathf.PI * ph * 2f) * 0.4f;
+                    d[i] = (growl + rough[i] * 6f) * env;
+                }
+                // eco lontana
+                int delay = (int)(0.35f * Rate);
+                for (int i = d.Length - 1; i >= delay; i--) d[i] += d[i - delay] * 0.35f;
+                LowPass(d, 700f);
+            }, 501 + variant);
+        }
+
+        /// <summary>Il fischio di un macigno che arriva dall'alto (sale di volume e di tono).</summary>
+        public static AudioClip Whistle()
+        {
+            return Build("fischio_macigno", 2.4f, (d, r) =>
+            {
+                float ph = 0f, len = d.Length / (float)Rate;
+                var air = new float[d.Length];
+                for (int i = 0; i < air.Length; i++) air[i] = Noise(r);
+                LowPass(air, 1500f);
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate, k = t / len;
+                    ph += (250f + 500f * k * k) / Rate;
+                    d[i] = (Mathf.Sin(2f * Mathf.PI * ph) * 0.3f + air[i] * 3f) * k * k;
+                }
+            }, 510);
+        }
+
+        /// <summary>Impatto enorme: tonfo profondo, schianto di legno e pietre, detriti che ricadono.</summary>
+        public static AudioClip HugeImpact()
+        {
+            return Build("impatto_macigno", 3.5f, (d, r) =>
+            {
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    d[i] = Mathf.Sin(2f * Mathf.PI * (30f + 40f * Mathf.Exp(-t * 8f)) * t) * Mathf.Exp(-t * 2.2f) * 1.4f
+                         + Noise(r) * Mathf.Exp(-t * 6f) * 0.9f;
+                }
+                for (int k = 0; k < 70; k++)   // detriti
+                {
+                    int s0 = (int)((0.05f + (float)r.NextDouble() * 2.6f) * Rate);
+                    float a = 0.1f + (float)r.NextDouble() * 0.3f, f = 200f + (float)r.NextDouble() * 900f;
+                    for (int i = s0; i < s0 + Rate / 25 && i < d.Length; i++)
+                    {
+                        float t = (i - s0) / (float)Rate;
+                        d[i] += (Noise(r) * 0.7f + Mathf.Sin(2f * Mathf.PI * f * t) * 0.3f) * a * Mathf.Exp(-t * 60f);
+                    }
+                }
+                LowPass(d, 2200f);
+            }, 511);
+        }
+
+        /// <summary>Fischio nelle orecchie dopo lo stordimento (acuto e sottile). In loop.</summary>
+        public static AudioClip Tinnitus()
+        {
+            return Build("fischio_orecchie", 2f, (d, r) =>
+            {
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    d[i] = Mathf.Sin(2f * Mathf.PI * 5600f * t) * 0.6f + Mathf.Sin(2f * Mathf.PI * 5650f * t) * 0.3f;
+                }
+            }, 512);
+        }
+
+        /// <summary>Il ronzio del segnale che salta ("Bzzzz"): onda quadra a 120 Hz che gracchia.</summary>
+        public static AudioClip Buzz()
+        {
+            return Build("ronzio_segnale", 1.6f, (d, r) =>
+            {
+                float len = d.Length / (float)Rate;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    float sq = Mathf.Sign(Mathf.Sin(2f * Mathf.PI * 120f * t)) * 0.5f + Mathf.Sign(Mathf.Sin(2f * Mathf.PI * 241f * t)) * 0.2f;
+                    d[i] = (sq + Noise(r) * 0.35f) * Mathf.Clamp01(t / 0.01f) * Mathf.Clamp01((len - t) / 0.3f) * 0.7f;
+                }
+            }, 514);
+        }
+
+        /// <summary>Il boato sordo di una scossa che arriva dall'alto: rombo basso, vetri e barattoli che tintinnano.</summary>
+        public static AudioClip Rumble()
+        {
+            return Build("scossa", 3.2f, (d, r) =>
+            {
+                float len = d.Length / (float)Rate;
+                for (int i = 0; i < d.Length; i++)
+                {
+                    float t = i / (float)Rate;
+                    d[i] = Noise(r) * Mathf.Clamp01(t / 0.15f) * Mathf.Exp(-t * 0.9f) * 2.5f;
+                }
+                LowPass(d, 90f);
+                for (int k = 0; k < 40; k++)   // tintinnii
+                {
+                    int s0 = (int)((0.1f + (float)r.NextDouble() * 2.2f) * Rate);
+                    float f = 1800f + (float)r.NextDouble() * 2500f;
+                    for (int i = s0; i < s0 + Rate / 12 && i < d.Length; i++)
+                    {
+                        float t = (i - s0) / (float)Rate;
+                        d[i] += Mathf.Sin(2f * Mathf.PI * f * t) * 0.06f * Mathf.Exp(-t * 40f);
+                    }
+                }
+            }, 515);
+        }
+
+        /// <summary>Urla lontane di gente (più voci, filtrate dalla distanza).</summary>
+        public static AudioClip DistantScreams()
+        {
+            return Build("urla_lontane", 4f, (d, r) =>
+            {
+                for (int v = 0; v < 4; v++)
+                {
+                    float start = (float)r.NextDouble() * 1.5f, dur = 1.2f + (float)r.NextDouble() * 1.5f, f0 = 380f + (float)r.NextDouble() * 300f;
+                    float ph = 0f;
+                    for (int i = (int)(start * Rate); i < d.Length && i < (start + dur) * Rate; i++)
+                    {
+                        float t = i / (float)Rate - start;
+                        float f = f0 * (1f + 0.15f * Mathf.Sin(t * 7f + v) - 0.2f * t / dur);
+                        ph += f / Rate;
+                        float tone = Mathf.Sin(2f * Mathf.PI * ph) + 0.5f * Mathf.Sin(4f * Mathf.PI * ph) + 0.3f * Mathf.Sin(6f * Mathf.PI * ph);
+                        d[i] += (tone + Noise(r) * 0.4f) * Mathf.Sin(Mathf.PI * t / dur) * 0.3f;
+                    }
+                }
+                LowPass(d, 1400f);
+            }, 513);
+        }
+
         public static float Midi(int note) => 440f * Mathf.Pow(2f, (note - 69) / 12f);
 
         // ------------------------------------------------------------------ voci "alla Animal Crossing"

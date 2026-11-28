@@ -114,7 +114,8 @@ namespace FantaLandia.Horror.Story
 
         void Start()
         {
-            if (PendingStart >= 0) { startAt = (StartAt)PendingStart; PendingStart = -1; }
+            if (PendingStart >= 0 && PendingStart < Chapter2Director.CheckpointBase) startAt = (StartAt)PendingStart;
+            PendingStart = -1;
             Objective = "";
             fpc = FindFirstObjectByType<FirstPersonController>();
             if (fpc != null)
@@ -992,7 +993,16 @@ namespace FantaLandia.Horror.Story
                 creditAlpha = 1f;
                 yield return new WaitForSeconds(3.5f);
             }
-            GameSettingsReset();
+            // si continua con il capitolo 2 (se la sua scena è nella build), altrimenti si ricomincia dall'inizio
+            if (Application.CanStreamedLevelBeLoaded(Chapter2Director.SceneName))
+            {
+                FantaLandia.Horror.UI.GameSettings.Checkpoint = Chapter2Director.CheckpointBase;
+                PendingStart = Chapter2Director.CheckpointBase;
+                FantaLandia.Horror.UI.NotebookMenu.SuppressAutoOpen = true;
+                FantaLandia.Horror.UI.IntroSequence.SkipLogo = true;
+                UnityEngine.SceneManagement.SceneManager.LoadScene(Chapter2Director.SceneName);
+            }
+            else GameSettingsReset();
         }
 
         float creditAlpha = 1f;
