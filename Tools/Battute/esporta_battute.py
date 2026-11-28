@@ -56,7 +56,7 @@ def scan(path):
 
 def main():
     index, lines, n = [], [], 0
-    lines.append("BATTUTE DI FANTALANDIA - capitoli 1 e 2")
+    lines.append("BATTUTE DI GUYS NIGHT - capitoli 1 e 2")
     lines.append("Cambia solo il testo dopo i due punti. Lascia il numero [..] e il nome. Le righe che non tocchi restano uguali.")
     lines.append("SCELTA = una risposta che il giocatore sceglie (la dice Muark). OBIETTIVO = cosa è scritto nel taccuino.")
     lines.append("")
